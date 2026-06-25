@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lin-Badminton | Kinetic Court</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#c2cab0",
+                    "secondary-fixed": "#dae2fd",
+                    "surface-container-high": "#e6e8ea",
+                    "inverse-surface": "#2d3133",
+                    "inverse-primary": "#98da27",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#a3e635",
+                    "surface-dim": "#d8dadc",
+                    "primary": "#446900",
+                    "outline": "#727a64",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#5c647a",
+                    "tertiary-container": "#c3d4ee",
+                    "on-background": "#191c1e",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#446900",
+                    "secondary-container": "#dae2fd",
+                    "surface-container-low": "#f2f4f6",
+                    "on-surface": "#191c1e",
+                    "surface": "#f7f9fb",
+                    "surface-bright": "#f7f9fb",
+                    "on-secondary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eff1f3",
+                    "primary-fixed": "#b2f746",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "on-secondary-fixed": "#131b2e",
+                    "on-surface-variant": "#424936",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "primary-fixed-dim": "#98da27",
+                    "secondary": "#565e74",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#505f76",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#334f00",
+                    "on-tertiary-container": "#4c5c72",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "surface-container": "#eceef0",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-primary-container": "#416400",
+                    "surface-variant": "#e0e3e5",
+                    "background": "#f7f9fb",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-primary-fixed": "#121f00",
+                    "tertiary-fixed": "#d3e4fe"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px",
+                    "2xl": "1.5rem"
+            },
+            "spacing": {
+                    "section-gap": "48px",
+                    "container-padding": "24px",
+                    "base": "8px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .hero-gradient {
+            background: linear-gradient(to bottom, rgba(25, 28, 30, 0.4), rgba(25, 28, 30, 0.9));
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/90 dark:bg-inverse-surface/90 backdrop-blur-md shadow-sm border-b border-outline-variant/30">
+<div class="flex items-center justify-between px-container-padding h-16 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-headline-md" style="font-variation-settings: 'FILL' 1;">sports_tennis</span>
+<span class="text-headline-md font-headline-md font-extrabold text-primary">Lin-Badminton</span>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-md transition-colors duration-200" href="#">Explore</a>
+<a class="text-on-surface-variant font-label-md hover:text-primary transition-colors duration-200" href="#">Features</a>
+<a class="text-on-surface-variant font-label-md hover:text-primary transition-colors duration-200" href="#">Testimonials</a>
+</nav>
+<button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-label-md scale-95 active:scale-90 transition-transform">
+                Book Now
+            </button>
+</div>
+</header>
+<main class="pt-16">
+<!-- Hero Section -->
+<section class="relative h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
+<img alt="Action Shot" class="absolute inset-0 w-full h-full object-cover object-center" src="https://lh3.googleusercontent.com/aida/AP1WRLvZ8elRJ7HwRPVjH0MxbuilTcdE5F8WR50omfgW5bfgC0VcM39Fh11fDSU6MuB59mBO1WqrjaYyCPEKNiGlKK3pi0dk2SKzoOuzfmOPNSAIkYBYwj2sqNv0RPNWqFeGIWyOqwqySXxozPbwYRf3kyL1dGmEH38Fd3PnIAe8gb_S1MamTvcC_rjVJ11VhEfAm-pyNyf4Zkfz9908KFl5ByxzPJqpd-MgIOwXYDoimuyA1JwVXCQeTpP5pe4"/>
+<div class="absolute inset-0 hero-gradient"></div>
+<div class="relative z-10 w-full max-w-7xl mx-auto px-container-padding text-center md:text-left">
+<div class="max-w-2xl">
+<h1 class="text-surface-container-lowest font-display-lg text-[40px] md:text-display-lg leading-tight mb-gutter uppercase tracking-tight">
+                        Smash Your Limits. <br/><span class="text-primary-container">Master the Court.</span>
+</h1>
+<p class="text-surface-variant font-body-lg mb-8 opacity-90">
+                        Find professional badminton coaches and structured training programs tailored to your skill level. Precision and performance, delivered on every serve.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+<button class="bg-primary-container text-on-primary-container px-10 py-4 rounded-full font-label-md shadow-lg hover:brightness-110 transition-all">
+                            View Classes
+                        </button>
+<button class="border-2 border-surface-container-lowest text-surface-container-lowest px-10 py-4 rounded-full font-label-md hover:bg-surface-container-lowest/10 transition-all">
+                            Learn More
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="py-section-gap px-container-padding max-w-7xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="bg-surface-container-low p-8 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-primary-container rounded-xl flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<h3 class="font-headline-md text-on-surface mb-2">Expert Coaches</h3>
+<p class="text-on-surface-variant">Train with international-level professionals dedicated to refining your technique.</p>
+</div>
+<div class="bg-surface-container-low p-8 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-primary-container rounded-xl flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+</div>
+<h3 class="font-headline-md text-on-surface mb-2">Flexible Schedules</h3>
+<p class="text-on-surface-variant">Early bird or night owl, our courts and classes are available when you need them.</p>
+</div>
+<div class="bg-surface-container-low p-8 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-primary-container rounded-xl flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">fitness_center</span>
+</div>
+<h3 class="font-headline-md text-on-surface mb-2">All Skill Levels</h3>
+<p class="text-on-surface-variant">From first-time swingers to pro-level competitive players, we have the right track.</p>
+</div>
+</div>
+</section>
+<!-- Popular Training Sessions -->
+<section class="py-section-gap bg-surface-container-lowest">
+<div class="max-w-7xl mx-auto px-container-padding">
+<div class="flex justify-between items-end mb-12">
+<div>
+<span class="text-primary font-label-md uppercase tracking-widest mb-2 block">Our Programs</span>
+<h2 class="font-headline-lg text-on-surface">Popular Training Sessions</h2>
+</div>
+<a class="hidden md:flex items-center text-primary font-label-md hover:underline" href="#">
+                        See All Classes <span class="material-symbols-outlined ml-1">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Class Card 1 -->
+<div class="group bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/30 shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative h-64 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A professional badminton player performing a powerful jump smash on a sleek, high-tech indoor court. The lighting is dramatic and focused, highlighting the athlete's intense concentration and muscle definition. The color palette features vibrant neon lime green lines on the court floor against a deep charcoal background, creating a high-energy and competitive atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5cui8i0qk7WzGqvFOGHydpQ2P0s5qTpycp7hwKNWNQAf_HUVRCOrToOZ0VagkzvMoLw1MmrSHMNqGFsKgm_LA-jLI3W9JD-hXlQjIUGbo-6OwH5KY_PQ1SMXIhcG0j4RPHVaSYM0mOSgO6Zj-wGO1NlvmDYRrY6X-j03hnpF-X6mntIf3nK55Zeioo-qflPkEBzGw4_n8jNS915sAyyAtNIVSCX3SKXPUeM7ATH318CsXITF1KNc72vlfyfZvo8VgjboZcU6jG8Q"/>
+<div class="absolute top-4 left-4">
+<span class="bg-primary-container text-on-primary-container px-4 py-1.5 rounded-full text-label-sm font-label-sm uppercase">Advanced</span>
+</div>
+</div>
+<div class="p-8">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline-md text-on-surface mb-1">Pro Smash Workshop</h3>
+<p class="text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">person</span> Coach Marcus V.
+                                    </p>
+</div>
+<div class="text-right">
+<span class="text-headline-md font-bold text-primary">$45</span>
+<span class="text-label-sm block opacity-60">/ session</span>
+</div>
+</div>
+<div class="space-y-3 mb-8">
+<div class="flex justify-between text-label-sm mb-1">
+<span class="text-on-surface-variant">Capacity: 12/15 spots filled</span>
+<span class="text-primary font-bold">80%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[80%] rounded-full"></div>
+</div>
+</div>
+<button class="w-full bg-inverse-surface text-primary-container py-4 rounded-xl font-label-md group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                                Book This Session
+                            </button>
+</div>
+</div>
+<!-- Class Card 2 -->
+<div class="group bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/30 shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative h-64 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A focused close-up of a high-quality badminton shuttlecock resting on a court surface. The background is a modern sports facility with blurred neon lighting and professional court markings. The aesthetic is crisp and high-contrast, utilizing deep grays and electric greens to emphasize precision and sporting technology. The lighting is soft but highlights the intricate feather details of the shuttlecock." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKpWcxyqVoXRw2jgVxLns3vVXrXUVOBF-_C-9JrKpXKq8LCHTPBs9AGvO_p1WtineHRVxa2LcyCfGx3eh2aPJjZ7EnPl0YS-D3z5fw1mBerrGOOmrLIU_0XszRD9mbkQhLajSHeSHyLO26C1jPFJoM_9skHheijRtg7OJD-mW2OqD__xhxlKRj1vExKB4bQoR7Tp20mylifL4-ts2ju10bl3iiqIQxGY-yCM-VWj5lh33s9C_J83YbaUV4XGFhr-NRPxneY5qjCi0"/>
+<div class="absolute top-4 left-4">
+<span class="bg-secondary-container text-on-secondary-container px-4 py-1.5 rounded-full text-label-sm font-label-sm uppercase">Beginner</span>
+</div>
+</div>
+<div class="p-8">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline-md text-on-surface mb-1">Footwork Basics</h3>
+<p class="text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">person</span> Coach Sarah L.
+                                    </p>
+</div>
+<div class="text-right">
+<span class="text-headline-md font-bold text-primary">$35</span>
+<span class="text-label-sm block opacity-60">/ session</span>
+</div>
+</div>
+<div class="space-y-3 mb-8">
+<div class="flex justify-between text-label-sm mb-1">
+<span class="text-on-surface-variant">Capacity: 5/12 spots filled</span>
+<span class="text-primary font-bold">42%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[42%] rounded-full"></div>
+</div>
+</div>
+<button class="w-full bg-inverse-surface text-primary-container py-4 rounded-xl font-label-md group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                                Book This Session
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonials -->
+<section class="py-section-gap px-container-padding max-w-7xl mx-auto">
+<h2 class="font-headline-lg text-center mb-12">Player Stories</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm italic text-on-surface-variant relative">
+<div class="flex mb-4 text-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="mb-6">"The coaching staff here is phenomenal. My smash speed increased by 15% in just three weeks of focused training."</p>
+<div class="flex items-center gap-3 not-italic">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="User Avatar" data-alt="A portrait of a young male athlete smiling confidently, shot in a high-key studio environment with clean white lighting. The image conveys a sense of achievement and well-being. The style is modern and professional, fitting for a testimonial section of a premium sports app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB--lm9h-maUIEMSeTKcNO4gUNyCAcqLKsVySmg6MDjyPFKme8t_Y8bNU3fFN3dcuAmxa7jJld7Fsb32ZRwI1_8N1vf94Mh1iNLiOKzV3hLnUpgQ6TOlzpL2YjYiDaOHNlzGqdq8Fv7qNl6qIIr_Ao6NRcym-Oo9pVBKX6RDdpSGjjsbSRpYWnffjY3q2ae8iVJHdJWvEk269qJaSywxvIPOoNzpEg3EkP2FzuH5FiRTMi58pP8gfKc1LUXWl4watdGCZlzYRTP4CM"/>
+</div>
+<span class="font-label-md text-on-surface">James K., Competitive Player</span>
+</div>
+</div>
+<div class="bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm italic text-on-surface-variant relative">
+<div class="flex mb-4 text-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">star</span>
+</div>
+<p class="mb-6">"Best badminton complex in the city. The courts are perfectly maintained and the community is so welcoming."</p>
+<div class="flex items-center gap-3 not-italic">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="User Avatar" data-alt="A bright and friendly headshot of a woman in activewear, captured with natural morning light that creates a fresh, energetic mood. The background is softly out of focus, suggesting an outdoor or airy indoor sports setting. The overall feel is one of health, vitality, and satisfaction with a fitness lifestyle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrdAji9U_MBkbvyyby-VziMYxBLk-3i9EeuSk9-9vk3-KOXH1y2HAIQ5d45uFFPcGTnBHmJb1CiKecBuVMriDUH6DicjIb8CRvn-SIMNvZGxap8rmN73H6gFVCme6QEH-gXVvsyryjGpmQzD8bEE4pbGeEpeq1_qHwT4NsyMOWr6A-midz3jS6yusFit_tCkU8u_bzn1-0q2EEB4k13P841gjchIL_FcG11dxvsl2TabwxMTo5IimhQMlrc23w7M-kQEk9vlcRYxI"/>
+</div>
+<span class="font-label-md text-on-surface">Sarah M., Amateur</span>
+</div>
+</div>
+<div class="bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm italic text-on-surface-variant relative">
+<div class="flex mb-4 text-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="mb-6">"Kinetic Court lives up to its name. Fast-paced, professional, and efficient booking system. Five stars!"</p>
+<div class="flex items-center gap-3 not-italic">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="User Avatar" data-alt="A portrait of a middle-aged man with a determined and sporty appearance, photographed in a modern architectural setting with sleek gray walls. The lighting is crisp and highlights the subject's athletic physique. The color palette is muted with sophisticated grays and whites, reflecting a premium and high-performance brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQEXvopWlqpAxYZH_6yYrQBmFUddKRd0poqPsn8Jnxmt84lRalLrbG4C8v-CfPiif6GsFL6FK0J9zw-lU0MvY0uGd9BxPTj0eQ0QA5fxLElB1FhiMCTOfuhVmtnMzjbQEss_6tpHYYHEMQae2dweSj7-3U83Pks0koex-3OhAHbvPynFO2pdZ14cZmyS4mQ_3vVF4k83o3Z93m4uE58We3FzEOHs45yFBj2EetRzSIPEQ8wzGkUoJayyv5hakMJsj-RFFp50bWmsc"/>
+</div>
+<span class="font-label-md text-on-surface">David L., Weekly Regular</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full pt-section-gap pb-8 bg-inverse-surface dark:bg-surface-container-lowest border-t border-outline/20">
+<div class="flex flex-col md:flex-row justify-between items-start gap-gutter px-container-padding max-w-7xl mx-auto">
+<div class="mb-8 md:mb-0">
+<span class="text-headline-md font-headline-lg font-black text-primary-container">Kinetic Court.</span>
+<p class="text-surface-variant opacity-80 mt-2 max-w-xs">Precision and Performance. Your ultimate destination for professional badminton training and court hire.</p>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-12">
+<div>
+<h4 class="text-on-primary-container font-label-md mb-4 uppercase">Company</h4>
+<ul class="space-y-2">
+<li><a class="text-surface-variant opacity-80 hover:text-primary-fixed hover:opacity-100 transition-opacity" href="#">Classes</a></li>
+<li><a class="text-surface-variant opacity-80 hover:text-primary-fixed hover:opacity-100 transition-opacity" href="#">Coaches</a></li>
+<li><a class="text-surface-variant opacity-80 hover:text-primary-fixed hover:opacity-100 transition-opacity" href="#">Courts</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-on-primary-container font-label-md mb-4 uppercase">Support</h4>
+<ul class="space-y-2">
+<li><a class="text-surface-variant opacity-80 hover:text-primary-fixed hover:opacity-100 transition-opacity" href="#">Membership</a></li>
+<li><a class="text-surface-variant opacity-80 hover:text-primary-fixed hover:opacity-100 transition-opacity" href="#">Contact</a></li>
+<li><a class="text-surface-variant opacity-80 hover:text-primary-fixed hover:opacity-100 transition-opacity" href="#">FAQ</a></li>
+</ul>
+</div>
+<div class="col-span-2 sm:col-span-1">
+<h4 class="text-on-primary-container font-label-md mb-4 uppercase">Social</h4>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-surface-variant hover:text-primary-fixed cursor-pointer transition-colors">public</span>
+<span class="material-symbols-outlined text-surface-variant hover:text-primary-fixed cursor-pointer transition-colors">share</span>
+<span class="material-symbols-outlined text-surface-variant hover:text-primary-fixed cursor-pointer transition-colors">verified</span>
+</div>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-container-padding mt-16 pt-8 border-t border-outline/10 text-center">
+<p class="text-label-sm text-surface-variant opacity-60">© 2024 Lin-Badminton Kinetic Court. All rights reserved.</p>
+</div>
+</footer>
+<script>
+        // Simple parallax effect for hero image
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const heroImage = document.querySelector('.hero-gradient').previousElementSibling;
+            if (heroImage) {
+                heroImage.style.transform = `translateY(${scrolled * 0.4}px)`;
+            }
+        });
+    </script>
+</body></html>

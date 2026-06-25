@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Đăng nhập | Kinetic Court</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#98da27",
+                    "on-primary": "#ffffff",
+                    "primary": "#446900",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "background": "#f7f9fb",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#f7f9fb",
+                    "surface-container-highest": "#e0e3e5",
+                    "tertiary": "#505f76",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#121f00",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "on-surface": "#191c1e",
+                    "surface-container": "#eceef0",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-secondary-container": "#5c647a",
+                    "surface-variant": "#e0e3e5",
+                    "surface-tint": "#446900",
+                    "primary-fixed": "#b2f746",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-tertiary": "#ffffff",
+                    "outline-variant": "#c2cab0",
+                    "surface-container-high": "#e6e8ea",
+                    "primary-container": "#a3e635",
+                    "on-tertiary-container": "#4c5c72",
+                    "on-background": "#191c1e",
+                    "surface-container-low": "#f2f4f6",
+                    "on-secondary-fixed": "#131b2e",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "primary-fixed-dim": "#98da27",
+                    "secondary-container": "#dae2fd",
+                    "tertiary-container": "#c3d4ee",
+                    "surface": "#f7f9fb",
+                    "on-surface-variant": "#424936",
+                    "surface-dim": "#d8dadc",
+                    "outline": "#727a64",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#d3e4fe",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#416400",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "secondary-fixed": "#dae2fd",
+                    "secondary": "#565e74",
+                    "on-primary-fixed-variant": "#334f00",
+                    "inverse-surface": "#2d3133"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "48px",
+                    "gutter": "16px",
+                    "container-padding": "24px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .form-focus-glow:focus-within {
+            box-shadow: 0 0 0 2px #a3e635;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex items-center justify-center p-gutter">
+<main class="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
+<div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0px_4px_20px_rgba(15,23,42,0.05)] border border-outline-variant">
+<!-- Header Image Backdrop -->
+<div class="relative h-48 w-full overflow-hidden">
+<img alt="Lin-Badminton background" class="w-full h-full object-cover grayscale brightness-50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmVRHDSpBZAhAFHz53PcFk1dUAIhX9c9K-hlaS3knwsvEjv4OR1UE9QWJCXaPQFCd5gmtV4-ECnKI-RY2D-3QNk_fItHjsZc_Biak4L5SimDKNa9gNVxl7nDe9sr1C2xDUZFYgoDOJccJ5azyMwKxElmWtDSxTxkGVA0UieelsJxpLk4BM87LyYAtY3kscc2Rq5L9oAQohTZQTH5YA3eW4iiApXm4WlduYRRqcQ2fl3_190HE1m96EfWmFWJx3av59aH2LlHvfWC0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent opacity-60"></div>
+<div class="absolute bottom-0 left-0 w-full p-6">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary-container text-3xl">badminton</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-white tracking-tight">Lin-Badminton</h1>
+</div>
+<p class="text-white/80 font-body-md">Chào mừng trở lại! Bạn đã sẵn sàng ra sân?</p>
+</div>
+</div>
+<div class="p-8 space-y-6">
+<!-- Error Alert State -->
+<div class="hidden bg-error-container text-on-error-container p-4 rounded-xl flex items-center gap-3 animate-pulse border border-error/20" id="error-alert">
+<span class="material-symbols-outlined text-error">report</span>
+<p class="text-label-md">Email hoặc mật khẩu không hợp lệ</p>
+<button class="ml-auto" onclick="document.getElementById('error-alert').classList.add('hidden')">
+<span class="material-symbols-outlined text-error text-lg">close</span>
+</button>
+</div>
+<form class="space-y-5" id="signin-form" onsubmit="return handleSignIn(event)">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="block text-label-md text-on-surface-variant" for="email">Địa chỉ Email</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant group-focus-within:text-primary transition-colors">mail</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 bg-surface-container-low border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md" id="email" name="email" placeholder="ten@vidu.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="block text-label-md text-on-surface-variant" for="password">Mật khẩu</label>
+<a class="text-label-sm text-primary hover:underline" href="#">Quên mật khẩu?</a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant group-focus-within:text-primary transition-colors">lock</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-3 bg-surface-container-low border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-on-surface-variant hover:text-primary transition-colors" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined" id="visibility-icon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Remember Me -->
+<div class="flex items-center gap-3">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary-container bg-surface-container-low" id="remember" type="checkbox"/>
+<label class="text-body-md text-on-surface-variant cursor-pointer select-none" for="remember">Ghi nhớ đăng nhập</label>
+</div>
+<!-- Submit Button -->
+<button class="w-full bg-primary-container text-on-primary-container font-headline-md py-4 rounded-xl shadow-lg shadow-primary-container/10 active:scale-95 transition-all duration-150 hover:brightness-105" type="submit">
+                        Đăng nhập
+                    </button>
+</form>
+<div class="relative py-2">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant"></div>
+</div>
+<div class="relative flex justify-center text-label-sm">
+<span class="px-2 bg-surface-container-lowest text-on-surface-variant">HOẶC TIẾP TỤC VỚI</span>
+</div>
+</div>
+<!-- Secondary Social -->
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 py-3 px-4 border border-outline-variant rounded-xl text-on-surface font-label-md hover:bg-surface-container transition-colors">
+<svg class="w-5 h-5" viewbox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="currentColor"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="currentColor"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="currentColor"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 12-4.53z" fill="currentColor"></path></svg>
+                        Google
+                    </button>
+<button class="flex items-center justify-center gap-2 py-3 px-4 border border-outline-variant rounded-xl text-on-surface font-label-md hover:bg-surface-container transition-colors">
+<svg class="w-5 h-5 text-blue-600" fill="currentColor" viewbox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
+                        Facebook
+                    </button>
+</div>
+<div class="text-center">
+<p class="text-on-surface-variant font-body-md">
+                        Chưa có tài khoản? 
+                        <a class="text-primary font-label-md hover:underline decoration-2 underline-offset-4" href="#">Đăng ký ngay</a>
+</p>
+</div>
+</div>
+</div>
+<!-- Subtle Footer Branding -->
+<div class="mt-8 text-center">
+<p class="text-on-surface-variant/40 text-label-sm tracking-widest uppercase">
+                © 2024 Kinetic Court Athletics
+            </p>
+</div>
+</main>
+<script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const visibilityIcon = document.getElementById('visibility-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                visibilityIcon.textContent = 'visibility_off';
+            } else {
+                passwordInput.type = 'password';
+                visibilityIcon.textContent = 'visibility';
+            }
+        }
+
+        function handleSignIn(e) {
+            e.preventDefault();
+            const alert = document.getElementById('error-alert');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (email && password) {
+                alert.classList.remove('hidden');
+                const card = document.querySelector('main');
+                card.classList.add('animate-shake');
+                setTimeout(() => card.classList.remove('animate-shake'), 500);
+            }
+            return false;
+        }
+    </script>
+<style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        .animate-shake {
+            animation: shake 0.2s ease-in-out 0s 2;
+        }
+    </style>
+</body></html>

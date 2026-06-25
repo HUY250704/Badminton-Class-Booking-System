@@ -1,0 +1,351 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#334f00",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "inverse-on-surface": "#eff1f3",
+                    "secondary-fixed": "#dae2fd",
+                    "outline": "#727a64",
+                    "on-primary-container": "#416400",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#98da27",
+                    "secondary": "#565e74",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface": "#f7f9fb",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "tertiary-container": "#c3d4ee",
+                    "surface-bright": "#f7f9fb",
+                    "on-surface-variant": "#424936",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed-dim": "#98da27",
+                    "on-surface": "#191c1e",
+                    "on-secondary-fixed": "#131b2e",
+                    "surface-container": "#eceef0",
+                    "surface-container-high": "#e6e8ea",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#d3e4fe",
+                    "primary-fixed": "#b2f746",
+                    "on-primary-fixed": "#121f00",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-secondary-container": "#5c647a",
+                    "background": "#f7f9fb",
+                    "on-error-container": "#93000a",
+                    "surface-container-low": "#f2f4f6",
+                    "outline-variant": "#c2cab0",
+                    "surface-tint": "#446900",
+                    "inverse-surface": "#2d3133",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "secondary-container": "#dae2fd",
+                    "primary": "#446900",
+                    "on-tertiary-container": "#4c5c72",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "surface-variant": "#e0e3e5",
+                    "primary-container": "#a3e635",
+                    "on-background": "#191c1e",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#d8dadc",
+                    "on-primary": "#ffffff",
+                    "tertiary": "#505f76",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "48px",
+                    "gutter": "16px",
+                    "base": "8px",
+                    "container-padding": "24px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .shimmer {
+            background: linear-gradient(90deg, #eceef0 25%, #f7f9fb 50%, #eceef0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .custom-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface mb-20">
+<!-- Top App Bar -->
+<header class="bg-surface dark:bg-inverse-surface fixed top-0 w-full z-50 border-b border-outline-variant dark:border-outline shadow-sm dark:shadow-none">
+<div class="flex justify-between items-center px-container-padding py-4 max-w-full mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary dark:text-inverse-primary" style="font-size: 28px;">sports_tennis</span>
+<h1 class="font-display-lg text-headline-md-mobile md:text-headline-md text-primary dark:text-inverse-primary tracking-tighter">Lin-Badminton</h1>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A professional studio headshot of a young woman with a determined expression, lit with high-contrast cinematic lighting. The background is a soft, out-of-focus athletic facility in cool blue tones. Her skin texture and hair details are sharp, reflecting the high-performance and modern aesthetic of the brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeQskIhFagmuOW0SOgqn085wfr-nJpJ_9Meq2Y3rkQCK9okw5XlIbNEAz7Dx1xERQ3VSXjJLaiSvD2nc7vjH1QWdCf6BwWFMuBCKI3f-SPrdTdZ1LAezCcJIkJ3KsaEaYNTAHF71ukYrFEvNburDszSxqUxLVXSKAUI9Sm1ZYw61RiP0-5VWPiolHz-se_iuQT6BlR3z_p1lT-Xo2njhq3MQj8p9wfMwHEH7tA88tkopIb1vz69SkIsN05gAr3Vc69bz9moSE2fjA">
+</div>
+</div>
+</header>
+<main class="mt-20 px-container-padding pb-8">
+<!-- Hero Section -->
+<section class="py-6 flex flex-col items-center text-center">
+<h2 class="font-display-lg text-headline-lg-mobile md:text-display-lg text-on-surface mb-6">Elevate Your Badminton Skills</h2>
+<!-- Central Search Bar -->
+<div class="w-full max-w-md relative mb-8">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+</div>
+<input class="w-full pl-12 pr-4 py-4 bg-surface-container-low border border-outline-variant rounded-full text-body-md focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all outline-none" placeholder="Search classes, coaches, or courts..." type="text">
+</div>
+<!-- Quick Filter Tabs -->
+<div class="w-full overflow-x-auto custom-scrollbar flex gap-2 pb-2">
+<button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-label-md text-label-md whitespace-nowrap active:scale-95 duration-150">All</button>
+<button class="bg-surface-container-high text-on-surface-variant px-6 py-2 rounded-full font-label-md text-label-md whitespace-nowrap hover:bg-surface-container-highest transition-colors">Beginner</button>
+<button class="bg-surface-container-high text-on-surface-variant px-6 py-2 rounded-full font-label-md text-label-md whitespace-nowrap hover:bg-surface-container-highest transition-colors">Intermediate</button>
+<button class="bg-surface-container-high text-on-surface-variant px-6 py-2 rounded-full font-label-md text-label-md whitespace-nowrap hover:bg-surface-container-highest transition-colors">Advanced</button>
+</div>
+</section>
+<!-- Skeleton Loader (Initially hidden, but toggled via script for demo) -->
+<div class="grid grid-cols-1 gap-6 mt-6 hidden" id="skeleton-grid">
+<div class="bg-surface-container-low rounded-2xl p-4 shadow-sm space-y-4">
+<div class="h-48 w-full shimmer rounded-xl"></div>
+<div class="h-6 w-3/4 shimmer rounded"></div>
+<div class="h-4 w-full shimmer rounded"></div>
+<div class="flex gap-2">
+<div class="h-6 w-20 shimmer rounded-full"></div>
+<div class="h-6 w-20 shimmer rounded-full"></div>
+</div>
+<div class="h-10 w-full shimmer rounded-lg"></div>
+</div>
+<div class="bg-surface-container-low rounded-2xl p-4 shadow-sm space-y-4">
+<div class="h-48 w-full shimmer rounded-xl"></div>
+<div class="h-6 w-1/2 shimmer rounded"></div>
+<div class="h-4 w-5/6 shimmer rounded"></div>
+<div class="h-10 w-full shimmer rounded-lg"></div>
+</div>
+</div>
+<!-- Class List Grid -->
+<div class="grid grid-cols-1 gap-6 mt-6" id="class-grid">
+<!-- Card 1: Advanced -->
+<div class="bg-surface-container-low rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(15,23,42,0.05)] border border-outline-variant flex flex-col group">
+<div class="relative h-48">
+<img alt="Advanced Smash Class" class="w-full h-full object-cover" data-alt="A dynamic, low-angle shot of an intense badminton smash at a high-end indoor court. The lighting is focused and dramatic, highlighting the Neon Lime accents of the shuttlecock and court lines. The atmosphere is energetic, competitive, and professional, perfectly capturing the advanced skill level with crisp motion and vibrant colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzKrbbXPUQonXuhiqzqcZNhuJzvcz6Ai33Za8OjiIzOWoy8SEik5MfVfPgENuhKICdAR--iafotmKI_o5Eye_y83tK3QDSH4Gs_Ec1RCgdYozTXtjwYYifB5Kuy2ueQZoI6Bdzud2r40DQEfSl2yVmLldCLItzLRxJEMtzvTqLiUu0UxVx9_t4NQXIRjMMJbC8XRjoo5C7IaM69C94RjrnVhdH9hSgs3nCpuauxCK2rx8bSfb0QzGQLnlrcXmg1SXoqiNrYM1_nR4">
+<div class="absolute top-4 right-4 bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-sm font-label-sm shadow-md">
+                        Advanced
+                    </div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Mastering the Smash</h3>
+<p class="text-body-md text-on-surface-variant mb-4 line-clamp-2">Refine your power and precision in this high-intensity workshop designed for competitive tournament...</p>
+<div class="space-y-3 mb-6">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">person</span>
+<span class="text-label-md font-label-md">Coach Lin Dan</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">location_on</span>
+<span class="text-label-md font-label-md">Arena Center, Court 4</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">calendar_today</span>
+<span class="text-label-md font-label-md">Mon, Oct 24 • 18:30</span>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex justify-between items-center mb-2">
+<span class="text-label-sm font-label-sm text-on-surface-variant">14/15 Spots Filled</span>
+<span class="text-label-sm font-label-sm text-error font-bold">Last few spots</span>
+</div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden mb-6">
+<div class="h-full bg-primary-container transition-all duration-1000" style="width: 93%;"></div>
+</div>
+<button class="w-full bg-on-primary-fixed-variant text-primary-fixed py-4 rounded-xl font-label-md text-label-md active:scale-[0.98] transition-transform">Register Now</button>
+</div>
+</div>
+</div>
+<!-- Card 2: Beginner -->
+<div class="bg-surface-container-low rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(15,23,42,0.05)] border border-outline-variant flex flex-col">
+<div class="relative h-48">
+<img alt="Beginner Basics Class" class="w-full h-full object-cover" data-alt="A clean, bright view of an indoor badminton court with a net in focus. Soft daylight filters through large windows, creating a welcoming and calm environment. The color palette is composed of neutrals and light grays, emphasizing a breathable and modern space for beginner players to learn the fundamentals of the sport." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCATnHf1HgYjrkmJOuNhsVedS_eXCRruIbrOZRryyXbW-7BKTScepOxPsBjDCbSaRAWUZWTLR6bSHMiCLbrQO906ReB7HjSDU5qWUw7zyN-PC4DRXM_eSi6Yi7CNaOEioQhx-3f0gzE1U4r5VJMrnn9We_mVpNWPNPh2Lx8j_LLxIn0E0PiUQCJ4PvhHWwXHTr5TppztrQlYZrf46p98boISkrA_s46utqHfyCWO92Hmbs-zssQ6H45MZYe8gWM1jOIK2xMiVKVNE8">
+<div class="absolute top-4 right-4 bg-surface-container-highest text-on-surface px-3 py-1 rounded-full text-label-sm font-label-sm shadow-md">
+                        Beginner
+                    </div>
+</div>
+<div class="p-6">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Fundamental Footwork</h3>
+<p class="text-body-md text-on-surface-variant mb-4 line-clamp-2">Start your journey with the correct posture and court movement. Perfect for those new to the game.</p>
+<div class="space-y-3 mb-6">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">person</span>
+<span class="text-label-md font-label-md">Coach Sarah J.</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">location_on</span>
+<span class="text-label-md font-label-md">City Sports Hub</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">calendar_today</span>
+<span class="text-label-md font-label-md">Wed, Oct 26 • 10:00</span>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex justify-between items-center mb-2">
+<span class="text-label-sm font-label-sm text-on-surface-variant">5/15 Spots Filled</span>
+</div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden mb-6">
+<div class="h-full bg-primary-container" style="width: 33%;"></div>
+</div>
+<button class="w-full bg-white border border-on-surface-variant text-on-surface py-4 rounded-xl font-label-md text-label-md active:scale-[0.98] transition-transform">Register</button>
+</div>
+</div>
+</div>
+<!-- Card 3: Intermediate -->
+<div class="bg-surface-container-low rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(15,23,42,0.05)] border border-outline-variant flex flex-col">
+<div class="relative h-48">
+<img alt="Intermediate Tactics" class="w-full h-full object-cover" data-alt="Close up of a professional badminton racket and shuttlecock on a blue court surface. The lighting is crisp and even, highlighting the technical precision of the equipment. The scene is modern and performance-oriented, using a cool palette of blues and slate grays with a hint of Neon Lime to evoke an intermediate skill-focused atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALzOheSMo5VDg7PGqYegbSfxAE1HzHj3ThS_a7NZeqG-pe3k5vyEHNHtVTBO6EVyFUGSR5eQPsGamL410MWSfbkLDVTzIRHfU3U5mkdiRLKshmz8zLCjZR-BY8Ybgois1Xs4gXx6XgyjcBGzwalCpHHFWNeMyfjGoBNA_aN7fN3d2CoJfBCsV3V3m6k9Q5QN7M8HmWB3ZGxGsoc9DyHRsOJxwROdEZ5I5Wb4ZmfDNJm3ucOF2fd3a3YIXxYN5dpXg8XYA01ZMJ5eI">
+<div class="absolute top-4 right-4 bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full text-label-sm font-label-sm shadow-md">
+                        Intermediate
+                    </div>
+</div>
+<div class="p-6">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Doubles Tactics &amp; Drills</h3>
+<p class="text-body-md text-on-surface-variant mb-4 line-clamp-2">Learn rotation, defense strategies, and communication to dominate the doubles court.</p>
+<div class="space-y-3 mb-6">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">person</span>
+<span class="text-label-md font-label-md">Coach Kevin S.</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">location_on</span>
+<span class="text-label-md font-label-md">East Court Complex</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">calendar_today</span>
+<span class="text-label-md font-label-md">Sat, Oct 29 • 15:00</span>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex justify-between items-center mb-2">
+<span class="text-label-sm font-label-sm text-on-surface-variant">10/15 Spots Filled</span>
+</div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden mb-6">
+<div class="h-full bg-primary-container" style="width: 66%;"></div>
+</div>
+<button class="w-full bg-on-primary-fixed-variant text-primary-fixed py-4 rounded-xl font-label-md text-label-md active:scale-[0.98] transition-transform">Register</button>
+</div>
+</div>
+</div>
+</div>
+<!-- FAB for Quick Booking (Contextual) -->
+<button class="fixed bottom-20 right-6 w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl flex items-center justify-center active:scale-90 transition-all z-40">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 border-t border-outline-variant bg-surface/90 backdrop-blur-md shadow-[0_-4px_20px_rgba(15,23,42,0.05)]">
+<div class="flex justify-around items-center h-16 w-full px-2">
+<!-- Active Home Tab -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-4 py-1 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">sports_score</span>
+<span class="font-label-sm text-label-sm">Classes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-label-sm text-label-sm">Bookings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</div>
+</nav>
+<script>
+        // Simulate Loading State
+        function toggleLoading(isLoading) {
+            const grid = document.getElementById('class-grid');
+            const skeleton = document.getElementById('skeleton-grid');
+            
+            if(isLoading) {
+                grid.classList.add('hidden');
+                skeleton.classList.remove('hidden');
+            } else {
+                grid.classList.remove('hidden');
+                skeleton.classList.add('hidden');
+            }
+        }
+
+        // Demo interactive loading effect for 2 seconds on load
+        window.addEventListener('DOMContentLoaded', () => {
+            toggleLoading(true);
+            setTimeout(() => toggleLoading(false), 1500);
+        });
+
+        // Filter functionality simulation
+        const filterButtons = document.querySelectorAll('button[class*="rounded-full"]');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => {
+                    b.classList.remove('bg-primary-container', 'text-on-primary-container');
+                    b.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                });
+                btn.classList.add('bg-primary-container', 'text-on-primary-container');
+                btn.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+                
+                // Trigger loading state on filter change
+                toggleLoading(true);
+                setTimeout(() => toggleLoading(false), 800);
+            });
+        });
+    </script>
+
+
+</body></html>

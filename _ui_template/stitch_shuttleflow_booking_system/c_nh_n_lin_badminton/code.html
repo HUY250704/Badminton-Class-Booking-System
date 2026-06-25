@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hồ sơ cá nhân - Kinetic Court</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#121f00",
+                    "surface-variant": "#e0e3e5",
+                    "on-secondary-fixed": "#131b2e",
+                    "on-primary-container": "#416400",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "secondary-container": "#dae2fd",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#5c647a",
+                    "surface-container-low": "#f2f4f6",
+                    "tertiary-fixed": "#d3e4fe",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-tertiary-container": "#4c5c72",
+                    "background": "#f7f9fb",
+                    "surface-container-highest": "#e0e3e5",
+                    "secondary": "#565e74",
+                    "primary-fixed-dim": "#98da27",
+                    "surface-dim": "#d8dadc",
+                    "secondary-fixed": "#dae2fd",
+                    "tertiary": "#505f76",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed-variant": "#334f00",
+                    "on-error-container": "#93000a",
+                    "primary": "#446900",
+                    "surface-tint": "#446900",
+                    "on-error": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-container-high": "#e6e8ea",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#c3d4ee",
+                    "surface": "#f7f9fb",
+                    "surface-container": "#eceef0",
+                    "inverse-surface": "#2d3133",
+                    "on-surface-variant": "#424936",
+                    "outline": "#727a64",
+                    "on-surface": "#191c1e",
+                    "on-background": "#191c1e",
+                    "primary-fixed": "#b2f746",
+                    "outline-variant": "#c2cab0",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#98da27",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "surface-bright": "#f7f9fb",
+                    "primary-container": "#a3e635",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "on-tertiary-fixed-variant": "#38485d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding": "24px",
+                    "base": "8px",
+                    "section-gap": "48px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f7f9fb;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .input-focus-ring:focus {
+            outline: none;
+            border-color: #a3e635;
+            box-shadow: 0 0 0 2px rgba(163, 230, 53, 0.2);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm dark:shadow-none flex justify-between items-center px-container-padding py-4 max-w-full mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary dark:text-inverse-primary" style="font-size: 28px;">sports_tennis</span>
+<h1 class="font-display-lg text-headline-md-mobile md:text-headline-md text-primary dark:text-inverse-primary tracking-tighter">Kinetic Court</h1>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a young adult Vietnamese male athlete with a friendly smile, short black hair, wearing a high-performance neon lime badminton jersey. The lighting is soft and directional, typical of a high-end sports magazine shoot, set against a clean, minimalist light gray background that emphasizes a modern, athletic lifestyle aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2xrG_PsdnrxPfbDwOWsSQPwJVR37tO5zWx_UVO_0Fer4PxhQq8IpwZt4sHNU4aHSXsoaOZlNY6LL0e09U4BrkfNAgVnTr0F8n5NkjOq06EOeOHdlrQo7aDVycbelYKtphMN-NBUDIGVy1apvU-hkRpsiSBuXlKyV19fVBzL0xivq5644PCzZ37t6SJvgK_bRoNonVpwdR0NH8PpquDbpGy5ieC6aAWy2sFSoIjTZx70vy2wCSafn67yyEHCPu848N3ysbKYgAqRE"/>
+</div>
+</header>
+<main class="pt-24 pb-32 px-container-padding max-w-md mx-auto">
+<!-- Profile Header Section -->
+<section class="flex flex-col items-center mb-8">
+<div class="relative mb-4">
+<div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
+<img class="w-full h-full object-cover" data-alt="A close-up high-resolution portrait of a sporty man named Nguyễn Văn A, featuring a confident look and a warm smile. He is wearing a minimalist slate gray athletic polo. The image style is polished and high-contrast, following a clean light-mode design with soft ambient shadows and a professional sporting complex atmosphere in the blurred background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUdAVqwOncApFgLm-BSD22aEp5rtikbegt4CBavq3NaW67dC3gKEODlYD4uXi6kRqMpWYR7MphfS6JUviu5bpXBNmeGmYEggPS89wUB_HoxeRyK3vamsLmJ8XXHxJeHPrOIPdj3koYhAsZrsm99CZIYVICw4SF2FGbKXHCLnXUM8gWdi7LnrBZdE7kWYi5ITeEjLnB263-we06O0C-S1IhutLsMJQDZGV6xoKjhQ_Uc98PE3GvHimhG21hcBNRqD54BvmnLrgXVPs"/>
+</div>
+<button class="absolute bottom-1 right-1 bg-primary text-on-primary p-2 rounded-full shadow-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">photo_camera</span>
+</button>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Nguyễn Văn A</h2>
+<span class="inline-block px-3 py-1 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm">Học viên</span>
+</section>
+<!-- Stats Row (Bento Style Cards) -->
+<section class="grid grid-cols-2 gap-4 mb-8">
+<div class="glass-card p-4 rounded-2xl shadow-[0_4px_20px_rgba(15,23,42,0.05)] border border-outline-variant flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-primary mb-2" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-headline-md text-headline-md text-on-surface">8</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Lớp đã tham gia</span>
+</div>
+<div class="glass-card p-4 rounded-2xl shadow-[0_4px_20px_rgba(15,23,42,0.05)] border border-outline-variant flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-primary mb-2" style="font-variation-settings: 'FILL' 1;">timer</span>
+<span class="font-headline-md text-headline-md text-on-surface">24</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Giờ trên sân</span>
+</div>
+</section>
+<!-- Form Fields -->
+<section class="space-y-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Họ và tên</label>
+<input class="w-full h-14 px-4 rounded-xl border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-on-surface input-focus-ring transition-all" type="text" value="Nguyễn Văn A"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Địa chỉ Email</label>
+<input class="w-full h-14 px-4 rounded-xl border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-on-surface input-focus-ring transition-all" type="email" value="vana.nguyen@email.com"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Số điện thoại</label>
+<input class="w-full h-14 px-4 rounded-xl border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-on-surface input-focus-ring transition-all" type="tel" value="090 123 4567"/>
+</div>
+<button class="w-full py-3 px-4 border border-outline text-on-surface font-label-md text-label-md rounded-xl hover:bg-surface-container-high transition-colors active:scale-[0.98] duration-150 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">lock_reset</span>
+                Đổi mật khẩu
+            </button>
+</section>
+<!-- Action Button -->
+<section class="mt-10">
+<button class="w-full h-14 bg-primary-container text-on-primary-container font-headline-md text-headline-md rounded-xl shadow-md active:scale-95 transition-all duration-200 flex items-center justify-center">
+                Lưu thay đổi
+            </button>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface dark:bg-inverse-surface border-t border-outline-variant dark:border-outline bg-surface/90 backdrop-blur-md shadow-[0_-4px_20px_rgba(15,23,42,0.05)]">
+<div class="flex justify-around items-center h-16 w-full px-2">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-inverse-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<!-- Classes -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-inverse-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">sports_score</span>
+<span class="font-label-sm text-label-sm">Classes</span>
+</a>
+<!-- Bookings -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:text-primary dark:hover:text-inverse-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-label-sm text-label-sm">Bookings</span>
+</a>
+<!-- Profile (ACTIVE) -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-4 py-1 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</div>
+</nav>
+<script>
+        // Simple micro-interaction for form inputs
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.querySelector('label').style.color = '#446900';
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.querySelector('label').style.color = '';
+            });
+        });
+
+        // Save button feedback
+        const saveBtn = document.querySelector('button.bg-primary-container');
+        saveBtn.addEventListener('click', () => {
+            const originalText = saveBtn.innerText;
+            saveBtn.innerText = 'Đang lưu...';
+            saveBtn.style.opacity = '0.7';
+            setTimeout(() => {
+                saveBtn.innerText = 'Đã lưu thành công!';
+                saveBtn.style.backgroundColor = '#446900';
+                saveBtn.style.color = '#ffffff';
+                setTimeout(() => {
+                    saveBtn.innerText = originalText;
+                    saveBtn.style.backgroundColor = '';
+                    saveBtn.style.color = '';
+                    saveBtn.style.opacity = '1';
+                }, 2000);
+            }, 800);
+        });
+    </script>
+</body></html>

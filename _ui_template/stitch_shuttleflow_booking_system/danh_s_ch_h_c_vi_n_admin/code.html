@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Danh sách học viên - Kinetic Court Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#121f00",
+                    "surface-variant": "#e0e3e5",
+                    "on-secondary-fixed": "#131b2e",
+                    "on-primary-container": "#416400",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "secondary-container": "#dae2fd",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#5c647a",
+                    "surface-container-low": "#f2f4f6",
+                    "tertiary-fixed": "#d3e4fe",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-tertiary-container": "#4c5c72",
+                    "background": "#f7f9fb",
+                    "surface-container-highest": "#e0e3e5",
+                    "secondary": "#565e74",
+                    "primary-fixed-dim": "#98da27",
+                    "surface-dim": "#d8dadc",
+                    "secondary-fixed": "#dae2fd",
+                    "tertiary": "#505f76",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed-variant": "#334f00",
+                    "on-error-container": "#93000a",
+                    "primary": "#446900",
+                    "surface-tint": "#446900",
+                    "on-error": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-container-high": "#e6e8ea",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#c3d4ee",
+                    "surface": "#f7f9fb",
+                    "surface-container": "#eceef0",
+                    "inverse-surface": "#2d3133",
+                    "on-surface-variant": "#424936",
+                    "outline": "#727a64",
+                    "on-surface": "#191c1e",
+                    "on-background": "#191c1e",
+                    "primary-fixed": "#b2f746",
+                    "outline-variant": "#c2cab0",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#98da27",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "surface-bright": "#f7f9fb",
+                    "primary-container": "#a3e635",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "on-tertiary-fixed-variant": "#38485d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding": "24px",
+                    "base": "8px",
+                    "section-gap": "48px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        background-color: #f7f9fb;
+        color: #191c1e;
+        font-family: 'Inter', sans-serif;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background">
+<!-- Navigation Drawer (SideNav) -->
+<aside class="hidden lg:flex flex-col h-screen h-full w-64 fixed left-0 top-0 z-40 bg-surface-container-low dark:bg-inverse-surface border-r border-outline-variant dark:border-outline">
+<div class="p-6 flex flex-col gap-1">
+<h1 class="font-headline-lg text-headline-lg text-primary">Admin Portal</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Management System</p>
+</div>
+<nav class="flex-1 mt-4">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-high m-2 p-3 flex items-center gap-3 rounded-lg cursor-pointer transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary font-bold rounded-lg m-2 p-3 flex items-center gap-3 cursor-pointer transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="font-label-md text-label-md">Schedule</span>
+</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-high m-2 p-3 flex items-center gap-3 rounded-lg cursor-pointer transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Coaches</span>
+</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-high m-2 p-3 flex items-center gap-3 rounded-lg cursor-pointer transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">stadium</span>
+<span class="font-label-md text-label-md">Courts</span>
+</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-high m-2 p-3 flex items-center gap-3 rounded-lg cursor-pointer transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-outline-variant">
+<div class="flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">person</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">Admin</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">lin-badminton.com</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top AppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm dark:shadow-none lg:pl-64">
+<div class="flex justify-between items-center px-container-padding py-4 max-w-full mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary dark:text-inverse-primary">sports_tennis</span>
+<span class="font-display-lg text-headline-md text-primary dark:text-inverse-primary tracking-tighter">Kinetic Court</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">notifications</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a sports administrator in a bright, modern office. The lighting is soft and natural, emphasizing a high-energy yet professional atmosphere suitable for a sports complex management team. The aesthetic is clean and focused with minimalist background elements." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeNNBmRcRsUaYu6QFFdfJFQSLGgNINAi8tD2noVyOswl9UNw6H4c-j2j9i4MwpwBGjtZzAHKBJ2rPmGKG4lnESGTBiR4DZz-htf54Cgz9J1k_em53LrtcN8rms5ZdO0lXiz-SSGUaeZvT_OHbtdSjG-dnk9Yzme4PJyqcHV6ykJP2h16NZ7q6z_X3Ij1lmbIWIAPove3E_PV1xorDd5SFPdHbH_s5ACu30cl-j9wcHEt_T7wweZqTO_GyGDzG91u-YZaTTgdcwvpk"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="lg:pl-64 pt-20 pb-24 lg:pb-8 min-h-screen">
+<div class="max-w-6xl mx-auto px-container-padding py-base lg:py-8">
+<!-- Page Header Area -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+<div>
+<nav class="flex items-center gap-2 text-on-surface-variant mb-2">
+<span class="font-label-sm text-label-sm">Classes</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="font-label-sm text-label-sm">Advanced Smash</span>
+</nav>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Danh sách học viên - Kỹ thuật Smash cơ bản</h2>
+</div>
+<div class="bg-surface-container-high rounded-xl p-4 flex items-center gap-4 border border-outline-variant min-w-[240px]">
+<div class="flex-1">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-md text-label-md text-on-surface">12/15 Chỗ đã đầy</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">80%</span>
+</div>
+<div class="w-full h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 80%"></div>
+</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">group</span>
+</div>
+</div>
+</div>
+<!-- Table Section -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-[0_4px_20px_rgba(15,23,42,0.05)] border border-outline-variant overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-6 py-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Học viên</th>
+<th class="px-6 py-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Email</th>
+<th class="px-6 py-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Ngày đăng ký</th>
+<th class="px-6 py-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Trạng thái</th>
+<th class="px-6 py-4 text-right"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Student Row 1 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A candid close-up portrait of a young male badminton student with a bright, energetic smile. High-contrast studio lighting creates a professional yet approachable sporting feel. The background is a soft, blurred lime green, maintaining the brand's primary color energy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLCDI3b0NHE3RGF0IkKoWSaLS1a7f08ScT3FfewmPvFpAF4SmzFZyL3TC3QfbWjfXDXyKeqvJX537e73GMBidirN_62mHK7XnBUNH3w21cH_lsVungYRVmsKFYE59Az9LfZJPd6MI9Vzc7ox_QVW4e8UhsPm6M_G5_FeOJjKRaiJHE-B5znrS5R6hxBhlBVe4_zvfKpOak2DHKBsD_NIVF2_NqrAL2uqyTVEZ-Ow33SOkrxThvb8EFChnJ8Ge30LROlRw7DBgafGM"/>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Nguyễn Văn An</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">ID: #LB-1029</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap font-body-md text-body-md text-on-surface-variant">an.nguyen@email.com</td>
+<td class="px-6 py-4 whitespace-nowrap font-body-md text-body-md text-on-surface-variant">12/10/2023</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-sm text-label-sm">Đã thanh toán</span>
+</td>
+<td class="px-6 py-4 text-right whitespace-nowrap">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-highest">more_vert</button>
+</td>
+</tr>
+<!-- Student Row 2 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A portrait of a determined young female athlete in a white polo shirt, representing a modern sporting lifestyle. The lighting is clean and balanced against a minimalist light gray studio background. The overall aesthetic is breathable, professional, and performance-focused." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOg0JmPf_NsSCWdIF3x94D1im8czOIe8yXysFc5T1puiejLRwA7VUTmTJ-DCBRRzmOVzMN6jgvVxal24cb3anmfXKoabU_Q9xlLpid_ZbTi9_uiI4y4oWXDs6uL905iXl7fmzdwKtn_RivOuE8yxh7JhNoKvNFeWW7stULGWfZ-0wWuKsRyFSaUT-7QFs1XmhPTT_K18AI1qqxAboHT33ys3Mrnj632UsE_fs219vDWCVEfQ5ZyyWSUV_vSP4rNbc2biyDsfs817E"/>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Trần Thị Bích</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">ID: #LB-1032</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap font-body-md text-body-md text-on-surface-variant">bich.tran@email.com</td>
+<td class="px-6 py-4 whitespace-nowrap font-body-md text-body-md text-on-surface-variant">13/10/2023</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-sm text-label-sm">Đã thanh toán</span>
+</td>
+<td class="px-6 py-4 text-right whitespace-nowrap">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-highest">more_vert</button>
+</td>
+</tr>
+<!-- Student Row 3 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A portrait of a male badminton player in his late 20s, showing a high-performance athlete look. The background is a sophisticated neutral gray with subtle accent lighting that highlights the texture of his jersey. Clean, minimalist sporting aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgfRDUU4rdF822AxnQ0unRU3AS7vGb-za0IzUOTZQZ9rKWfjQSIC84M95_8murfVNQH7krCeVIH1Mvn4GA1pwF7jiZAzpsbQRhp-m59BcXIfdtOql1x6Xw_-oPyG530DXJL6Rhm1IdVgBInlRhs2lfBVV0ZZdwBDvKqo07061ZD_cVTTK4DuvN1Gt7GA3WjNVUKk9Zbeuo-CN4-vsRBjhbPYyMA81ANKh0a0uT-DbVtbgfhrdQ4HEC6kWknYGzhvRAju-5ILoDHQQ"/>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Lê Minh Hoàng</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">ID: #LB-1045</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap font-body-md text-body-md text-on-surface-variant">hoang.le@email.com</td>
+<td class="px-6 py-4 whitespace-nowrap font-body-md text-body-md text-on-surface-variant">14/10/2023</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full font-label-sm text-label-sm">Chờ xác nhận</span>
+</td>
+<td class="px-6 py-4 text-right whitespace-nowrap">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-highest">more_vert</button>
+</td>
+</tr>
+<!-- Student Row 4 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Professional headshot of a young woman in sporting gear, minimalist and high-contrast lighting. The focus is sharp on her confident expression. The palette is dominated by whites and grays with a touch of vibrant green in the clothing details." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJ9yBjqkfSwPQ84X2Nz9IBGfJ3i232KHg6iT4_vQT3k49XmpcjyxHA-oV5VCjBzuah-gbYyOeU5GTsO5eP_WEsf3NQs7OOLouH_UQvPHs09VYnZWZeEi_9jnZJUMlD2LqARc9fXddfnf_aeND8a-HyaYsx0qACbKP4qAZ-aIzfMd5tbsSAwhkvu_Q6aQhUi0j1fjwgpF7B3u3uvRfbg8bE49qMXn0KLCOG7zeQygLbC20Z6Ddb2ZyYnNtihshfp2KgOsrfkYxs5lY"/>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Phạm Thu Hà</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">ID: #LB-1051</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap font-body-md text-body-md text-on-surface-variant">ha.pham@email.com</td>
+<td class="px-6 py-4 whitespace-nowrap font-body-md text-body-md text-on-surface-variant">14/10/2023</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-sm text-label-sm">Đã thanh toán</span>
+</td>
+<td class="px-6 py-4 text-right whitespace-nowrap">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-highest">more_vert</button>
+</td>
+</tr>
+<!-- Student Row 5 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Close-up of a young male student in a modern badminton jersey. The lighting is crisp and energetic, emphasizing movement and focus. Minimalist background in soft neutral tones helps keep the focus on the student's portrait." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEYZZnYW9IykcEELY_YCp6KXFdn8_VqUiyrYd06QL3fT0m2isqh-cgQarWEpuLvmRD1GrW8DZfVD87ghygJtbPdivXVHB430cej7pww-WddlBtcbc8CcR5TZ-RT8I76lZ_Q81R0uQ2Z6lcHQOsz6WCNxl94kJnd0DEg2CzxtP8mM9uhPN_Szwi5aYSQsTfMhSh1TJ54wK_9WpL6MdATuJ--GBuXmGKa0TVWUXZZ0rFkRKfdpWBzh7BVSqNcgd5lfxKdvKQeN829Eg"/>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Vũ Minh Đức</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">ID: #LB-1058</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap font-body-md text-body-md text-on-surface-variant">duc.vu@email.com</td>
+<td class="px-6 py-4 whitespace-nowrap font-body-md text-body-md text-on-surface-variant">15/10/2023</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full font-label-sm text-label-sm">Đã thanh toán</span>
+</td>
+<td class="px-6 py-4 text-right whitespace-nowrap">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-highest">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer/Pagination -->
+<div class="px-6 py-4 bg-surface-container-low flex items-center justify-between border-t border-outline-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Hiển thị 5 trên 12 học viên</span>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Additional Actions Bento -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant hover:shadow-md transition-all">
+<span class="material-symbols-outlined text-primary mb-3 text-3xl">mail</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Gửi thông báo</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Gửi email hàng loạt cho tất cả 12 học viên trong danh sách.</p>
+<button class="w-full py-2 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md hover:bg-secondary-fixed-dim transition-colors">Gửi Mail</button>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant hover:shadow-md transition-all">
+<span class="material-symbols-outlined text-primary mb-3 text-3xl">download</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Xuất danh sách</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Tải xuống danh sách học viên dưới dạng file Excel hoặc PDF.</p>
+<button class="w-full py-2 border border-secondary text-secondary rounded-lg font-label-md text-label-md hover:bg-secondary-container transition-colors">Tải xuống</button>
+</div>
+<div class="bg-primary-container p-6 rounded-2xl border border-primary/20 hover:shadow-md transition-all flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-on-primary-container mb-3 text-3xl">person_add</span>
+<h3 class="font-headline-md text-headline-md text-on-primary-container mb-2">Thêm học viên</h3>
+<p class="font-body-md text-body-md text-on-primary-container/80">Thêm thủ công học viên vào lớp học này.</p>
+</div>
+<button class="mt-4 w-full py-3 bg-on-primary-container text-white rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">Thêm ngay</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface/90 backdrop-blur-md border-t border-outline-variant dark:border-outline shadow-[0_-4px_20px_rgba(15,23,42,0.05)]">
+<div class="flex justify-around items-center h-16 w-full px-2">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">sports_score</span>
+<span class="font-label-sm text-label-sm">Classes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-label-sm text-label-sm">Bookings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</div>
+</nav>
+<script>
+        // Simple row highlight micro-interaction
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', () => {
+                console.log('Student row clicked');
+            });
+        });
+    </script>
+</body></html>

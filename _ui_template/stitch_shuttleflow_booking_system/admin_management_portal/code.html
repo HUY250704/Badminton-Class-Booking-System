@@ -1,0 +1,484 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Kinetic Court Admin | Performance Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#334f00",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "inverse-on-surface": "#eff1f3",
+                    "secondary-fixed": "#dae2fd",
+                    "outline": "#727a64",
+                    "on-primary-container": "#416400",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#98da27",
+                    "secondary": "#565e74",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface": "#f7f9fb",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "tertiary-container": "#c3d4ee",
+                    "surface-bright": "#f7f9fb",
+                    "on-surface-variant": "#424936",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed-dim": "#98da27",
+                    "on-surface": "#191c1e",
+                    "on-secondary-fixed": "#131b2e",
+                    "surface-container": "#eceef0",
+                    "surface-container-high": "#e6e8ea",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#d3e4fe",
+                    "primary-fixed": "#b2f746",
+                    "on-primary-fixed": "#121f00",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "on-secondary-container": "#5c647a",
+                    "background": "#f7f9fb",
+                    "on-error-container": "#93000a",
+                    "surface-container-low": "#f2f4f6",
+                    "outline-variant": "#c2cab0",
+                    "surface-tint": "#446900",
+                    "inverse-surface": "#2d3133",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "secondary-container": "#dae2fd",
+                    "primary": "#446900",
+                    "on-tertiary-container": "#4c5c72",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "surface-variant": "#e0e3e5",
+                    "primary-container": "#a3e635",
+                    "on-background": "#191c1e",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#d8dadc",
+                    "on-primary": "#ffffff",
+                    "tertiary": "#505f76",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px",
+                    "2xl": "1rem"
+            },
+            "spacing": {
+                    "section-gap": "48px",
+                    "gutter": "16px",
+                    "base": "8px",
+                    "container-padding": "24px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        [data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            background-color: #f7f9fb;
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for tight UI */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c2cab0; border-radius: 10px; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface">
+<!-- Desktop Sidebar Navigation -->
+<aside class="hidden lg:flex flex-col h-screen h-full w-64 fixed left-0 top-0 z-40 bg-surface-container-low border-r border-outline-variant">
+<div class="p-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="sports_tennis">sports_tennis</span>
+<h1 class="font-headline-lg text-primary text-headline-lg tracking-tighter">Lin-Badminton</h1>
+</div>
+<div class="mt-4 flex-1">
+<nav class="space-y-1">
+<a class="text-on-surface-variant hover:bg-surface-container-high m-2 p-3 flex items-center gap-3 rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+                </a>
+<a class="bg-secondary-container text-on-secondary-container font-bold rounded-lg m-2 p-3 flex items-center gap-3 transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-weight="fill">sports_score</span> Class Management
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high m-2 p-3 flex items-center gap-3 rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">groups</span> Student Rosters
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high m-2 p-3 flex items-center gap-3 rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">stadium</span> Courts
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high m-2 p-3 flex items-center gap-3 rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+                </a>
+</nav>
+</div>
+<div class="p-4 border-t border-outline-variant">
+<div class="flex items-center gap-3 p-2">
+<img alt="Admin" class="w-10 h-10 rounded-full object-cover" data-alt="A professional headshot of a sports facility manager in a clean, modern studio setting. He is wearing a dark polo shirt and smiling confidently. The lighting is soft and even, highlighting his friendly and authoritative persona against a neutral, high-key background that matches a premium fitness brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeeVmFGBCz8tawfxx9SqLrdooxc27U3UXvRmOvWozVr6IxYGnAIzgvSn6QSTZIvt19Q8kMy5SoFvGncyxWoFdkN817GqI6llZUJ0bI5JCMjOBpRk9-mcDjMvKTZYJrxoBnqqoRd7m2XpNOuuCsgMmptHMThME0CEeQY4moUIgrvBtAUk4Zvfk3SZ_DnEOAfjdZBQMpnrlF4WEkhDzCCGvjTbLtJfVmykvnYJzCezi56zbWSevfIg_1zH5J8zfWT-oPe2FWndBuEKU">
+<div>
+<p class="font-label-md text-label-md text-on-surface">Marcus Chen</p>
+<p class="text-xs text-on-surface-variant">Head Administrator</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Mobile Top Bar -->
+<header class="lg:hidden fixed top-0 w-full z-50 bg-surface shadow-sm border-b border-outline-variant flex justify-between items-center px-container-padding py-4 h-16">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="sports_tennis">sports_tennis</span>
+<span class="font-display-lg text-headline-md-mobile text-primary tracking-tighter">Lin-Badminton</span>
+</div>
+<img alt="Profile" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A close-up portrait of a fitness administrator with a friendly expression. The image is bright and professional, featuring crisp details and a soft-focus background that evokes a high-end sports club atmosphere. The lighting is designed to feel energetic and welcoming, consistent with a performance-driven light mode UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD49a45rEMhq_5ncR0evCUa8mKR2R9y6Kgai4xlGjMfarcFY_ymUy9Io0iDeZJmTUvBiGPOFku81tQ8XvnYvYZQOxgR6pXXsg9nMktS9-DIsJ_4rIFQip0mTnhbRqipKdWGQEjcTfv7DpLM-VdPhVCJ3xoPPaiNjv_MEC5Johx45hlhKZ4CII7QR2fh4AbA6TFfHdtVllyoy2oZ2JB430vhL9in87cmUAKuQiX0DkRfYwFfCM_CB4qxdBK1q2zLwo6e-LIVvYUf7h4">
+</header>
+<!-- Main Content Area -->
+<main class="lg:ml-64 pt-20 lg:pt-8 pb-24 px-container-padding min-h-screen">
+<div class="max-w-6xl mx-auto space-y-8">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Class Management</h2>
+<p class="text-on-surface-variant font-body-md text-body-md">Schedule and oversee active training sessions.</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-surface border border-outline text-on-surface px-4 py-2 rounded-lg font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">filter_list</span> Filter
+                    </button>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md flex items-center gap-2 shadow-sm hover:opacity-90 transition-all" onclick="toggleModal('create-class-modal')">
+<span class="material-symbols-outlined text-[20px]">add</span> Create New Class
+                    </button>
+</div>
+</div>
+<!-- Dashboard Stats Bento (Small) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="glass-card p-4 rounded-2xl shadow-sm">
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Active Classes</p>
+<h3 class="text-headline-md font-headline-md mt-1">24 <span class="text-primary text-sm font-normal">+2 today</span></h3>
+</div>
+<div class="glass-card p-4 rounded-2xl shadow-sm">
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Total Enrollment</p>
+<h3 class="text-headline-md font-headline-md mt-1">186 <span class="text-on-surface-variant text-sm font-normal">/ 240 capacity</span></h3>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-2">
+<div class="bg-primary-container h-full rounded-full" style="width: 77.5%"></div>
+</div>
+</div>
+<div class="glass-card p-4 rounded-2xl shadow-sm">
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Revenue (Monthly)</p>
+<h3 class="text-headline-md font-headline-md mt-1">$12,450</h3>
+</div>
+</div>
+<!-- Class Management Table -->
+<div class="glass-card rounded-2xl shadow-[0_4px_20px_rgba(15,23,42,0.05)] overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Class Title</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Level</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Schedule</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Slots</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Table Row 1 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4">
+<div class="font-label-md text-label-md text-on-surface">Smash Fundamentals</div>
+<div class="text-xs text-on-surface-variant">Coach: Vikram Singh</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-label-sm font-label-sm">Beginner</span>
+</td>
+<td class="px-6 py-4 font-body-md text-body-md">Mon, Wed 6:00 PM</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md">10/12</span>
+<div class="w-16 bg-surface-container h-1 rounded-full">
+<div class="bg-primary-container h-full rounded-full" style="width: 83%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary-container rounded-lg transition-colors text-on-surface-variant" onclick="toggleModal('roster-modal')" title="View Students">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+</button>
+<button class="p-2 hover:bg-primary-container rounded-lg transition-colors text-on-surface-variant" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 hover:bg-error-container text-error rounded-lg transition-colors" title="Delete">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Table Row 2 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4">
+<div class="font-label-md text-label-md text-on-surface">Elite Footwork Pro</div>
+<div class="text-xs text-on-surface-variant">Coach: Sarah J.</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-sm font-label-sm">Advanced</span>
+</td>
+<td class="px-6 py-4 font-body-md text-body-md">Tue, Thu 7:30 PM</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md">8/8</span>
+<div class="w-16 bg-surface-container h-1 rounded-full">
+<div class="bg-error h-full rounded-full" style="width: 100%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary-container rounded-lg transition-colors text-on-surface-variant" onclick="toggleModal('roster-modal')">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+</button>
+<button class="p-2 hover:bg-primary-container rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 hover:bg-error-container text-error rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Table Row 3 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-4">
+<div class="font-label-md text-label-md text-on-surface">Mixed Doubles Strategy</div>
+<div class="text-xs text-on-surface-variant">Coach: Mike "Shuttle" Lee</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full text-label-sm font-label-sm">Intermediate</span>
+</td>
+<td class="px-6 py-4 font-body-md text-body-md">Sat 10:00 AM</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md">14/16</span>
+<div class="w-16 bg-surface-container h-1 rounded-full">
+<div class="bg-primary-container h-full rounded-full" style="width: 87%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary-container rounded-lg transition-colors text-on-surface-variant" onclick="toggleModal('roster-modal')">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+</button>
+<button class="p-2 hover:bg-primary-container rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 hover:bg-error-container text-error rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (FAB) -->
+<button class="fixed bottom-20 md:bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform z-50 group" onclick="toggleModal('create-class-modal')">
+<span class="material-symbols-outlined text-3xl">add</span>
+<span class="absolute right-16 bg-inverse-surface text-inverse-on-surface px-3 py-1 rounded-md text-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">Create Class</span>
+</button>
+<!-- Bottom Nav for Mobile -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface/90 backdrop-blur-md border-t border-outline-variant shadow-[0_-4px_20px_rgba(15,23,42,0.05)] flex justify-around items-center h-16 w-full px-2">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1" href="#">
+<span class="material-symbols-outlined" data-weight="fill">sports_score</span>
+<span class="font-label-sm text-label-sm">Classes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-sm text-label-sm">Rosters</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">Config</span>
+</a>
+</nav>
+<!-- Create New Class Modal -->
+<div class="fixed inset-0 z-[60] hidden" id="create-class-modal">
+<div class="absolute inset-0 bg-inverse-surface/40 backdrop-blur-sm" onclick="toggleModal('create-class-modal')"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg px-4">
+<div class="bg-surface rounded-2xl shadow-xl overflow-hidden p-8 border border-outline-variant animate-in slide-in-from-bottom-4 duration-300">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md">New Class Configuration</h3>
+<button class="text-on-surface-variant hover:bg-surface-container rounded-full p-1 transition-colors" onclick="toggleModal('create-class-modal')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<form class="space-y-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Class Title</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg p-3 text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="e.g. Backhand Mastery" type="text">
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Coach</label>
+<select class="w-full bg-surface border border-outline-variant rounded-lg p-3 text-body-md outline-none focus:border-primary">
+<option>Vikram Singh</option>
+<option>Sarah J.</option>
+<option>Mike Lee</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Skill Level</label>
+<select class="w-full bg-surface border border-outline-variant rounded-lg p-3 text-body-md outline-none focus:border-primary">
+<option>Beginner</option>
+<option>Intermediate</option>
+<option>Advanced</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Max Students</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg p-3 text-body-md outline-none focus:border-primary" type="number" value="12">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Price ($)</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg p-3 text-body-md outline-none focus:border-primary" type="number" value="45">
+</div>
+</div>
+<div class="pt-4 flex gap-3">
+<button class="flex-1 bg-surface-container-high text-on-surface px-4 py-3 rounded-xl font-label-md text-label-md" onclick="toggleModal('create-class-modal')" type="button">Discard</button>
+<button class="flex-1 bg-primary text-on-primary px-4 py-3 rounded-xl font-label-md text-label-md shadow-md" type="submit">Create Session</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+<!-- Student Roster Modal -->
+<div class="fixed inset-0 z-[60] hidden" id="roster-modal">
+<div class="absolute inset-0 bg-inverse-surface/40 backdrop-blur-sm" onclick="toggleModal('roster-modal')"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl px-4">
+<div class="bg-surface rounded-2xl shadow-2xl overflow-hidden border border-outline-variant animate-in zoom-in-95 duration-300">
+<div class="bg-primary p-6 text-on-primary">
+<div class="flex justify-between items-center">
+<div>
+<h3 class="font-headline-md text-headline-md">Student Roster</h3>
+<p class="text-on-primary/80 font-body-md text-body-md">Smash Fundamentals • Mon, Wed 6:00 PM</p>
+</div>
+<button class="text-on-primary hover:bg-white/10 rounded-full p-2" onclick="toggleModal('roster-modal')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+<div class="p-0 overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container border-b border-outline-variant">
+<tr>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant">Name</th>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant">Email</th>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant">Enrolled</th>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr>
+<td class="px-6 py-4 font-body-md text-body-md">Alex Rodriguez</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm text-label-sm">a.rod@gmail.com</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm text-label-sm">Oct 12, 14:20</td>
+<td class="px-6 py-4"><span class="bg-primary-container/30 text-primary text-[10px] px-2 py-0.5 rounded font-bold uppercase">Paid</span></td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-body-md text-body-md">Lin Xiao</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm text-label-sm">lxiao88@outlook.com</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm text-label-sm">Oct 14, 09:12</td>
+<td class="px-6 py-4"><span class="bg-primary-container/30 text-primary text-[10px] px-2 py-0.5 rounded font-bold uppercase">Paid</span></td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-body-md text-body-md">Emma Wilson</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm text-label-sm">emma.w@edu.com</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm text-label-sm">Oct 15, 11:45</td>
+<td class="px-6 py-4"><span class="bg-secondary-container text-on-secondary-container text-[10px] px-2 py-0.5 rounded font-bold uppercase">Pending</span></td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-body-md text-body-md">Jordan Peele</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm text-label-sm">jpeele@studio.com</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm text-label-sm">Oct 15, 13:02</td>
+<td class="px-6 py-4"><span class="bg-primary-container/30 text-primary text-[10px] px-2 py-0.5 rounded font-bold uppercase">Paid</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-6 bg-surface-container-low flex justify-between items-center">
+<p class="text-on-surface-variant font-label-sm text-label-sm">Showing 4 of 10 enrolled</p>
+<button class="text-primary font-label-md text-label-md hover:underline">Download CSV</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Add some basic interactivity for the class items
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', (e) => {
+                // If the click wasn't on a button, do a generic select action
+                if (!e.target.closest('button')) {
+                    row.classList.toggle('bg-primary-container/10');
+                }
+            });
+        });
+    </script>
+
+
+</body></html>
