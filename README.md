@@ -1,92 +1,271 @@
-# Badminton Class Booking System
+# Project 8 - Badminton Class Booking System
 
-Local run (backend + frontend):
+Fullstack MERN application for managing and booking badminton classes. Admin users can create classes, manage students, and control class capacity. Regular users can browse upcoming classes, enroll, cancel enrollments, and manage their registered classes.
 
-Backend
-
-```bash
-cd backend
-cp .env.example .env
-# edit .env to set MONGO_URI and JWT_SECRET
-npm install
-npm run seed   # optional - creates demo users and classes
-npm run dev
-```
-
-Frontend
-
-```bash
-cd frontend
-cp .env.example .env
-npm install
-npm run dev
-```
-
-Deployment notes
-
-- Frontend (Vercel):
-	1. Create a new Vercel project and point it at the `frontend` folder.
-	2. Set environment variable `VITE_API_URL` to your backend API URL (e.g. `https://your-backend.onrender.com/api`).
-	3. Build command: `npm run build`. Output directory: `dist`.
-
-- Backend (Render):
-	1. Create a new Web Service on Render (or similar on Heroku).
-	2. Set the build/start commands: `npm install` and `npm start` (or use `npm run dev` for development).
-	3. Add environment variables: `MONGO_URI`, `JWT_SECRET`, and `CLIENT_URL` (comma-separated allowed origins).
-
-Security
-
-- Never commit real secrets to the repo. Use environment variables for `MONGO_URI` and `JWT_SECRET`.
-- For production, use a strong `JWT_SECRET` and restrict `CLIENT_URL` to your deployed frontend domain.
-
-# Badminton Class Booking System
-
-Fullstack MERN app for managing badminton classes, enrollments, and admin workflows.
+This project focuses on connecting a React frontend with a custom Node.js/Express backend, including authentication, authorization, protected APIs, and real deployment configuration.
 
 ## Tech Stack
 
-- Backend: Node.js, Express, MongoDB, Mongoose, JWT
-- Frontend: React, Vite, Axios, TanStack React Query, React Router
+- Frontend: React, Vite, React Router, Axios, TanStack React Query
+- Backend: Node.js, Express, MongoDB, Mongoose
+- Auth: JWT, bcrypt
+- Deployment: Vercel for frontend, Render for backend
+
+## Main Entities
+
+### User
+
+- `role`: `admin` | `user`
+
+### Class
+
+- `title`
+- `description`
+- `coachName`
+- `level`: `beginner` | `intermediate` | `advanced`
+- `startDate`
+- `schedule`
+- `location`
+- `maxStudents`
+- `createdBy`: reference to `User`
+
+### Enrollment
+
+- `class`: reference to `Class`
+- `user`: reference to `User`
+- `enrolledAt`
+
+## Features
+
+### Public
+
+- View upcoming badminton classes
+- Search classes by name, coach, or description
+- Filter classes by level
+- View class details
+- See current enrollment count and maximum capacity
+
+### User
+
+- Register and log in
+- Enroll in a class after login
+- Cancel enrollment
+- View registered classes
+- Access protected user routes with JWT
+
+### Admin
+
+- Create new classes
+- Edit class information
+- Delete classes
+- View the student list for each class
+- Access admin routes only when the user role is `admin`
+
+## Business Rules
+
+- A user cannot enroll in the same class twice.
+- A user cannot enroll when the class is full.
+- Only admins can create, edit, or delete classes.
+- Each class displays both current student count and maximum capacity.
+- Protected APIs require a valid JWT.
+- Admin APIs require both authentication and admin role authorization.
+
+## Project Structure
+
+```text
+.
+|-- backend/
+|   |-- src/
+|   |   |-- controllers/
+|   |   |-- middleware/
+|   |   |-- models/
+|   |   |-- routes/
+|   |   |-- app.js
+|   |   `-- server.js
+|   `-- package.json
+|-- frontend/
+|   |-- public/
+|   |-- src/
+|   |   |-- api/
+|   |   |-- components/
+|   |   |-- hooks/
+|   |   |-- pages/
+|   |   `-- utils/
+|   `-- package.json
+`-- package.json
+```
+
+## API Overview
+
+### Auth
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+
+### Classes
+
+- `GET /api/classes`
+- `GET /api/classes/:id`
+- `POST /api/classes` - admin only
+- `PATCH /api/classes/:id` - admin only
+- `DELETE /api/classes/:id` - admin only
+- `GET /api/classes/:id/students` - admin only
+
+### Enrollments
+
+- `POST /api/classes/:id/enroll`
+- `DELETE /api/classes/:id/enroll`
+- `GET /api/classes/my/enrollments`
+
+## Environment Variables
+
+Do not commit real `.env` files or secrets.
+
+### Backend `.env`
+
+Create `backend/.env`:
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_strong_jwt_secret
+CLIENT_URL=http://localhost:5173
+```
+
+Optional for local development without MongoDB:
+
+```env
+USE_MEMORY_DB=true
+```
+
+### Frontend `.env`
+
+Create `frontend/.env`:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
 
 ## Local Setup
 
-1. Install dependencies:
+Install all dependencies:
 
 ```bash
 npm run install:all
 ```
 
-2. Create backend env:
+Seed demo data:
 
 ```bash
-cp backend/.env.example backend/.env
+npm run seed --prefix backend
 ```
 
-3. Create frontend env:
-
-```bash
-cp frontend/.env.example frontend/.env
-```
-
-4. Start both apps:
+Start backend and frontend together:
 
 ```bash
 npm run dev
 ```
 
-Backend runs on `http://localhost:5000`; frontend runs on `http://localhost:5173`.
+Default local URLs:
 
-## Default Admin
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:5000`
+- Health check: `http://localhost:5000/api/health`
 
-Register normally, then set one user's role to `admin` directly in MongoDB for first-time setup:
+## Demo Accounts
 
-```js
-db.users.updateOne({ email: "admin@example.com" }, { $set: { role: "admin" } })
+After running the seed script:
+
+```text
+Admin
+Email: admin@example.com
+Password: password123
+
+User
+Email: user@example.com
+Password: password123
 ```
 
 ## Deployment
 
-- Deploy `frontend/` to Vercel. Set `VITE_API_URL` to the Render backend URL plus `/api`.
-- Deploy `backend/` to Render. Set `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL`, and optional `PORT`.
+### Frontend - Vercel
 
-Never commit real `.env` files.
+1. Create a Vercel project from the `frontend/` folder.
+2. Set build command:
+
+```bash
+npm run build
+```
+
+3. Set output directory:
+
+```text
+dist
+```
+
+4. Add environment variable:
+
+```env
+VITE_API_URL=https://your-render-backend.onrender.com/api
+```
+
+### Backend - Render
+
+1. Create a Render Web Service from the `backend/` folder.
+2. Set build command:
+
+```bash
+npm install
+```
+
+3. Set start command:
+
+```bash
+npm start
+```
+
+4. Add environment variables:
+
+```env
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_strong_jwt_secret
+CLIENT_URL=https://your-vercel-frontend.vercel.app
+```
+
+`CLIENT_URL` supports comma-separated origins if multiple frontend URLs are needed.
+
+## Topics Learned
+
+- Axios `GET`, `POST`, `PATCH`, and `DELETE` from React
+- Attaching JWT to request headers
+- React Query caching, refetching, and mutations
+- Authentication and role-based authorization
+- CORS configuration
+- Environment variables on frontend and backend
+- End-to-end authentication flow: login, save token, call protected API
+- Many-to-many relationship through the `Enrollment` model
+- Search, filter, and pagination
+- Loading states, empty states, and error states
+- Protected routes
+- Deploying frontend to Vercel and backend to Render
+
+## Done Criteria
+
+- [x] Class list displays correctly with loading state
+- [x] Search and level filter work
+- [x] Enroll and cancel enrollment work with React Query updates
+- [x] Duplicate enrollment is blocked
+- [x] Enrollment is blocked when class capacity is full
+- [x] User can view registered classes
+- [x] Only admins can create, edit, and delete classes
+- [x] Student list displays for each class
+- [x] CORS is configured
+- [ ] Frontend deployed to Vercel and backend deployed to Render
+- [x] No API keys or secrets are committed in source code
+
+## Security Notes
+
+- Keep `backend/.env` private.
+- Use a strong `JWT_SECRET` in production.
+- Restrict `CLIENT_URL` to the deployed frontend domain in production.
+- Only expose frontend-safe variables that start with `VITE_`.
