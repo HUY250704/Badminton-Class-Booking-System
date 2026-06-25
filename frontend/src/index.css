@@ -772,7 +772,7 @@ img { display: block; max-width: 100%; }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
@@ -832,6 +832,44 @@ img { display: block; max-width: 100%; }
   min-width: 120px;
   display: grid;
   gap: 8px;
+}
+
+.admin-controls {
+  padding: 18px;
+  border: 1px solid var(--outline);
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+}
+
+.admin-search {
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--slate);
+  background: var(--surface-low);
+}
+
+.admin-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
 }
 
 .table-actions {
@@ -1050,6 +1088,7 @@ img { display: block; max-width: 100%; }
   .auth-art { min-height: 260px; }
   .detail-hero, .detail-hero img { min-height: 420px; }
   .stats-grid, .form-grid { grid-template-columns: 1fr; }
+  .admin-controls { grid-template-columns: 1fr; }
   .heading-row { align-items: stretch; flex-direction: column; }
   .button-fit { width: 100%; }
   .table-card { overflow-x: auto; }

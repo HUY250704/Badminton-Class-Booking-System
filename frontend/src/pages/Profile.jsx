@@ -8,6 +8,8 @@ import { getUser } from '../hooks/useAuth'
 export default function Profile() {
   const user = getUser()
   const isStudent = user?.role !== 'admin'
+  const displayName = user?.role === 'admin' ? 'Admin' : user?.name
+  const roleLabel = user?.role === 'admin' ? 'Admin' : 'User'
   const { data = [] } = useQuery({
     queryKey: ['my-enrollments'],
     queryFn: () => api.get('/classes/my/enrollments').then((r) => r.data),
@@ -21,14 +23,14 @@ export default function Profile() {
       <section className="profile-hero page-card">
         <div className="profile-avatar"><UserRound size={42} /></div>
         <div>
-          <span className="eyebrow">{user?.role === 'admin' ? 'Administrator' : 'Player profile'}</span>
-          <h1>{user?.name || 'Lin-Badminton Member'}</h1>
+          <span className="eyebrow">{roleLabel}</span>
+          <h1>{displayName || 'Lin-Badminton Member'}</h1>
           <p><Mail size={18} /> {user?.email || 'No email available'}</p>
         </div>
       </section>
 
       <section className="stats-grid">
-        <div className="stat-card"><span>Role</span><strong>{user?.role || 'student'}</strong></div>
+        <div className="stat-card"><span>Role</span><strong>{roleLabel}</strong></div>
         <div className="stat-card"><span>Booked</span><strong>{isStudent ? data.length : 'Admin'}</strong></div>
         <div className="stat-card"><span>Upcoming</span><strong>{isStudent ? upcomingCount : 'All'}</strong></div>
       </section>

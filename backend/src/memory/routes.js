@@ -83,10 +83,11 @@ router.get('/classes', memoryOptionalAuth, (req, res) => {
   const { search = '', level = '', page = 1, limit = 9 } = req.query;
   const pageNumber = Math.max(Number(page), 1);
   const limitNumber = Math.min(Math.max(Number(limit), 1), 50);
+  const includePast = req.query.includePast === 'true' && req.user?.role === 'admin';
   const term = search.trim().toLowerCase();
 
   let classes = memory.classes
-    .filter((item) => new Date(item.startDate) >= new Date())
+    .filter((item) => includePast || new Date(item.startDate) >= new Date())
     .filter((item) => !level || item.level === level)
     .filter((item) => {
       if (!term) return true;

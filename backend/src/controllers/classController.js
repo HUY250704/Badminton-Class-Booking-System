@@ -30,10 +30,9 @@ export const getClasses = asyncHandler(async (req, res) => {
   const { search = '', level = '', page = 1, limit = 9 } = req.query;
   const pageNumber = Math.max(Number(page), 1);
   const limitNumber = Math.min(Math.max(Number(limit), 1), 50);
+  const includePast = req.query.includePast === 'true' && req.user?.role === 'admin';
 
-  const filter = {
-    startDate: { $gte: new Date() }
-  };
+  const filter = includePast ? {} : { startDate: { $gte: new Date() } };
 
   if (level) {
     filter.level = level;

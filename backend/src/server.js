@@ -9,7 +9,6 @@ const envPath = path.resolve(__dirname, '../.env');
 
 dotenv.config({ path: envPath });
 console.log('Loaded env from:', envPath);
-console.log('MONGO_URI:', process.env.MONGO_URI);
 
 const port = process.env.PORT || 5000;
 
