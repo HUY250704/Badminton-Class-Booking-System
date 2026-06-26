@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { LogOut, UserRound } from 'lucide-react'
 import { getUser, clearAuth } from '../hooks/useAuth'
 import badmintonLogo from '../assets/logo.png'
@@ -7,9 +8,12 @@ import badmintonLogo from '../assets/logo.png'
 export default function Header() {
   const user = getUser()
   const navigate = useNavigate()
+  const qc = useQueryClient()
+  const displayName = user?.role === 'admin' ? 'Admin' : user?.name
 
   function logout() {
     clearAuth()
+    qc.clear()
     navigate('/login')
   }
 
@@ -27,8 +31,8 @@ export default function Header() {
           <>
             <NavLink to="/my/enrollments">My Classes</NavLink>
             {user.role === 'admin' && <NavLink to="/admin">Admin</NavLink>}
-            <NavLink to="/profile" className="user-chip"><UserRound size={16} /> {user.name}</NavLink>
-            <button className="icon-button" title="Logout" onClick={logout}><LogOut size={18} /></button>
+            <NavLink to="/profile" className="user-chip"><UserRound size={16} /> {displayName}</NavLink>
+            <button className="icon-button" title="Logout" aria-label="Logout" onClick={logout}><LogOut size={18} /></button>
           </>
         ) : (
           <>
