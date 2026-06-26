@@ -9,13 +9,15 @@ import { errorHandler, notFound } from './middleware/error.js';
 const app = express();
 
 function getAllowedOrigins() {
-  return (process.env.CLIENT_URL || 'http://localhost:5173')
+  const configuredOrigins = process.env.CORS_ORIGINS || process.env.CLIENT_URL || 'http://localhost:5173';
+
+  return configuredOrigins
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
 }
 
-app.use(cors({
+const corsOptions = {
   origin(origin, callback) {
     const allowedOrigins = getAllowedOrigins();
     const isLocalDevOrigin = process.env.NODE_ENV !== 'production'
@@ -28,8 +30,12 @@ app.use(cors({
 
     callback(new Error('Not allowed by CORS'));
   },
-  credentials: true
-}));
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'tiny' : 'dev'));
