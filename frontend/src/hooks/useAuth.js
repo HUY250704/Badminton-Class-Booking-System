@@ -21,13 +21,17 @@ export function getUser() {
 }
 
 export async function login(email, password) {
-  const res = await api.post('/auth/login', { email, password })
+  const res = await api.post('/auth/login', { email: email.trim().toLowerCase(), password })
   saveAuth(res.data)
   return res.data
 }
 
 export async function register(data) {
-  const res = await api.post('/auth/register', data)
+  const res = await api.post('/auth/register', {
+    ...data,
+    name: data.name.trim(),
+    email: data.email.trim().toLowerCase()
+  })
   saveAuth(res.data)
   return res.data
 }

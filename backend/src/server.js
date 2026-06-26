@@ -8,20 +8,26 @@ const __dirname = path.dirname(__filename);
 const envPath = path.resolve(__dirname, '../.env');
 
 dotenv.config({ path: envPath });
-console.log('Loaded env from:', envPath);
+console.log('Environment loaded:', Boolean(process.env.NODE_ENV || process.env.PORT || process.env.MONGO_URI));
+console.log('Mongo URI configured:', Boolean(process.env.MONGO_URI));
 
 const port = process.env.PORT || 5000;
+
+if (!process.env.JWT_SECRET) {
+  console.error('JWT_SECRET is required');
+  process.exit(1);
+}
 
 try {
   await connectDB();
 } catch (error) {
   if (process.env.NODE_ENV === 'production') {
-    console.error(error);
+    console.error('MongoDB connection failed. Check database configuration and network access.');
     process.exit(1);
   }
 
   process.env.USE_MEMORY_DB = 'true';
-  console.warn(`MongoDB unavailable (${error.message}). Falling back to in-memory dev data.`);
+  console.warn('MongoDB unavailable. Falling back to in-memory development data.');
 }
 
 const { default: app } = await import('./app.js');

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CalendarDays, Edit, Eye, Plus, Search, Trash2, UsersRound } from 'lucide-react'
 import api from '../api/axios'
+import { getApiErrorMessage } from '../api/errors'
 import { capacityPercent, formatDateTime, levelLabel } from '../utils/classUi'
 
 const levels = [
@@ -80,7 +81,7 @@ export default function AdminDashboard() {
       </section>
 
       {isLoading && <div className="page-card skeleton-card tall" />}
-      {isError && <div className="alert alert-error">{error?.response?.data?.message || 'Could not load classes'}</div>}
+      {isError && <div className="alert alert-error">{getApiErrorMessage(error, 'Could not load classes')}</div>}
       {!isLoading && classes.length === 0 && (
         <div className="empty-state empty-state-action">
           <CalendarDays size={24} />
@@ -129,10 +130,10 @@ export default function AdminDashboard() {
                     <td><span className={isPast ? 'status-badge muted' : 'status-badge success'}>{isPast ? 'Past' : 'Upcoming'}</span></td>
                     <td>
                       <div className="table-actions">
-                        <Link title="Details" to={`/classes/${item._id}`}><Eye size={18} /></Link>
-                        <Link title="Students" to={`/admin/${item._id}/students`}><UsersRound size={18} /></Link>
-                        <Link title="Edit" to={`/admin/create?id=${item._id}`}><Edit size={18} /></Link>
-                        <button title="Delete" disabled={remove.isPending} onClick={() => {
+                        <Link title="Details" aria-label={`View ${item.title}`} to={`/classes/${item._id}`}><Eye size={18} /></Link>
+                        <Link title="Students" aria-label={`View students for ${item.title}`} to={`/admin/${item._id}/students`}><UsersRound size={18} /></Link>
+                        <Link title="Edit" aria-label={`Edit ${item.title}`} to={`/admin/create?id=${item._id}`}><Edit size={18} /></Link>
+                        <button title="Delete" aria-label={`Delete ${item.title}`} disabled={remove.isPending} onClick={() => {
                           if (confirm('Delete this class and all enrollments?')) remove.mutate(item._id)
                         }}><Trash2 size={18} /></button>
                       </div>
@@ -145,7 +146,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {remove.isError && <div className="alert alert-error">{remove.error?.response?.data?.message || 'Could not delete class'}</div>}
+      {remove.isError && <div className="alert alert-error">{getApiErrorMessage(remove.error, 'Could not delete class')}</div>}
     </div>
   )
 }

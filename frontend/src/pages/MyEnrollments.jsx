@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { CalendarDays, MapPin, Search, UserRound } from 'lucide-react'
 import api from '../api/axios'
+import { getApiErrorMessage } from '../api/errors'
 import { capacityPercent, classImage, daysUntil, formatDateTime, levelLabel } from '../utils/classUi'
 
 export default function MyEnrollments() {
@@ -12,7 +13,7 @@ export default function MyEnrollments() {
   })
 
   if (isLoading) return <div className="page-card skeleton-card tall" />
-  if (isError) return <div className="alert alert-error">{error?.response?.data?.message || 'Could not load enrollments'}</div>
+  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, 'Could not load enrollments')}</div>
 
   const upcomingCount = data.filter((item) => new Date(item.class.startDate) >= new Date()).length
 

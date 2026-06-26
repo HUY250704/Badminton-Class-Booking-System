@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { CalendarDays, MapPin, Search, Sparkles, UserRound } from 'lucide-react'
 import api from '../api/axios'
+import { getApiErrorMessage } from '../api/errors'
 import { capacityPercent, capacityText, classImage, daysUntil, formatDate, formatDateTime, formatTime, levelLabel } from '../utils/classUi'
 
 function fetchClasses({ queryKey }) {
@@ -18,11 +19,7 @@ const levels = [
 ]
 
 function getClassLoadError(error) {
-  if (!error?.response) {
-    return 'Cannot connect to backend. Start the backend and make sure MongoDB is connected.'
-  }
-
-  return error.response.data?.message || 'Could not load classes'
+  return getApiErrorMessage(error, 'Could not load classes')
 }
 
 export default function ClassList() {

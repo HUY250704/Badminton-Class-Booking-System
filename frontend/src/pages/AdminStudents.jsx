@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Mail, UserRound } from 'lucide-react'
 import api from '../api/axios'
+import { getApiErrorMessage } from '../api/errors'
 import { formatDateTime } from '../utils/classUi'
 
 export default function AdminStudents() {
@@ -13,7 +14,7 @@ export default function AdminStudents() {
   })
 
   if (isLoading) return <div className="page-card skeleton-card tall" />
-  if (isError) return <div className="alert alert-error">{error?.response?.data?.message || 'Could not load students'}</div>
+  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, 'Could not load students')}</div>
 
   return (
     <div className="stack">

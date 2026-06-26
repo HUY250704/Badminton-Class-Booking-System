@@ -18,7 +18,8 @@ function getAllowedOrigins() {
 app.use(cors({
   origin(origin, callback) {
     const allowedOrigins = getAllowedOrigins();
-    const isLocalDevOrigin = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin || '');
+    const isLocalDevOrigin = process.env.NODE_ENV !== 'production'
+      && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin || '');
 
     if (!origin || allowedOrigins.includes(origin) || isLocalDevOrigin) {
       callback(null, true);
@@ -30,7 +31,9 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(morgan('dev'));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan(process.env.NODE_ENV === 'production' ? 'tiny' : 'dev'));
+}
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', database: process.env.USE_MEMORY_DB === 'true' ? 'memory' : 'mongodb' });

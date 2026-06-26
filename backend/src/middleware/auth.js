@@ -1,13 +1,13 @@
 import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { ApiError } from '../utils/ApiError.js';
 
 export const protect = asyncHandler(async (req, res, next) => {
   const header = req.headers.authorization;
 
   if (!header?.startsWith('Bearer ')) {
-    res.status(401);
-    throw new Error('Not authorized, token missing');
+    throw new ApiError(401, 'Not authorized, token missing', 'AUTH_TOKEN_MISSING');
   }
 
   const token = header.split(' ')[1];
@@ -15,8 +15,7 @@ export const protect = asyncHandler(async (req, res, next) => {
   const user = await User.findById(decoded.id);
 
   if (!user) {
-    res.status(401);
-    throw new Error('Not authorized, user not found');
+    throw new ApiError(401, 'Not authorized, user not found', 'AUTH_USER_NOT_FOUND');
   }
 
   req.user = user;
@@ -25,8 +24,7 @@ export const protect = asyncHandler(async (req, res, next) => {
 
 export function adminOnly(req, res, next) {
   if (req.user?.role !== 'admin') {
-    res.status(403);
-    throw new Error('Admin access required');
+    throw new ApiError(403, 'Admin access required', 'ADMIN_REQUIRED');
   }
 
   next();

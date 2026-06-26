@@ -1,5 +1,7 @@
 import bcrypt from 'bcryptjs';
 import express from 'express';
+import { validateClassBody, validateClassQuery, validateLogin, validateRegister } from '../middleware/validate.js';
+import { ApiError } from '../utils/ApiError.js';
 import { signToken } from '../utils/token.js';
 import { memoryAdminOnly, memoryOptionalAuth, memoryProtect } from './auth.js';
 import { memory, newId } from './store.js';
@@ -31,18 +33,12 @@ function classPayload(item, userId) {
   };
 }
 
-router.post('/auth/register', async (req, res, next) => {
+router.post('/auth/register', validateRegister, async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-      res.status(400);
-      throw new Error('Name, email, and password are required');
-    }
-
-    if (memory.users.some((user) => user.email.toLowerCase() === email.toLowerCase())) {
-      res.status(409);
-      throw new Error('Email is already registered');
+    if (memory.users.some((user) => user.email === email)) {
+      throw new ApiError(409, 'Email is already registered', 'EMAIL_ALREADY_REGISTERED', ['email']);
     }
 
     const user = {
@@ -59,14 +55,13 @@ router.post('/auth/register', async (req, res, next) => {
   }
 });
 
-router.post('/auth/login', async (req, res, next) => {
+router.post('/auth/login', validateLogin, async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = memory.users.find((item) => item.email.toLowerCase() === String(email || '').toLowerCase());
+    const user = memory.users.find((item) => item.email === email);
 
     if (!user || !(await bcrypt.compare(password || '', user.password))) {
-      res.status(401);
-      throw new Error('Invalid email or password');
+      throw new ApiError(401, 'Invalid email or password', 'INVALID_CREDENTIALS');
     }
 
     res.json(authPayload(user));
@@ -79,7 +74,7 @@ router.get('/auth/me', memoryProtect, (req, res) => {
   res.json(publicUser(req.user));
 });
 
-router.get('/classes', memoryOptionalAuth, (req, res) => {
+router.get('/classes', validateClassQuery, memoryOptionalAuth, (req, res) => {
   const { search = '', level = '', page = 1, limit = 9 } = req.query;
   const pageNumber = Math.max(Number(page), 1);
   const limitNumber = Math.min(Math.max(Number(limit), 1), 50);
@@ -109,7 +104,7 @@ router.get('/classes', memoryOptionalAuth, (req, res) => {
   });
 });
 
-router.post('/classes', memoryProtect, memoryAdminOnly, (req, res) => {
+router.post('/classes', memoryProtect, memoryAdminOnly, validateClassBody(), (req, res) => {
   const item = {
     _id: newId('class'),
     title: req.body.title,
@@ -146,25 +141,22 @@ router.get('/classes/my/enrollments', memoryProtect, (req, res) => {
 router.get('/classes/:id', memoryOptionalAuth, (req, res, next) => {
   const item = memory.classes.find((classItem) => classItem._id === req.params.id);
   if (!item) {
-    res.status(404);
-    next(new Error('Class not found'));
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
     return;
   }
   res.json(classPayload(item, req.user?._id));
 });
 
-router.patch('/classes/:id', memoryProtect, memoryAdminOnly, (req, res, next) => {
+router.patch('/classes/:id', memoryProtect, memoryAdminOnly, validateClassBody({ partial: true }), (req, res, next) => {
   const item = memory.classes.find((classItem) => classItem._id === req.params.id);
   if (!item) {
-    res.status(404);
-    next(new Error('Class not found'));
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
     return;
   }
 
   const currentStudents = memory.enrollments.filter((enrollment) => enrollment.class === item._id).length;
   if (req.body.maxStudents !== undefined && Number(req.body.maxStudents) < currentStudents) {
-    res.status(400);
-    next(new Error('Max students cannot be lower than current enrollments'));
+    next(new ApiError(400, 'Max students cannot be lower than current enrollments', 'MAX_STUDENTS_TOO_LOW', ['maxStudents']));
     return;
   }
 
@@ -180,8 +172,7 @@ router.patch('/classes/:id', memoryProtect, memoryAdminOnly, (req, res, next) =>
 router.delete('/classes/:id', memoryProtect, memoryAdminOnly, (req, res, next) => {
   const index = memory.classes.findIndex((item) => item._id === req.params.id);
   if (index === -1) {
-    res.status(404);
-    next(new Error('Class not found'));
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
     return;
   }
 
@@ -193,21 +184,18 @@ router.delete('/classes/:id', memoryProtect, memoryAdminOnly, (req, res, next) =
 router.post('/classes/:id/enroll', memoryProtect, (req, res, next) => {
   const item = memory.classes.find((classItem) => classItem._id === req.params.id);
   if (!item) {
-    res.status(404);
-    next(new Error('Class not found'));
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
     return;
   }
 
   if (memory.enrollments.some((enrollment) => enrollment.class === item._id && enrollment.user === req.user._id)) {
-    res.status(409);
-    next(new Error('You are already enrolled in this class'));
+    next(new ApiError(409, 'You are already enrolled in this class', 'ALREADY_ENROLLED'));
     return;
   }
 
   const currentStudents = memory.enrollments.filter((enrollment) => enrollment.class === item._id).length;
   if (currentStudents >= item.maxStudents) {
-    res.status(409);
-    next(new Error('Class is already full'));
+    next(new ApiError(409, 'Class is already full', 'CLASS_FULL'));
     return;
   }
 
@@ -224,8 +212,7 @@ router.post('/classes/:id/enroll', memoryProtect, (req, res, next) => {
 router.delete('/classes/:id/enroll', memoryProtect, (req, res, next) => {
   const index = memory.enrollments.findIndex((item) => item.class === req.params.id && item.user === req.user._id);
   if (index === -1) {
-    res.status(404);
-    next(new Error('Enrollment not found'));
+    next(new ApiError(404, 'Enrollment not found', 'ENROLLMENT_NOT_FOUND'));
     return;
   }
 
@@ -236,8 +223,7 @@ router.delete('/classes/:id/enroll', memoryProtect, (req, res, next) => {
 router.get('/classes/:id/students', memoryProtect, memoryAdminOnly, (req, res, next) => {
   const item = memory.classes.find((classItem) => classItem._id === req.params.id);
   if (!item) {
-    res.status(404);
-    next(new Error('Class not found'));
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
     return;
   }
 

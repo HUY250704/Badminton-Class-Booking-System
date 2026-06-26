@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { Lock, Mail, UserRound } from 'lucide-react'
+import { getApiErrorMessage } from '../api/errors'
 import { register } from '../hooks/useAuth'
 
 export default function Register() {
@@ -30,7 +31,11 @@ export default function Register() {
           className="form-card"
           onSubmit={(e) => {
             e.preventDefault()
-            mutation.mutate({ name, email, password })
+            mutation.mutate({
+              name: name.trim(),
+              email: email.trim().toLowerCase(),
+              password
+            })
           }}
         >
           <div>
@@ -52,7 +57,7 @@ export default function Register() {
           <button className="button button-primary button-full" disabled={mutation.isPending} type="submit">
             {mutation.isPending ? 'Creating account...' : 'Register'}
           </button>
-          {mutation.isError && <div className="alert alert-error">{mutation.error?.response?.data?.message || 'Register failed'}</div>}
+          {mutation.isError && <div className="alert alert-error">{getApiErrorMessage(mutation.error, 'Register failed')}</div>}
           <p className="muted center">Already registered? <Link to="/login">Login</Link></p>
         </form>
       </section>

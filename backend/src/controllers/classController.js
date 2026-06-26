@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import ClassModel from '../models/Class.js';
 import Enrollment from '../models/Enrollment.js';
+import { ApiError } from '../utils/ApiError.js';
 
 async function attachCounts(classes, userId) {
   const ids = classes.map((item) => item._id);
@@ -70,8 +71,7 @@ export const getClassById = asyncHandler(async (req, res) => {
   const classItem = await ClassModel.findById(req.params.id).populate('createdBy', 'name email');
 
   if (!classItem) {
-    res.status(404);
-    throw new Error('Class not found');
+    throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
   const [payload] = await attachCounts([classItem], req.user?._id);
@@ -80,7 +80,14 @@ export const getClassById = asyncHandler(async (req, res) => {
 
 export const createClass = asyncHandler(async (req, res) => {
   const classItem = await ClassModel.create({
-    ...req.body,
+    title: req.body.title,
+    description: req.body.description,
+    coachName: req.body.coachName,
+    level: req.body.level,
+    startDate: req.body.startDate,
+    schedule: req.body.schedule,
+    location: req.body.location,
+    maxStudents: req.body.maxStudents,
     createdBy: req.user._id
   });
 
@@ -93,8 +100,7 @@ export const updateClass = asyncHandler(async (req, res) => {
   const classItem = await ClassModel.findById(req.params.id);
 
   if (!classItem) {
-    res.status(404);
-    throw new Error('Class not found');
+    throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
   if (req.body.maxStudents !== undefined) {
@@ -102,8 +108,7 @@ export const updateClass = asyncHandler(async (req, res) => {
     const currentStudents = await Enrollment.countDocuments({ class: classItem._id });
 
     if (nextMaxStudents < currentStudents) {
-      res.status(400);
-      throw new Error('Max students cannot be lower than current enrollments');
+      throw new ApiError(400, 'Max students cannot be lower than current enrollments', 'MAX_STUDENTS_TOO_LOW', ['maxStudents']);
     }
   }
 
@@ -124,8 +129,7 @@ export const deleteClass = asyncHandler(async (req, res) => {
   const classItem = await ClassModel.findById(req.params.id);
 
   if (!classItem) {
-    res.status(404);
-    throw new Error('Class not found');
+    throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
   await Enrollment.deleteMany({ class: classItem._id });
@@ -137,8 +141,7 @@ export const getClassStudents = asyncHandler(async (req, res) => {
   const classItem = await ClassModel.findById(req.params.id);
 
   if (!classItem) {
-    res.status(404);
-    throw new Error('Class not found');
+    throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
   const enrollments = await Enrollment.find({ class: classItem._id })

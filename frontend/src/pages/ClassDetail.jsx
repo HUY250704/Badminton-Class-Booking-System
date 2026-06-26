@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, UsersRound, UserRound } from 'lucide-react'
 import api from '../api/axios'
+import { getApiErrorMessage } from '../api/errors'
 import { getUser } from '../hooks/useAuth'
 import { capacityPercent, capacityText, classImage, daysUntil, formatDateTime, formatTime, levelLabel } from '../utils/classUi'
 
@@ -42,7 +43,7 @@ export default function ClassDetail() {
   })
 
   if (isLoading) return <div className="page-card skeleton-card tall" />
-  if (isError) return <div className="alert alert-error">{error?.response?.data?.message || 'Could not load class'}</div>
+  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, 'Could not load class')}</div>
 
   const isFull = data.currentStudents >= data.maxStudents
   const percent = capacityPercent(data.currentStudents, data.maxStudents)
@@ -105,7 +106,7 @@ export default function ClassDetail() {
               </button>
             </div>
           )}
-          {actionError && <div className="alert alert-error">{actionError.response?.data?.message || 'Operation failed'}</div>}
+          {actionError && <div className="alert alert-error">{getApiErrorMessage(actionError, 'Operation failed')}</div>}
         </aside>
 
         <section className="page-card info-grid">

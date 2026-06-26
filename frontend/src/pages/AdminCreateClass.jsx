@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, CalendarDays, MapPin, UserRound } from 'lucide-react'
 import api from '../api/axios'
+import { getApiErrorMessage } from '../api/errors'
 import { capacityPercent, classImage, formatDateTime, levelLabel } from '../utils/classUi'
 
 const initialForm = {
@@ -25,6 +26,7 @@ function toDatetimeLocal(value) {
 
 export default function AdminCreateClass() {
   const [form, setForm] = useState(initialForm)
+  const [formError, setFormError] = useState('')
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [searchParams] = useSearchParams()
@@ -64,16 +66,42 @@ export default function AdminCreateClass() {
   })
 
   function update(field, value) {
+    setFormError('')
     setForm((current) => ({ ...current, [field]: value }))
   }
 
   function submit(e) {
     e.preventDefault()
-    save.mutate({ ...form, maxStudents: Number(form.maxStudents) })
+    const payload = {
+      ...form,
+      title: form.title.trim(),
+      description: form.description.trim(),
+      coachName: form.coachName.trim(),
+      schedule: form.schedule.trim(),
+      location: form.location.trim(),
+      maxStudents: Number(form.maxStudents)
+    }
+
+    if (!payload.title || !payload.description || !payload.coachName || !payload.schedule || !payload.location) {
+      setFormError('Please fill in all class details.')
+      return
+    }
+
+    if (!Number.isInteger(payload.maxStudents) || payload.maxStudents < 1) {
+      setFormError('Max students must be a positive whole number.')
+      return
+    }
+
+    if (new Date(payload.startDate) < new Date()) {
+      setFormError('Start date cannot be in the past.')
+      return
+    }
+
+    save.mutate(payload)
   }
 
   if (existingClass.isLoading) return <div className="page-card skeleton-card tall" />
-  if (existingClass.isError) return <div className="alert alert-error">{existingClass.error?.response?.data?.message || 'Could not load class'}</div>
+  if (existingClass.isError) return <div className="alert alert-error">{getApiErrorMessage(existingClass.error, 'Could not load class')}</div>
 
   return (
     <div className="form-page">
@@ -106,7 +134,8 @@ export default function AdminCreateClass() {
             <Link className="button button-secondary" to={editId ? `/classes/${editId}` : '/admin'}><ArrowLeft size={18} /> Cancel</Link>
             <button className="button button-primary" disabled={save.isPending} type="submit">{save.isPending ? 'Saving...' : editId ? 'Save Changes' : 'Create Class'}</button>
           </div>
-          {save.isError && <div className="alert alert-error">{save.error?.response?.data?.message || 'Could not save class'}</div>}
+          {formError && <div className="alert alert-error">{formError}</div>}
+          {save.isError && <div className="alert alert-error">{getApiErrorMessage(save.error, 'Could not save class')}</div>}
         </form>
 
         <aside className="class-card preview-card">

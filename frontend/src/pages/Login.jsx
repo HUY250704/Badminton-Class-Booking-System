@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { LogIn, Lock, Mail } from 'lucide-react'
+import { getApiErrorMessage } from '../api/errors'
 import { login } from '../hooks/useAuth'
 
 export default function Login() {
@@ -29,7 +30,7 @@ export default function Login() {
           className="form-card"
           onSubmit={(e) => {
             e.preventDefault()
-            mutation.mutate({ email, password })
+            mutation.mutate({ email: email.trim().toLowerCase(), password })
           }}
         >
           <div>
@@ -47,7 +48,7 @@ export default function Login() {
           <button className="button button-primary button-full" disabled={mutation.isPending} type="submit">
             <LogIn size={18} /> {mutation.isPending ? 'Signing in...' : 'Login'}
           </button>
-          {mutation.isError && <div className="alert alert-error">{mutation.error?.response?.data?.message || 'Login failed'}</div>}
+          {mutation.isError && <div className="alert alert-error">{getApiErrorMessage(mutation.error, 'Login failed')}</div>}
           <p className="muted center">New player? <Link to="/register">Create an account</Link></p>
         </form>
       </section>

@@ -14,6 +14,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import Header from './components/Header'
 import AdminStudents from './pages/AdminStudents'
+import NotFound from './pages/NotFound'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/create" element={<AdminRoute><AdminCreateClass /></AdminRoute>} />
           <Route path="/admin/:id/students" element={<AdminRoute><AdminStudents /></AdminRoute>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
     </div>

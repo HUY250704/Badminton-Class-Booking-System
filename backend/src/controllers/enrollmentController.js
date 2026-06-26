@@ -2,14 +2,14 @@ import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
 import ClassModel from '../models/Class.js';
 import Enrollment from '../models/Enrollment.js';
+import { ApiError } from '../utils/ApiError.js';
 
 export const enrollInClass = asyncHandler(async (req, res) => {
   const classId = req.params.id;
   const classItem = await ClassModel.findById(classId);
 
   if (!classItem) {
-    res.status(404);
-    throw new Error('Class not found');
+    throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
   // Use a transaction when available to avoid race conditions causing over-enrollment.
@@ -19,16 +19,12 @@ export const enrollInClass = asyncHandler(async (req, res) => {
     await session.withTransaction(async () => {
       const existing = await Enrollment.findOne({ class: classId, user: req.user._id }).session(session);
       if (existing) {
-        const err = new Error('You are already enrolled in this class');
-        err.status = 409;
-        throw err;
+        throw new ApiError(409, 'You are already enrolled in this class', 'ALREADY_ENROLLED');
       }
 
       const currentStudents = await Enrollment.countDocuments({ class: classId }).session(session);
       if (currentStudents >= classItem.maxStudents) {
-        const err = new Error('Class is already full');
-        err.status = 409;
-        throw err;
+        throw new ApiError(409, 'Class is already full', 'CLASS_FULL');
       }
 
       enrollment = await Enrollment.create([{ class: classId, user: req.user._id }], { session });
@@ -36,14 +32,8 @@ export const enrollInClass = asyncHandler(async (req, res) => {
       enrollment = enrollment[0];
     });
   } catch (error) {
-    // Translate error thrown inside transaction
-    if (error.status === 409) {
-      res.status(409);
-      throw new Error(error.message);
-    }
     if (error.code === 11000) {
-      res.status(409);
-      throw new Error('You are already enrolled in this class');
+      throw new ApiError(409, 'You are already enrolled in this class', 'ALREADY_ENROLLED');
     }
     throw error;
   } finally {
@@ -60,8 +50,7 @@ export const cancelEnrollment = asyncHandler(async (req, res) => {
   });
 
   if (!enrollment) {
-    res.status(404);
-    throw new Error('Enrollment not found');
+    throw new ApiError(404, 'Enrollment not found', 'ENROLLMENT_NOT_FOUND');
   }
 
   res.json({ message: 'Enrollment cancelled' });
