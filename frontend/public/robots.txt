@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /my
+Disallow: /profile
+Disallow: /booking-success
+
+Sitemap: https://badminton-class-booking-system.vercel.app/sitemap.xml
