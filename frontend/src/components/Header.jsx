@@ -7,6 +7,7 @@ import badmintonLogo from '../assets/logo.png'
 export default function Header() {
   const user = getUser()
   const navigate = useNavigate()
+  const displayName = user?.role === 'admin' ? 'Admin' : user?.name
 
   function logout() {
     clearAuth()
@@ -27,7 +28,7 @@ export default function Header() {
           <>
             <NavLink to="/my/enrollments">My Classes</NavLink>
             {user.role === 'admin' && <NavLink to="/admin">Admin</NavLink>}
-            <NavLink to="/profile" className="user-chip"><UserRound size={16} /> {user.name}</NavLink>
+            <NavLink to="/profile" className="user-chip"><UserRound size={16} /> {displayName}</NavLink>
             <button className="icon-button" title="Logout" onClick={logout}><LogOut size={18} /></button>
           </>
         ) : (
