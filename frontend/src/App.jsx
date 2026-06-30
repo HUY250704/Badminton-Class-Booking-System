@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Landing from './pages/Landing'
@@ -15,8 +16,38 @@ import AdminRoute from './components/AdminRoute'
 import Header from './components/Header'
 import AdminStudents from './pages/AdminStudents'
 import NotFound from './pages/NotFound'
+import { ENROLLMENT_EVENT_KEY, invalidateEnrollmentQueries } from './api/enrollmentEvents'
 
 export default function App() {
+  const qc = useQueryClient()
+
+  useEffect(() => {
+    function handlePayload(payload) {
+      invalidateEnrollmentQueries(qc, payload?.classId)
+    }
+
+    function handleStorage(event) {
+      if (event.key !== ENROLLMENT_EVENT_KEY || !event.newValue) return
+      try {
+        handlePayload(JSON.parse(event.newValue))
+      } catch {
+        handlePayload()
+      }
+    }
+
+    let channel
+    if ('BroadcastChannel' in window) {
+      channel = new BroadcastChannel(ENROLLMENT_EVENT_KEY)
+      channel.onmessage = (event) => handlePayload(event.data)
+    }
+
+    window.addEventListener('storage', handleStorage)
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      channel?.close()
+    }
+  }, [qc])
+
   return (
     <div className="app-shell">
       <Header />

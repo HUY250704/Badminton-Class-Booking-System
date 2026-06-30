@@ -126,6 +126,10 @@ export function validateClassBody({ partial = false } = {}) {
         payload.maxStudents = Number(req.body.maxStudents);
       }
 
+      if (partial && req.body.updatedAt !== undefined) {
+        payload.updatedAt = req.body.updatedAt;
+      }
+
       if (!partial) {
         requireFields({
           title: payload.title,
@@ -161,6 +165,14 @@ export function validateClassBody({ partial = false } = {}) {
 
       if (payload.maxStudents !== undefined && (!Number.isInteger(payload.maxStudents) || payload.maxStudents < 1)) {
         throw new ApiError(400, 'Max students must be a positive integer', 'VALIDATION_ERROR', ['maxStudents']);
+      }
+
+      if (payload.updatedAt !== undefined) {
+        const date = new Date(payload.updatedAt);
+        if (Number.isNaN(date.getTime())) {
+          throw new ApiError(400, 'Updated timestamp must be a valid date', 'VALIDATION_ERROR', ['updatedAt']);
+        }
+        payload.updatedAt = date.toISOString();
       }
 
       req.body = payload;

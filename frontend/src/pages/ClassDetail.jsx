@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, UsersRound, UserRound } from 'lucide-react'
 import api from '../api/axios'
+import { broadcastEnrollmentChange, invalidateEnrollmentQueries } from '../api/enrollmentEvents'
 import { getApiErrorMessage } from '../api/errors'
 import { getUser } from '../hooks/useAuth'
 import { capacityPercent, capacityText, classImage, daysUntil, formatDateTime, formatTime, levelLabel } from '../utils/classUi'
@@ -12,6 +13,8 @@ export default function ClassDetail() {
   const qc = useQueryClient()
   const navigate = useNavigate()
   const user = getUser()
+  const [actionLock, setActionLock] = useState('')
+  const [notice, setNotice] = useState('')
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['class', id],
@@ -21,20 +24,22 @@ export default function ClassDetail() {
   const enroll = useMutation({
     mutationFn: () => api.post(`/classes/${id}/enroll`).then((r) => r.data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['classes'] })
-      qc.invalidateQueries({ queryKey: ['class', id] })
-      qc.invalidateQueries({ queryKey: ['my-enrollments'] })
-      navigate('/booking-success', { state: { classItem: data } })
-    }
+      invalidateEnrollmentQueries(qc, id)
+      broadcastEnrollmentChange(id)
+      localStorage.setItem('lastBookingClassId', id)
+      navigate(`/booking-success?classId=${id}`, { state: { classItem: data } })
+    },
+    onSettled: () => setActionLock('')
   })
 
   const cancel = useMutation({
     mutationFn: () => api.delete(`/classes/${id}/enroll`).then((r) => r.data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['classes'] })
-      qc.invalidateQueries({ queryKey: ['class', id] })
-      qc.invalidateQueries({ queryKey: ['my-enrollments'] })
-    }
+    onSuccess: (result) => {
+      invalidateEnrollmentQueries(qc, id)
+      broadcastEnrollmentChange(id)
+      setNotice(result?.alreadyCancelled ? 'This class was already cancelled earlier.' : 'Enrollment cancelled.')
+    },
+    onSettled: () => setActionLock('')
   })
 
   const remove = useMutation({
@@ -46,8 +51,26 @@ export default function ClassDetail() {
   if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, 'Could not load class')}</div>
 
   const isFull = data.currentStudents >= data.maxStudents
+  const hasStarted = new Date(data.startDate) <= new Date()
   const percent = capacityPercent(data.currentStudents, data.maxStudents)
   const actionError = enroll.error || cancel.error || remove.error
+  const isEnrolling = actionLock === 'enroll' || enroll.isPending
+  const isCancelling = actionLock === 'cancel' || cancel.isPending
+
+  function handleEnroll() {
+    if (actionLock || enroll.isPending || isFull || hasStarted) return
+    setNotice('')
+    setActionLock('enroll')
+    enroll.mutate()
+  }
+
+  function handleCancel() {
+    if (actionLock || cancel.isPending) return
+    if (!confirm('Are you sure you want to cancel this class?')) return
+    setNotice('')
+    setActionLock('cancel')
+    cancel.mutate()
+  }
 
   return (
     <div className="stack">
@@ -86,13 +109,13 @@ export default function ClassDetail() {
             </div>
           )}
           {user?.role !== 'admin' && !data.isEnrolled && (
-            <button className="button button-primary button-full" disabled={!user || isFull || enroll.isPending} onClick={() => enroll.mutate()}>
-              {isFull ? 'Class Full' : enroll.isPending ? 'Enrolling...' : 'Enroll Now'}
+            <button className="button button-primary button-full" disabled={!user || isFull || hasStarted || isEnrolling} onClick={handleEnroll}>
+              {isFull ? 'Class Full' : hasStarted ? 'Class Started' : isEnrolling ? 'Enrolling...' : 'Enroll Now'}
             </button>
           )}
           {user?.role !== 'admin' && data.isEnrolled && (
-            <button className="button button-secondary button-full" disabled={cancel.isPending} onClick={() => cancel.mutate()}>
-              {cancel.isPending ? 'Cancelling...' : 'Cancel Enrollment'}
+            <button className="button button-secondary button-full" disabled={isCancelling} onClick={handleCancel}>
+              {isCancelling ? 'Cancelling...' : 'Cancel Enrollment'}
             </button>
           )}
           {user?.role === 'admin' && (
@@ -106,6 +129,7 @@ export default function ClassDetail() {
               </button>
             </div>
           )}
+          {notice && <div className="alert alert-success">{notice}</div>}
           {actionError && <div className="alert alert-error">{getApiErrorMessage(actionError, 'Operation failed')}</div>}
         </aside>
 

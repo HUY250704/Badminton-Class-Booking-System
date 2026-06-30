@@ -26,6 +26,7 @@ function toDatetimeLocal(value) {
 
 export default function AdminCreateClass() {
   const [form, setForm] = useState(initialForm)
+  const [loadedUpdatedAt, setLoadedUpdatedAt] = useState('')
   const [formError, setFormError] = useState('')
   const navigate = useNavigate()
   const qc = useQueryClient()
@@ -51,6 +52,7 @@ export default function AdminCreateClass() {
       location: item.location,
       maxStudents: item.maxStudents
     })
+    setLoadedUpdatedAt(item.updatedAt || '')
   }, [existingClass.data])
 
   const save = useMutation({
@@ -97,6 +99,15 @@ export default function AdminCreateClass() {
       return
     }
 
+    if (editId) {
+      const currentStudents = existingClass.data?.currentStudents || 0
+      if (payload.maxStudents < currentStudents) {
+        setFormError(`This class currently has ${currentStudents} enrolled students. Max students cannot be lower than ${currentStudents}.`)
+        return
+      }
+      payload.updatedAt = loadedUpdatedAt
+    }
+
     save.mutate(payload)
   }
 
@@ -128,7 +139,7 @@ export default function AdminCreateClass() {
             <label className="field"><span>Start Date</span><input required type="datetime-local" value={form.startDate} onChange={(e) => update('startDate', e.target.value)} /></label>
             <label className="field"><span>Schedule</span><input required value={form.schedule} onChange={(e) => update('schedule', e.target.value)} placeholder="Every Tue, 7:00 PM" /></label>
             <label className="field"><span>Location</span><input required value={form.location} onChange={(e) => update('location', e.target.value)} placeholder="Court 3, NAPA" /></label>
-            <label className="field"><span>Max Students</span><input required min="1" type="number" value={form.maxStudents} onChange={(e) => update('maxStudents', e.target.value)} /></label>
+            <label className="field"><span>Max Students</span><input required min={editId ? Math.max(existingClass.data?.currentStudents || 1, 1) : 1} type="number" value={form.maxStudents} onChange={(e) => update('maxStudents', e.target.value)} /></label>
           </div>
           <div className="form-actions">
             <Link className="button button-secondary" to={editId ? `/classes/${editId}` : '/admin'}><ArrowLeft size={18} /> Cancel</Link>
@@ -153,11 +164,11 @@ export default function AdminCreateClass() {
               <span><CalendarDays size={18} /> {formatDateTime(form.startDate)}</span>
             </div>
             <div className="capacity-row">
-              <span>0/{Number(form.maxStudents) || 1} spots filled</span>
-              <strong>{Number(form.maxStudents) || 1} spots left</strong>
+              <span>{existingClass.data?.currentStudents || 0}/{Number(form.maxStudents) || 1} spots filled</span>
+              <strong>{Math.max((Number(form.maxStudents) || 1) - (existingClass.data?.currentStudents || 0), 0)} spots left</strong>
             </div>
             <div className="progress-track">
-              <div className="progress-fill" style={{ width: `${capacityPercent(0, Number(form.maxStudents) || 1)}%` }} />
+              <div className="progress-fill" style={{ width: `${capacityPercent(existingClass.data?.currentStudents || 0, Number(form.maxStudents) || 1)}%` }} />
             </div>
           </div>
         </aside>

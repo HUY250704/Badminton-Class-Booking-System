@@ -5,15 +5,44 @@ import { LogIn, Lock, Mail } from 'lucide-react'
 import { getApiErrorMessage } from '../api/errors'
 import { login } from '../hooks/useAuth'
 
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+}
+
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [formError, setFormError] = useState('')
+  const [authMessage, setAuthMessage] = useState(() => sessionStorage.getItem('authMessage') || '')
   const navigate = useNavigate()
 
   const mutation = useMutation({
     mutationFn: ({ email, password }) => login(email, password),
-    onSuccess: () => navigate('/classes')
+    onSuccess: () => {
+      sessionStorage.removeItem('authMessage')
+      navigate('/classes')
+    }
   })
+
+  function submit(e) {
+    e.preventDefault()
+    const nextEmail = email.trim().toLowerCase()
+    setFormError('')
+    setAuthMessage('')
+    sessionStorage.removeItem('authMessage')
+
+    if (!nextEmail || !password) {
+      setFormError('Please enter both email and password.')
+      return
+    }
+
+    if (!isValidEmail(nextEmail)) {
+      setFormError('Please enter a valid email address.')
+      return
+    }
+
+    mutation.mutate({ email: nextEmail, password })
+  }
 
   return (
     <div className="auth-page">
@@ -28,10 +57,7 @@ export default function Login() {
         </div>
         <form
           className="form-card"
-          onSubmit={(e) => {
-            e.preventDefault()
-            mutation.mutate({ email: email.trim().toLowerCase(), password })
-          }}
+          onSubmit={submit}
         >
           <div>
             <span className="eyebrow">Member access</span>
@@ -48,6 +74,8 @@ export default function Login() {
           <button className="button button-primary button-full" disabled={mutation.isPending} type="submit">
             <LogIn size={18} /> {mutation.isPending ? 'Signing in...' : 'Login'}
           </button>
+          {authMessage && <div className="alert alert-error">{authMessage}</div>}
+          {formError && <div className="alert alert-error">{formError}</div>}
           {mutation.isError && <div className="alert alert-error">{getApiErrorMessage(mutation.error, 'Login failed')}</div>}
           <p className="muted center">New player? <Link to="/register">Create an account</Link></p>
         </form>

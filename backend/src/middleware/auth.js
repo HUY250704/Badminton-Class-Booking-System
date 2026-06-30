@@ -11,11 +11,20 @@ export const protect = asyncHandler(async (req, res, next) => {
   }
 
   const token = header.split(' ')[1];
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    throw new ApiError(401, 'Session expired. Please log in again.', 'SESSION_EXPIRED');
+  }
   const user = await User.findById(decoded.id);
 
   if (!user) {
     throw new ApiError(401, 'Not authorized, user not found', 'AUTH_USER_NOT_FOUND');
+  }
+
+  if ((user.tokenVersion || 0) !== (decoded.tokenVersion || 0)) {
+    throw new ApiError(401, 'Session expired. Please log in again.', 'SESSION_EXPIRED');
   }
 
   req.user = user;

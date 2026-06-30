@@ -572,6 +572,12 @@ img { display: block; max-width: 100%; }
   border-color: rgba(186, 26, 26, 0.22);
 }
 
+.alert-success {
+  color: var(--primary-dark);
+  background: rgba(163, 230, 53, 0.26);
+  border-color: rgba(51, 79, 0, 0.18);
+}
+
 .empty-state {
   color: var(--muted);
   text-align: center;

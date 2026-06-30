@@ -16,14 +16,16 @@ export const memory = {
       name: 'NAPA Admin',
       email: 'admin@example.com',
       password: bcrypt.hashSync('password123', 10),
-      role: 'admin'
+      role: 'admin',
+      tokenVersion: 0
     },
     {
       _id: demoUserId,
       name: 'Demo User',
       email: 'user@example.com',
       password: bcrypt.hashSync('password123', 10),
-      role: 'user'
+      role: 'user',
+      tokenVersion: 0
     }
   ],
   classes: [
@@ -37,7 +39,8 @@ export const memory = {
       schedule: 'Tue & Thu, 18:00 - 19:30',
       location: 'NAPA Court 1',
       maxStudents: 12,
-      createdBy: adminId
+      createdBy: adminId,
+      updatedAt: new Date(now).toISOString()
     },
     {
       _id: 'class_intermediate',
@@ -49,7 +52,8 @@ export const memory = {
       schedule: 'Mon & Wed, 19:30 - 21:00',
       location: 'NAPA Court 2',
       maxStudents: 10,
-      createdBy: adminId
+      createdBy: adminId,
+      updatedAt: new Date(now).toISOString()
     },
     {
       _id: 'class_advanced',
@@ -61,7 +65,8 @@ export const memory = {
       schedule: 'Sat, 08:00 - 10:00',
       location: 'NAPA Performance Hall',
       maxStudents: 8,
-      createdBy: adminId
+      createdBy: adminId,
+      updatedAt: new Date(now).toISOString()
     }
   ],
   enrollments: []

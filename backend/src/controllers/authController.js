@@ -46,3 +46,9 @@ export const me = asyncHandler(async (req, res) => {
     role: req.user.role
   });
 });
+
+export const logout = asyncHandler(async (req, res) => {
+  req.user.tokenVersion = (req.user.tokenVersion || 0) + 1;
+  await req.user.save();
+  res.json({ message: 'Logged out' });
+});

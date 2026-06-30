@@ -20,6 +20,7 @@ api.interceptors.response.use(
     if (error?.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+      sessionStorage.setItem('authMessage', 'Session expired. Please log in again.')
       queryClient.clear()
 
       if (!['/login', '/register'].includes(window.location.pathname)) {

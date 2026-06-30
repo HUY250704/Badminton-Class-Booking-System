@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { LogOut, UserRound } from 'lucide-react'
-import { getUser, clearAuth } from '../hooks/useAuth'
+import { getUser, logout as logoutUser } from '../hooks/useAuth'
 import badmintonLogo from '../assets/logo.png'
 
 export default function Header() {
@@ -11,8 +11,9 @@ export default function Header() {
   const qc = useQueryClient()
   const displayName = user?.role === 'admin' ? 'Admin' : user?.name
 
-  function logout() {
-    clearAuth()
+  async function logout() {
+    await logoutUser().catch(() => {})
+    sessionStorage.removeItem('authMessage')
     qc.clear()
     navigate('/login')
   }

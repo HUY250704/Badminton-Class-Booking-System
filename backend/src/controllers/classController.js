@@ -3,17 +3,19 @@ import ClassModel from '../models/Class.js';
 import Enrollment from '../models/Enrollment.js';
 import { ApiError } from '../utils/ApiError.js';
 
+const activeEnrollmentFilter = { status: { $ne: 'cancelled' } };
+
 async function attachCounts(classes, userId) {
   const ids = classes.map((item) => item._id);
   const counts = await Enrollment.aggregate([
-    { $match: { class: { $in: ids } } },
+    { $match: { class: { $in: ids }, status: { $ne: 'cancelled' } } },
     { $group: { _id: '$class', currentStudents: { $sum: 1 } } }
   ]);
   const countMap = new Map(counts.map((item) => [item._id.toString(), item.currentStudents]));
 
   let userEnrollments = new Set();
   if (userId) {
-    const enrollments = await Enrollment.find({ user: userId, class: { $in: ids } }).select('class');
+    const enrollments = await Enrollment.find({ user: userId, class: { $in: ids }, ...activeEnrollmentFilter }).select('class');
     userEnrollments = new Set(enrollments.map((item) => item.class.toString()));
   }
 
@@ -105,11 +107,24 @@ export const updateClass = asyncHandler(async (req, res) => {
 
   if (req.body.maxStudents !== undefined) {
     const nextMaxStudents = Number(req.body.maxStudents);
-    const currentStudents = await Enrollment.countDocuments({ class: classItem._id });
+    const currentStudents = await Enrollment.countDocuments({ class: classItem._id, ...activeEnrollmentFilter });
 
     if (nextMaxStudents < currentStudents) {
-      throw new ApiError(400, 'Max students cannot be lower than current enrollments', 'MAX_STUDENTS_TOO_LOW', ['maxStudents']);
+      throw new ApiError(
+        400,
+        `This class currently has ${currentStudents} enrolled students. Max students cannot be lower than ${currentStudents}.`,
+        'MAX_STUDENTS_TOO_LOW',
+        ['maxStudents']
+      );
     }
+  }
+
+  if (req.body.updatedAt && new Date(req.body.updatedAt).getTime() !== classItem.updatedAt.getTime()) {
+    throw new ApiError(
+      409,
+      'Class has been updated by someone else. Please refresh and try again.',
+      'CLASS_UPDATE_CONFLICT'
+    );
   }
 
   const fields = ['title', 'description', 'coachName', 'level', 'startDate', 'schedule', 'location', 'maxStudents'];
@@ -144,7 +159,7 @@ export const getClassStudents = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
-  const enrollments = await Enrollment.find({ class: classItem._id })
+  const enrollments = await Enrollment.find({ class: classItem._id, ...activeEnrollmentFilter })
     .populate('user', 'name email role')
     .sort({ enrolledAt: -1 });
 

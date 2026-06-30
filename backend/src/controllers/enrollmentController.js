@@ -4,6 +4,8 @@ import ClassModel from '../models/Class.js';
 import Enrollment from '../models/Enrollment.js';
 import { ApiError } from '../utils/ApiError.js';
 
+const activeEnrollmentFilter = { status: { $ne: 'cancelled' } };
+
 export const enrollInClass = asyncHandler(async (req, res) => {
   const classId = req.params.id;
   const classItem = await ClassModel.findById(classId);
@@ -12,22 +14,29 @@ export const enrollInClass = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
+  if (classItem.startDate <= new Date()) {
+    throw new ApiError(400, 'Cannot enroll in a class that has already started.', 'CLASS_ALREADY_STARTED');
+  }
+
   // Use a transaction when available to avoid race conditions causing over-enrollment.
   let enrollment;
   const session = await mongoose.startSession();
   try {
     await session.withTransaction(async () => {
       const existing = await Enrollment.findOne({ class: classId, user: req.user._id }).session(session);
+      if (existing?.status === 'cancelled') {
+        throw new ApiError(409, 'This class was cancelled earlier and cannot be re-enrolled.', 'ENROLLMENT_ALREADY_CANCELLED');
+      }
       if (existing) {
         throw new ApiError(409, 'You are already enrolled in this class', 'ALREADY_ENROLLED');
       }
 
-      const currentStudents = await Enrollment.countDocuments({ class: classId }).session(session);
+      const currentStudents = await Enrollment.countDocuments({ class: classId, ...activeEnrollmentFilter }).session(session);
       if (currentStudents >= classItem.maxStudents) {
         throw new ApiError(409, 'Class is already full', 'CLASS_FULL');
       }
 
-      enrollment = await Enrollment.create([{ class: classId, user: req.user._id }], { session });
+      enrollment = await Enrollment.create([{ class: classId, user: req.user._id, status: 'active' }], { session });
       // Enrollment.create with array returns an array
       enrollment = enrollment[0];
     });
@@ -44,20 +53,48 @@ export const enrollInClass = asyncHandler(async (req, res) => {
 });
 
 export const cancelEnrollment = asyncHandler(async (req, res) => {
-  const enrollment = await Enrollment.findOneAndDelete({
-    class: req.params.id,
-    user: req.user._id
-  });
+  const session = await mongoose.startSession();
+  let cancelled = null;
+  let alreadyCancelled = false;
 
-  if (!enrollment) {
-    throw new ApiError(404, 'Enrollment not found', 'ENROLLMENT_NOT_FOUND');
+  try {
+    await session.withTransaction(async () => {
+      const classItem = await ClassModel.findById(req.params.id).session(session);
+      if (!classItem) {
+        throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
+      }
+
+      const enrollment = await Enrollment.findOne({
+        class: req.params.id,
+        user: req.user._id
+      }).session(session);
+
+      if (!enrollment || enrollment.status === 'cancelled') {
+        alreadyCancelled = true;
+        return;
+      }
+
+      enrollment.status = 'cancelled';
+      enrollment.cancelledAt = new Date();
+      cancelled = await enrollment.save({ session });
+    });
+  } finally {
+    session.endSession();
   }
 
-  res.json({ message: 'Enrollment cancelled' });
+  if (alreadyCancelled) {
+    res.json({
+      message: 'This class was already cancelled earlier.',
+      alreadyCancelled: true
+    });
+    return;
+  }
+
+  res.json({ message: 'Enrollment cancelled', enrollment: cancelled });
 });
 
 export const myEnrollments = asyncHandler(async (req, res) => {
-  const enrollments = await Enrollment.find({ user: req.user._id })
+  const enrollments = await Enrollment.find({ user: req.user._id, ...activeEnrollmentFilter })
     .populate({
       path: 'class',
       populate: { path: 'createdBy', select: 'name email' }
@@ -65,7 +102,7 @@ export const myEnrollments = asyncHandler(async (req, res) => {
     .sort({ enrolledAt: -1 });
 
   const counts = await Enrollment.aggregate([
-    { $match: { class: { $in: enrollments.map((item) => item.class._id) } } },
+    { $match: { class: { $in: enrollments.map((item) => item.class._id) }, status: { $ne: 'cancelled' } } },
     { $group: { _id: '$class', currentStudents: { $sum: 1 } } }
   ]);
   const countMap = new Map(counts.map((item) => [item._id.toString(), item.currentStudents]));

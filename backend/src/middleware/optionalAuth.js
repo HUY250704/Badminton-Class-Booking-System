@@ -8,7 +8,8 @@ export async function optionalAuth(req, res, next) {
     if (header?.startsWith('Bearer ')) {
       const token = header.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id);
+      const user = await User.findById(decoded.id);
+      req.user = user && (user.tokenVersion || 0) === (decoded.tokenVersion || 0) ? user : null;
     }
 
     next();

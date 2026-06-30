@@ -20,6 +20,12 @@ export function memoryProtect(req, res, next) {
       return;
     }
 
+    if ((user.tokenVersion || 0) !== (decoded.tokenVersion || 0)) {
+      res.status(401);
+      next(new Error('Session expired. Please log in again.'));
+      return;
+    }
+
     req.user = user;
     next();
   } catch {
@@ -44,7 +50,8 @@ export function memoryOptionalAuth(req, _res, next) {
   if (header?.startsWith('Bearer ')) {
     try {
       const decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET);
-      req.user = memory.users.find((item) => item._id === decoded.id) || null;
+      const user = memory.users.find((item) => item._id === decoded.id) || null;
+      req.user = user && (user.tokenVersion || 0) === (decoded.tokenVersion || 0) ? user : null;
     } catch {
       req.user = null;
     }

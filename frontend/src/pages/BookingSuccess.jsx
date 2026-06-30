@@ -1,11 +1,23 @@
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { CalendarDays, CheckCircle2, MapPin, UserRound, UsersRound } from 'lucide-react'
+import api from '../api/axios'
+import { getApiErrorMessage } from '../api/errors'
 import { formatDateTime } from '../utils/classUi'
 
 export default function BookingSuccess() {
   const location = useLocation()
-  const klass = location.state?.classItem
+  const [searchParams] = useSearchParams()
+  const stateClass = location.state?.classItem
+  const classId = searchParams.get('classId') || stateClass?._id || localStorage.getItem('lastBookingClassId')
+  const { data, isError, error } = useQuery({
+    queryKey: ['class', classId],
+    queryFn: () => api.get(`/classes/${classId}`).then((r) => r.data),
+    enabled: Boolean(classId),
+    initialData: stateClass
+  })
+  const klass = data || stateClass
 
   return (
     <div className="success-page">
@@ -14,6 +26,7 @@ export default function BookingSuccess() {
         <span className="eyebrow">Booking confirmed</span>
         <h1>You are ready for court</h1>
         <p className="muted">Your class enrollment has been saved. You can review or cancel it from My Classes.</p>
+        {isError && <div className="alert alert-error">{getApiErrorMessage(error, 'Could not refresh class details')}</div>}
 
         <div className="success-details">
           <div><UserRound size={20} /><span>Class</span><strong>{klass?.title || 'Selected class'}</strong></div>

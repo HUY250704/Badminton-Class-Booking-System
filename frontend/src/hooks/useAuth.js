@@ -35,3 +35,11 @@ export async function register(data) {
   saveAuth(res.data)
   return res.data
 }
+
+export async function logout() {
+  try {
+    await api.post('/auth/logout')
+  } finally {
+    clearAuth()
+  }
+}

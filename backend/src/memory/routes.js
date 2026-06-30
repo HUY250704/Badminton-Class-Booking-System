@@ -25,11 +25,11 @@ function authPayload(user) {
 }
 
 function classPayload(item, userId) {
-  const currentStudents = memory.enrollments.filter((enrollment) => enrollment.class === item._id).length;
+  const currentStudents = memory.enrollments.filter((enrollment) => enrollment.class === item._id && enrollment.status !== 'cancelled').length;
   return {
     ...item,
     currentStudents,
-    isEnrolled: Boolean(userId && memory.enrollments.some((enrollment) => enrollment.class === item._id && enrollment.user === userId))
+    isEnrolled: Boolean(userId && memory.enrollments.some((enrollment) => enrollment.class === item._id && enrollment.user === userId && enrollment.status !== 'cancelled'))
   };
 }
 
@@ -46,7 +46,8 @@ router.post('/auth/register', validateRegister, async (req, res, next) => {
       name,
       email,
       password: await bcrypt.hash(password, 10),
-      role: 'user'
+      role: 'user',
+      tokenVersion: 0
     };
     memory.users.push(user);
     res.status(201).json(authPayload(user));
@@ -72,6 +73,11 @@ router.post('/auth/login', validateLogin, async (req, res, next) => {
 
 router.get('/auth/me', memoryProtect, (req, res) => {
   res.json(publicUser(req.user));
+});
+
+router.post('/auth/logout', memoryProtect, (req, res) => {
+  req.user.tokenVersion = (req.user.tokenVersion || 0) + 1;
+  res.json({ message: 'Logged out' });
 });
 
 router.get('/classes', validateClassQuery, memoryOptionalAuth, (req, res) => {
@@ -115,7 +121,8 @@ router.post('/classes', memoryProtect, memoryAdminOnly, validateClassBody(), (re
     schedule: req.body.schedule,
     location: req.body.location,
     maxStudents: Number(req.body.maxStudents),
-    createdBy: req.user._id
+    createdBy: req.user._id,
+    updatedAt: new Date().toISOString()
   };
   memory.classes.push(item);
   res.status(201).json(classPayload(item, req.user._id));
@@ -123,7 +130,7 @@ router.post('/classes', memoryProtect, memoryAdminOnly, validateClassBody(), (re
 
 router.get('/classes/my/enrollments', memoryProtect, (req, res) => {
   const enrollments = memory.enrollments
-    .filter((item) => item.user === req.user._id)
+    .filter((item) => item.user === req.user._id && item.status !== 'cancelled')
     .sort((a, b) => new Date(b.enrolledAt) - new Date(a.enrolledAt))
     .map((item) => {
       const klass = memory.classes.find((classItem) => classItem._id === item.class);
@@ -154,9 +161,14 @@ router.patch('/classes/:id', memoryProtect, memoryAdminOnly, validateClassBody({
     return;
   }
 
-  const currentStudents = memory.enrollments.filter((enrollment) => enrollment.class === item._id).length;
+  if (req.body.updatedAt && item.updatedAt && new Date(req.body.updatedAt).getTime() !== new Date(item.updatedAt).getTime()) {
+    next(new ApiError(409, 'Class has been updated by someone else. Please refresh and try again.', 'CLASS_UPDATE_CONFLICT'));
+    return;
+  }
+
+  const currentStudents = memory.enrollments.filter((enrollment) => enrollment.class === item._id && enrollment.status !== 'cancelled').length;
   if (req.body.maxStudents !== undefined && Number(req.body.maxStudents) < currentStudents) {
-    next(new ApiError(400, 'Max students cannot be lower than current enrollments', 'MAX_STUDENTS_TOO_LOW', ['maxStudents']));
+    next(new ApiError(400, `This class currently has ${currentStudents} enrolled students. Max students cannot be lower than ${currentStudents}.`, 'MAX_STUDENTS_TOO_LOW', ['maxStudents']));
     return;
   }
 
@@ -165,6 +177,7 @@ router.patch('/classes/:id', memoryProtect, memoryAdminOnly, validateClassBody({
   });
   if (req.body.startDate !== undefined) item.startDate = new Date(req.body.startDate).toISOString();
   if (req.body.maxStudents !== undefined) item.maxStudents = Number(req.body.maxStudents);
+  item.updatedAt = new Date().toISOString();
 
   res.json(classPayload(item, req.user._id));
 });
@@ -188,12 +201,23 @@ router.post('/classes/:id/enroll', memoryProtect, (req, res, next) => {
     return;
   }
 
-  if (memory.enrollments.some((enrollment) => enrollment.class === item._id && enrollment.user === req.user._id)) {
+  if (new Date(item.startDate) <= new Date()) {
+    next(new ApiError(400, 'Cannot enroll in a class that has already started.', 'CLASS_ALREADY_STARTED'));
+    return;
+  }
+
+  const existingEnrollment = memory.enrollments.find((enrollment) => enrollment.class === item._id && enrollment.user === req.user._id);
+  if (existingEnrollment?.status === 'cancelled') {
+    next(new ApiError(409, 'This class was cancelled earlier and cannot be re-enrolled.', 'ENROLLMENT_ALREADY_CANCELLED'));
+    return;
+  }
+
+  if (existingEnrollment) {
     next(new ApiError(409, 'You are already enrolled in this class', 'ALREADY_ENROLLED'));
     return;
   }
 
-  const currentStudents = memory.enrollments.filter((enrollment) => enrollment.class === item._id).length;
+  const currentStudents = memory.enrollments.filter((enrollment) => enrollment.class === item._id && enrollment.status !== 'cancelled').length;
   if (currentStudents >= item.maxStudents) {
     next(new ApiError(409, 'Class is already full', 'CLASS_FULL'));
     return;
@@ -203,20 +227,29 @@ router.post('/classes/:id/enroll', memoryProtect, (req, res, next) => {
     _id: newId('enroll'),
     class: item._id,
     user: req.user._id,
-    enrolledAt: new Date().toISOString()
+    enrolledAt: new Date().toISOString(),
+    status: 'active',
+    cancelledAt: null
   };
   memory.enrollments.push(enrollment);
   res.status(201).json(enrollment);
 });
 
 router.delete('/classes/:id/enroll', memoryProtect, (req, res, next) => {
-  const index = memory.enrollments.findIndex((item) => item.class === req.params.id && item.user === req.user._id);
-  if (index === -1) {
-    next(new ApiError(404, 'Enrollment not found', 'ENROLLMENT_NOT_FOUND'));
+  const klass = memory.classes.find((item) => item._id === req.params.id);
+  if (!klass) {
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
     return;
   }
 
-  memory.enrollments.splice(index, 1);
+  const enrollment = memory.enrollments.find((item) => item.class === req.params.id && item.user === req.user._id);
+  if (!enrollment || enrollment.status === 'cancelled') {
+    res.json({ message: 'This class was already cancelled earlier.', alreadyCancelled: true });
+    return;
+  }
+
+  enrollment.status = 'cancelled';
+  enrollment.cancelledAt = new Date().toISOString();
   res.json({ message: 'Enrollment cancelled' });
 });
 
@@ -228,7 +261,7 @@ router.get('/classes/:id/students', memoryProtect, memoryAdminOnly, (req, res, n
   }
 
   res.json(memory.enrollments
-    .filter((enrollment) => enrollment.class === item._id)
+    .filter((enrollment) => enrollment.class === item._id && enrollment.status !== 'cancelled')
     .map((enrollment) => ({
       id: enrollment._id,
       enrolledAt: enrollment.enrolledAt,
