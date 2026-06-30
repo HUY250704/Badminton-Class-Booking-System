@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo.png'],
+      includeAssets: ['logo.png', 'pwa-logo-192.png', 'pwa-logo-512.png'],
       manifest: {
         name: 'Lin-Badminton Class Booking',
         short_name: 'Lin-Badminton',
@@ -20,18 +20,18 @@ export default defineConfig({
         scope: '/',
         icons: [
           {
-            src: '/pwa-logo.png',
+            src: '/pwa-logo-192.png',
             sizes: '192x192',
             type: 'image/png'
 
           },
           {
-            src: '/pwa-logo.png',
+            src: '/pwa-logo-512.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: '/pwa-logo.png',
+            src: '/pwa-logo-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
