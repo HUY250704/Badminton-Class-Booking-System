@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, CheckCircle2, Eye, Mail, UserRound, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Eye, Mail, Trash2, UserRound, XCircle } from 'lucide-react'
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
 import { formatDateTime } from '../utils/classUi'
@@ -23,6 +23,14 @@ export default function AdminStudents() {
       records: [{ user, status }]
     }).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['class-attendance', id] })
+  })
+  const removeStudent = useMutation({
+    mutationFn: (userId) => api.delete(`/classes/${id}/students/${userId}`).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['class-students', id] })
+      qc.invalidateQueries({ queryKey: ['class', id] })
+      qc.invalidateQueries({ queryKey: ['classes'], exact: false })
+    }
   })
 
   const todayKey = new Date().toDateString()
@@ -78,11 +86,24 @@ export default function AdminStudents() {
               </span>
               <button title="Present" aria-label={`Mark ${item.user.name} present`} disabled={markAttendance.isPending} onClick={() => markAttendance.mutate({ user: item.user._id, status: 'present' })}><CheckCircle2 size={18} /></button>
               <button title="Absent" aria-label={`Mark ${item.user.name} absent`} disabled={markAttendance.isPending} onClick={() => markAttendance.mutate({ user: item.user._id, status: 'absent' })}><XCircle size={18} /></button>
+              <button
+                title="Remove student"
+                aria-label={`Remove ${item.user.name} from class`}
+                disabled={removeStudent.isPending}
+                onClick={() => {
+                  if (window.confirm(`Remove ${item.user.name} from this class?`)) {
+                    removeStudent.mutate(item.user._id)
+                  }
+                }}
+              >
+                <Trash2 size={18} />
+              </button>
             </div>
           </article>
         ))}
       </div>
       {markAttendance.isError && <div className="alert alert-error">{getApiErrorMessage(markAttendance.error, 'Could not mark attendance')}</div>}
+      {removeStudent.isError && <div className="alert alert-error">{getApiErrorMessage(removeStudent.error, 'Could not remove student')}</div>}
     </div>
   )
 }

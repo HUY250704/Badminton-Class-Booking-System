@@ -9,6 +9,7 @@ import Invoice from '../models/Invoice.js';
 import PaymentTransaction from '../models/PaymentTransaction.js';
 import Review from '../models/Review.js';
 import TransferRequest from '../models/TransferRequest.js';
+import User from '../models/User.js';
 import Waitlist from '../models/Waitlist.js';
 import { ApiError } from '../utils/ApiError.js';
 import { writeAuditLog } from '../utils/audit.js';
@@ -739,4 +740,67 @@ export const auditLogs = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .limit(100);
   res.json(logs);
+});
+
+export const listUsers = asyncHandler(async (req, res) => {
+  const search = String(req.query.search || '').trim();
+  const filter = search
+    ? {
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } }
+        ]
+      }
+    : {};
+
+  const users = await User.find(filter)
+    .select('name email role avatarUrl phone createdAt updatedAt')
+    .sort({ createdAt: -1 })
+    .limit(200);
+
+  res.json(users);
+});
+
+export const updateUserRole = asyncHandler(async (req, res) => {
+  const role = String(req.body.role || '').trim();
+  if (!['admin', 'user'].includes(role)) {
+    throw new ApiError(400, 'Role must be admin or user', 'VALIDATION_ERROR', ['role']);
+  }
+
+  const user = await User.findById(req.params.userId);
+  if (!user) {
+    throw new ApiError(404, 'User not found', 'USER_NOT_FOUND');
+  }
+
+  if (user._id.toString() === req.user._id.toString() && user.role === 'admin' && role !== 'admin') {
+    throw new ApiError(400, 'You cannot remove your own admin access', 'CANNOT_DEMOTE_SELF');
+  }
+
+  const previousRole = user.role;
+  user.role = role;
+  if (previousRole !== role) {
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
+  }
+  await user.save();
+
+  await writeAuditLog({
+    actor: req.user._id,
+    action: 'user.role_changed',
+    targetType: 'User',
+    targetId: user._id,
+    metadata: {
+      email: user.email,
+      previousRole,
+      role
+    }
+  });
+
+  res.json({
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    avatarUrl: user.avatarUrl || '',
+    phone: user.phone || ''
+  });
 });

@@ -1,5 +1,6 @@
 export function getApiErrorMessage(error, fallbackMessage = 'Something went wrong') {
   if (!error?.response) {
+    if (error?.message) return error.message
     return 'Cannot connect to backend. Please make sure the API server is running.'
   }
 

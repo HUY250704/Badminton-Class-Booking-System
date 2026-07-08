@@ -5,6 +5,7 @@ import {
   getClassById,
   getClasses,
   getClassStudents,
+  removeClassStudent,
   updateClass
 } from '../controllers/classController.js';
 import {
@@ -55,5 +56,6 @@ router.get('/:id/attendance', validateObjectId('id'), protect, adminOnly, getAtt
 router.put('/:id/attendance', validateObjectId('id'), protect, adminOnly, markAttendance);
 router.post('/:id/transfers', validateObjectId('id'), protect, createTransferRequest);
 router.get('/:id/students', validateObjectId('id'), protect, adminOnly, getClassStudents);
+router.delete('/:id/students/:userId', validateObjectId('id'), validateObjectId('userId'), protect, adminOnly, removeClassStudent);
 
 export default router;

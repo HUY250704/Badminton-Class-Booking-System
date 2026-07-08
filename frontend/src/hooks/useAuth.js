@@ -1,4 +1,6 @@
 import api from '../api/axios'
+import { signInWithPopup } from 'firebase/auth'
+import { firebaseAuth, firebaseGoogleProvider, isFirebaseConfigured } from '../config/firebase'
 
 export function saveAuth(payload) {
   if (payload?.token) {
@@ -48,6 +50,31 @@ export async function resetPassword(token, password) {
 }
 
 export async function googleAuthUrl() {
+  if (isFirebaseConfigured() && firebaseAuth) {
+    try {
+      const result = await signInWithPopup(firebaseAuth, firebaseGoogleProvider)
+      const idToken = await result.user.getIdToken()
+      const res = await api.post('/auth/firebase', { idToken })
+      saveAuth(res.data)
+      return null
+    } catch (error) {
+      if (error?.code === 'auth/configuration-not-found') {
+        throw new Error('Firebase Authentication chưa được bật cho project lin-badminton. Vào Firebase Console > Authentication > Get started, bật Google provider, rồi thử lại.')
+      }
+
+      throw error
+    }
+  }
+
+  if (import.meta.env.VITE_AUTH_GOOGLE_OAUTH === 'true') {
+    const res = await api.get('/auth/google/url')
+    return res.data.authUrl
+  }
+
+  throw new Error('Firebase Web config is missing. Fill VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, and VITE_FIREBASE_APP_ID in frontend/.env.')
+}
+
+export async function legacyGoogleAuthUrl() {
   const res = await api.get('/auth/google/url')
   return res.data.authUrl
 }

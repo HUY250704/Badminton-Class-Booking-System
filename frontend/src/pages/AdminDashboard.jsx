@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, BarChart3, CalendarDays, CheckCircle2, Download, Edit, Eye, Plus, Search, Trash2, UserRound, UsersRound, XCircle } from 'lucide-react'
+import { Activity, BarChart3, CalendarDays, CheckCircle2, Download, Edit, Eye, Plus, Search, ShieldCheck, Trash2, UserRound, UsersRound, XCircle } from 'lucide-react'
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
 import { capacityPercent, formatDateTime, levelLabel } from '../utils/classUi'
@@ -95,6 +95,11 @@ export default function AdminDashboard() {
     queryFn: () => api.get('/admin/audit-logs').then((r) => r.data)
   })
 
+  const users = useQuery({
+    queryKey: ['admin', 'users'],
+    queryFn: () => api.get('/admin/users').then((r) => r.data)
+  })
+
   const coaches = useQuery({
     queryKey: ['coaches'],
     queryFn: () => api.get('/coaches').then((r) => r.data)
@@ -119,6 +124,14 @@ export default function AdminDashboard() {
       qc.invalidateQueries({ queryKey: ['admin', 'transfers'] })
       qc.invalidateQueries({ queryKey: ['classes'], exact: false, refetchType: 'all' })
       qc.invalidateQueries({ queryKey: ['admin', 'metrics'] })
+    }
+  })
+
+  const updateRole = useMutation({
+    mutationFn: ({ userId, role }) => api.patch(`/admin/users/${userId}/role`, { role }).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      qc.invalidateQueries({ queryKey: ['admin', 'audit-logs'] })
     }
   })
 
@@ -409,6 +422,38 @@ export default function AdminDashboard() {
           ))}
           {!coaches.isLoading && (coaches.data || []).length === 0 && <p className="muted">No coach profiles yet. Create one from the class editor.</p>}
         </div>
+      </section>
+
+      <section className="page-card admin-panel">
+        <div className="panel-header">
+          <span className="eyebrow">User access</span>
+          <h2>Roles</h2>
+        </div>
+        <div className="compact-list">
+          {(users.data || []).slice(0, 10).map((user) => (
+            <article className="compact-row" key={user._id}>
+              <div className="compact-avatar">
+                {user.avatarUrl ? <img src={user.avatarUrl} alt="" /> : <ShieldCheck size={20} />}
+              </div>
+              <div>
+                <strong>{user.name}</strong>
+                <span>{user.email}</span>
+              </div>
+              <label className="role-select" aria-label={`Role for ${user.name}`}>
+                <select
+                  value={user.role}
+                  disabled={updateRole.isPending}
+                  onChange={(event) => updateRole.mutate({ userId: user._id, role: event.target.value })}
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </label>
+            </article>
+          ))}
+          {!users.isLoading && (users.data || []).length === 0 && <p className="muted">No users found.</p>}
+        </div>
+        {updateRole.isError && <div className="alert alert-error">{getApiErrorMessage(updateRole.error, 'Could not update user role')}</div>}
       </section>
 
       <section className="admin-split">

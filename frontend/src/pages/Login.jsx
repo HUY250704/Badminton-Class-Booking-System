@@ -33,7 +33,12 @@ export default function Login() {
   const googleLogin = useMutation({
     mutationFn: googleAuthUrl,
     onSuccess: (authUrl) => {
-      window.location.href = authUrl
+      if (authUrl) {
+        window.location.href = authUrl
+        return
+      }
+      sessionStorage.removeItem('authMessage')
+      navigate('/classes')
     }
   })
 

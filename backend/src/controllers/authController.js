@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import crypto from 'crypto';
 import User from '../models/User.js';
+import { firebaseAuth } from '../config/firebase.js';
 import { ApiError } from '../utils/ApiError.js';
 import { resetPasswordEmail, sendEmail } from '../utils/email.js';
 import { signToken } from '../utils/token.js';
@@ -235,6 +236,42 @@ export const googleCallback = asyncHandler(async (req, res) => {
       password: crypto.randomBytes(24).toString('hex'),
       googleId: profile.sub,
       avatarUrl: profile.picture || ''
+    });
+  }
+
+  res.json(authPayload(user));
+});
+
+export const firebaseLogin = asyncHandler(async (req, res) => {
+  const idToken = typeof req.body.idToken === 'string' ? req.body.idToken : '';
+  if (!idToken) {
+    throw new ApiError(400, 'Firebase ID token is required', 'VALIDATION_ERROR', ['idToken']);
+  }
+
+  let decoded;
+  try {
+    decoded = await firebaseAuth().verifyIdToken(idToken);
+  } catch {
+    throw new ApiError(401, 'Firebase session is invalid or expired', 'FIREBASE_TOKEN_INVALID');
+  }
+
+  const email = decoded.email?.toLowerCase();
+  if (!email) {
+    throw new ApiError(400, 'Firebase account must include an email address', 'FIREBASE_EMAIL_MISSING');
+  }
+
+  let user = await User.findOne({ email });
+  if (user) {
+    user.googleId = user.googleId || decoded.firebase?.identities?.['google.com']?.[0] || decoded.uid;
+    user.avatarUrl = user.avatarUrl || decoded.picture || '';
+    await user.save();
+  } else {
+    user = await User.create({
+      name: decoded.name || email.split('@')[0],
+      email,
+      password: crypto.randomBytes(24).toString('hex'),
+      googleId: decoded.firebase?.identities?.['google.com']?.[0] || decoded.uid,
+      avatarUrl: decoded.picture || ''
     });
   }
 

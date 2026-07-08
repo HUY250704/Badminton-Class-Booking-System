@@ -255,15 +255,17 @@ router.get('/classes', validateClassQuery, memoryOptionalAuth, (req, res) => {
     startDateTo,
     coach = '',
     location = '',
+    coachLocation = '',
     sortBy = 'startDate',
     sortOrder = 'asc'
   } = req.query;
   const pageNumber = Math.max(Number(page), 1);
-  const limitNumber = Math.min(Math.max(Number(limit), 1), 50);
-  const includePast = req.query.includePast === 'true' && req.user?.role === 'admin';
+  const limitNumber = Math.min(Math.max(Number(limit), 1), 1000);
+  const includePast = req.query.includePast === 'true';
   const term = search.trim().toLowerCase();
   const coachTerm = String(coach).trim().toLowerCase();
   const locationTerm = String(location).trim().toLowerCase();
+  const coachLocationTerm = String(coachLocation).trim().toLowerCase();
   const from = startDateFrom ? new Date(startDateFrom) : null;
   const to = startDateTo ? new Date(startDateTo) : null;
   if (to && !Number.isNaN(to.getTime())) to.setHours(23, 59, 59, 999);
@@ -278,6 +280,10 @@ router.get('/classes', validateClassQuery, memoryOptionalAuth, (req, res) => {
     .filter((item) => !to || Number.isNaN(to.getTime()) || new Date(item.startDate) <= to)
     .filter((item) => !coachTerm || String(item.coachName || '').toLowerCase().includes(coachTerm))
     .filter((item) => !locationTerm || String(item.location || '').toLowerCase().includes(locationTerm))
+    .filter((item) => {
+      if (!coachLocationTerm) return true;
+      return [item.coachName, item.location].some((value) => String(value || '').toLowerCase().includes(coachLocationTerm));
+    })
     .filter((item) => {
       if (!term) return true;
       return [item.title, item.coachName, item.description, item.location].some((value) => String(value || '').toLowerCase().includes(term));

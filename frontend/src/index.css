@@ -363,6 +363,20 @@ img { display: block; max-width: 100%; }
   color: var(--text);
 }
 
+.class-search-row {
+  width: min(980px, 100%);
+  margin: 30px 0 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr)) auto auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.class-search-row .search-panel {
+  width: 100%;
+  margin: 0;
+}
+
 .filter-pills {
   display: flex;
   flex-wrap: wrap;
@@ -1265,6 +1279,17 @@ img { display: block; max-width: 100%; }
   object-fit: cover;
 }
 
+.role-select select {
+  min-width: 120px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid var(--outline);
+  border-radius: 10px;
+  color: var(--text);
+  background: var(--surface);
+  font-weight: 800;
+}
+
 .admin-split {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1474,6 +1499,9 @@ img { display: block; max-width: 100%; }
   .landing-band { align-items: flex-start; flex-direction: column; }
   .hero-panel { padding: 26px; border-radius: 18px; }
   .hero-panel h1 { font-size: 38px; }
+  .class-search-row { grid-template-columns: 1fr; }
+  .class-search-row .button,
+  .class-search-row .status-badge { justify-self: start; }
   .auth-card, .detail-layout { grid-template-columns: 1fr; }
   .editor-layout, .hero-stats { grid-template-columns: 1fr; }
   .auth-art { min-height: 260px; }

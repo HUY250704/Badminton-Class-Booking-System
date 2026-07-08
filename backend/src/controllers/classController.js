@@ -72,12 +72,13 @@ export const getClasses = asyncHandler(async (req, res) => {
     startDateTo,
     coach = '',
     location = '',
+    coachLocation = '',
     sortBy = 'startDate',
     sortOrder = 'asc'
   } = req.query;
   const pageNumber = Math.max(Number(page), 1);
-  const limitNumber = Math.min(Math.max(Number(limit), 1), 50);
-  const includePast = req.query.includePast === 'true' && req.user?.role === 'admin';
+  const limitNumber = Math.min(Math.max(Number(limit), 1), 1000);
+  const includePast = req.query.includePast === 'true';
 
   const filter = includePast ? {} : { startDate: { $gte: new Date() } };
 
@@ -99,6 +100,19 @@ export const getClasses = asyncHandler(async (req, res) => {
 
   if (location.trim()) {
     filter.location = { $regex: location.trim(), $options: 'i' };
+  }
+
+  if (coachLocation.trim()) {
+    const term = coachLocation.trim();
+    filter.$and = [
+      ...(filter.$and || []),
+      {
+        $or: [
+          { coachName: { $regex: term, $options: 'i' } },
+          { location: { $regex: term, $options: 'i' } }
+        ]
+      }
+    ];
   }
 
   if (minPrice !== undefined) {
@@ -323,4 +337,40 @@ export const getClassStudents = asyncHandler(async (req, res) => {
     enrolledAt: item.enrolledAt,
     user: item.user
   })));
+});
+
+export const removeClassStudent = asyncHandler(async (req, res) => {
+  const classItem = await ClassModel.findById(req.params.id);
+  if (!classItem) {
+    throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
+  }
+
+  const enrollment = await Enrollment.findOne({
+    class: classItem._id,
+    user: req.params.userId,
+    ...activeEnrollmentFilter
+  }).populate('user', 'name email');
+
+  if (!enrollment) {
+    throw new ApiError(404, 'Student enrollment not found', 'ENROLLMENT_NOT_FOUND');
+  }
+
+  enrollment.status = 'cancelled';
+  enrollment.cancelledAt = new Date();
+  await enrollment.save();
+
+  await writeAuditLog({
+    actor: req.user._id,
+    action: 'class.student_removed',
+    targetType: 'Enrollment',
+    targetId: enrollment._id,
+    metadata: {
+      classId: classItem._id,
+      classTitle: classItem.title,
+      studentId: enrollment.user?._id || req.params.userId,
+      studentEmail: enrollment.user?.email
+    }
+  });
+
+  res.json({ message: 'Student removed from class' });
 });

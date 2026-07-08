@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   changePassword,
+  firebaseLogin,
   forgotPassword,
   googleAuthUrl,
   googleCallback,
@@ -22,6 +23,7 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.get('/google/url', googleAuthUrl);
 router.post('/google/callback', googleCallback);
+router.post('/firebase', firebaseLogin);
 router.get('/me', protect, me);
 router.patch('/me', protect, updateProfile);
 router.patch('/me/password', protect, changePassword);
