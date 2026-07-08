@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import './Coach.js';
 
 const classSchema = new mongoose.Schema(
   {
@@ -16,6 +17,11 @@ const classSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true
+    },
+    coach: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Coach',
+      default: null
     },
     level: {
       type: String,
@@ -40,6 +46,17 @@ const classSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 1
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 500000
+    },
+    imageUrl: {
+      type: String,
+      trim: true,
+      default: ''
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

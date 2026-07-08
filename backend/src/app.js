@@ -3,8 +3,13 @@ import express from 'express';
 import morgan from 'morgan';
 import authRoutes from './routes/authRoutes.js';
 import classRoutes from './routes/classRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
+import coachRoutes from './routes/coachRoutes.js';
 import memoryRoutes from './memory/routes.js';
 import { errorHandler, notFound } from './middleware/error.js';
+import { rateLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
 
@@ -37,6 +42,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use('/api', rateLimiter({
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
+  max: Number(process.env.RATE_LIMIT_MAX || 300)
+}));
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'tiny' : 'dev'));
 }
@@ -51,6 +60,10 @@ if (process.env.USE_MEMORY_DB === 'true') {
 } else {
   app.use('/api/auth', authRoutes);
   app.use('/api/classes', classRoutes);
+  app.use('/api/payments', paymentRoutes);
+  app.use('/api/admin', adminRoutes);
+  app.use('/api/uploads', uploadRoutes);
+  app.use('/api/coaches', coachRoutes);
 }
 
 app.use(notFound);

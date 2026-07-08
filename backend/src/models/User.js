@@ -16,11 +16,27 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true
     },
+    googleId: {
+      type: String,
+      trim: true,
+      sparse: true,
+      unique: true
+    },
     password: {
       type: String,
       required: true,
       minlength: 6,
       select: false
+    },
+    avatarUrl: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    phone: {
+      type: String,
+      trim: true,
+      default: ''
     },
     role: {
       type: String,
@@ -30,6 +46,16 @@ const userSchema = new mongoose.Schema(
     tokenVersion: {
       type: Number,
       default: 0
+    },
+    passwordResetToken: {
+      type: String,
+      select: false,
+      default: null
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
+      default: null
     }
   },
   { timestamps: true }

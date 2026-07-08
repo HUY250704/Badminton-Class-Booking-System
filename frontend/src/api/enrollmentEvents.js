@@ -20,7 +20,7 @@ export function broadcastEnrollmentChange(classId) {
 }
 
 export function invalidateEnrollmentQueries(queryClient, classId) {
-  queryClient.invalidateQueries({ queryKey: ['classes'] })
+  queryClient.invalidateQueries({ queryKey: ['classes'], exact: false, refetchType: 'all' })
   if (classId) {
     queryClient.invalidateQueries({ queryKey: ['class', classId] })
   }

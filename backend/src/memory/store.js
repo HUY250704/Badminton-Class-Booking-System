@@ -39,6 +39,8 @@ export const memory = {
       schedule: 'Tue & Thu, 18:00 - 19:30',
       location: 'NAPA Court 1',
       maxStudents: 12,
+      price: 500000,
+      coach: 'coach_minh',
       createdBy: adminId,
       updatedAt: new Date(now).toISOString()
     },
@@ -52,6 +54,8 @@ export const memory = {
       schedule: 'Mon & Wed, 19:30 - 21:00',
       location: 'NAPA Court 2',
       maxStudents: 10,
+      price: 500000,
+      coach: 'coach_linh',
       createdBy: adminId,
       updatedAt: new Date(now).toISOString()
     },
@@ -65,11 +69,49 @@ export const memory = {
       schedule: 'Sat, 08:00 - 10:00',
       location: 'NAPA Performance Hall',
       maxStudents: 8,
+      price: 500000,
+      coach: 'coach_an',
       createdBy: adminId,
       updatedAt: new Date(now).toISOString()
     }
   ],
-  enrollments: []
+  coaches: [
+    {
+      _id: 'coach_minh',
+      name: 'Coach Minh Tran',
+      email: 'minh@napa.test',
+      bio: 'Footwork and beginner fundamentals specialist.',
+      photoUrl: '',
+      specialties: ['Footwork', 'Beginner'],
+      createdAt: new Date(now).toISOString(),
+      updatedAt: new Date(now).toISOString()
+    },
+    {
+      _id: 'coach_linh',
+      name: 'Coach Linh Nguyen',
+      email: 'linh@napa.test',
+      bio: 'Doubles rotation and tactical movement coach.',
+      photoUrl: '',
+      specialties: ['Doubles', 'Tactics'],
+      createdAt: new Date(now).toISOString(),
+      updatedAt: new Date(now).toISOString()
+    },
+    {
+      _id: 'coach_an',
+      name: 'Coach An Pham',
+      email: 'an@napa.test',
+      bio: 'Advanced match tempo and deception training.',
+      photoUrl: '',
+      specialties: ['Advanced', 'Match play'],
+      createdAt: new Date(now).toISOString(),
+      updatedAt: new Date(now).toISOString()
+    }
+  ],
+  enrollments: [],
+  bookmarks: [],
+  waitlist: [],
+  attendance: [],
+  payments: []
 };
 
 export function newId(prefix) {

@@ -40,6 +40,7 @@ await ClassModel.create([
     schedule: 'Tue & Thu, 18:00 - 19:30',
     location: 'NAPA Court 1',
     maxStudents: 12,
+    price: 500000,
     createdBy: admin._id
   },
   {
@@ -51,6 +52,7 @@ await ClassModel.create([
     schedule: 'Mon & Wed, 19:30 - 21:00',
     location: 'NAPA Court 2',
     maxStudents: 10,
+    price: 500000,
     createdBy: admin._id
   },
   {
@@ -62,6 +64,7 @@ await ClassModel.create([
     schedule: 'Sat, 08:00 - 10:00',
     location: 'NAPA Performance Hall',
     maxStudents: 8,
+    price: 500000,
     createdBy: admin._id
   }
 ]);

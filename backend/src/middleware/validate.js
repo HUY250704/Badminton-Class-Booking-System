@@ -78,7 +78,7 @@ export function validateLogin(req, res, next) {
 
 export function validateClassQuery(req, res, next) {
   try {
-    const { page, limit, level } = req.query;
+    const { page, limit, level, minPrice, maxPrice, sortBy, sortOrder } = req.query;
 
     if (level && !classLevels.has(level)) {
       throw new ApiError(400, 'Invalid class level', 'VALIDATION_ERROR', ['level']);
@@ -90,6 +90,25 @@ export function validateClassQuery(req, res, next) {
 
     if (limit !== undefined && (!Number.isInteger(Number(limit)) || Number(limit) < 1)) {
       throw new ApiError(400, 'Limit must be a positive integer', 'VALIDATION_ERROR', ['limit']);
+    }
+    if (limit !== undefined && Number(limit) > 1000) {
+      throw new ApiError(400, 'Limit cannot exceed 1000', 'VALIDATION_ERROR', ['limit']);
+    }
+
+    if (minPrice !== undefined && (!Number.isFinite(Number(minPrice)) || Number(minPrice) < 0)) {
+      throw new ApiError(400, 'Minimum price must be a non-negative number', 'VALIDATION_ERROR', ['minPrice']);
+    }
+
+    if (maxPrice !== undefined && (!Number.isFinite(Number(maxPrice)) || Number(maxPrice) < 0)) {
+      throw new ApiError(400, 'Maximum price must be a non-negative number', 'VALIDATION_ERROR', ['maxPrice']);
+    }
+
+    if (sortBy && !['startDate', 'price', 'popularity'].includes(sortBy)) {
+      throw new ApiError(400, 'Invalid sort field', 'VALIDATION_ERROR', ['sortBy']);
+    }
+
+    if (sortOrder && !['asc', 'desc'].includes(sortOrder)) {
+      throw new ApiError(400, 'Invalid sort order', 'VALIDATION_ERROR', ['sortOrder']);
     }
 
     if (typeof req.query.search === 'string') {
@@ -107,8 +126,15 @@ export function validateClassBody({ partial = false } = {}) {
     try {
       const payload = {};
       const textFields = ['title', 'description', 'coachName', 'schedule', 'location'];
+      const optionalTextFields = ['imageUrl'];
 
       textFields.forEach((field) => {
+        if (req.body[field] !== undefined) {
+          payload[field] = cleanString(req.body[field]);
+        }
+      });
+
+      optionalTextFields.forEach((field) => {
         if (req.body[field] !== undefined) {
           payload[field] = cleanString(req.body[field]);
         }
@@ -124,6 +150,14 @@ export function validateClassBody({ partial = false } = {}) {
 
       if (req.body.maxStudents !== undefined) {
         payload.maxStudents = Number(req.body.maxStudents);
+      }
+
+      if (req.body.price !== undefined) {
+        payload.price = Number(req.body.price);
+      }
+
+      if (req.body.coach !== undefined) {
+        payload.coach = cleanString(req.body.coach) || null;
       }
 
       if (partial && req.body.updatedAt !== undefined) {
@@ -165,6 +199,14 @@ export function validateClassBody({ partial = false } = {}) {
 
       if (payload.maxStudents !== undefined && (!Number.isInteger(payload.maxStudents) || payload.maxStudents < 1)) {
         throw new ApiError(400, 'Max students must be a positive integer', 'VALIDATION_ERROR', ['maxStudents']);
+      }
+
+      if (payload.price !== undefined && (!Number.isFinite(payload.price) || payload.price < 0)) {
+        throw new ApiError(400, 'Price must be a non-negative number', 'VALIDATION_ERROR', ['price']);
+      }
+
+      if (payload.coach !== undefined && payload.coach && !mongoose.isValidObjectId(payload.coach)) {
+        throw new ApiError(400, 'Invalid coach id', 'INVALID_OBJECT_ID', ['coach']);
       }
 
       if (payload.updatedAt !== undefined) {

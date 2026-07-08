@@ -3,12 +3,16 @@ import { Routes, Route } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import GoogleCallback from './pages/GoogleCallback'
 import Landing from './pages/Landing'
 import ClassList from './pages/ClassList'
 import ClassDetail from './pages/ClassDetail'
 import MyEnrollments from './pages/MyEnrollments'
 import Profile from './pages/Profile'
 import BookingSuccess from './pages/BookingSuccess'
+import PaymentHistory from './pages/PaymentHistory'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminCreateClass from './pages/AdminCreateClass'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -57,10 +61,14 @@ export default function App() {
           <Route path="/classes" element={<ClassList />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/classes/:id" element={<ClassDetail />} />
           <Route path="/my/enrollments" element={<ProtectedRoute><MyEnrollments /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/booking-success" element={<ProtectedRoute><BookingSuccess /></ProtectedRoute>} />
+          <Route path="/payments" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/create" element={<AdminRoute><AdminCreateClass /></AdminRoute>} />
           <Route path="/admin/:id/students" element={<AdminRoute><AdminStudents /></AdminRoute>} />

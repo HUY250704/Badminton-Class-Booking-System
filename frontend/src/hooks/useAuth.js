@@ -36,6 +36,41 @@ export async function register(data) {
   return res.data
 }
 
+export async function forgotPassword(email) {
+  const res = await api.post('/auth/forgot-password', { email: email.trim().toLowerCase() })
+  return res.data
+}
+
+export async function resetPassword(token, password) {
+  const res = await api.post('/auth/reset-password', { token, password })
+  saveAuth(res.data)
+  return res.data
+}
+
+export async function googleAuthUrl() {
+  const res = await api.get('/auth/google/url')
+  return res.data.authUrl
+}
+
+export async function googleCallback(code) {
+  const res = await api.post('/auth/google/callback', { code })
+  saveAuth(res.data)
+  return res.data
+}
+
+export async function updateProfile(data) {
+  const res = await api.patch('/auth/me', data)
+  const current = getUser() || {}
+  localStorage.setItem('user', JSON.stringify({ ...current, ...res.data }))
+  return res.data
+}
+
+export async function changePassword(currentPassword, newPassword) {
+  const res = await api.patch('/auth/me/password', { currentPassword, newPassword })
+  saveAuth(res.data)
+  return res.data
+}
+
 export async function logout() {
   try {
     await api.post('/auth/logout')

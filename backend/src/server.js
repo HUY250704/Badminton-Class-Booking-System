@@ -31,6 +31,9 @@ try {
 }
 
 const { default: app } = await import('./app.js');
+const { startClassReminderScheduler } = await import('./utils/reminders.js');
+
+startClassReminderScheduler();
 
 app.listen(port, () => {
   console.log(`API running on port ${port}`);

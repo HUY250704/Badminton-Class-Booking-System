@@ -26,11 +26,48 @@ function authPayload(user) {
 
 function classPayload(item, userId) {
   const currentStudents = memory.enrollments.filter((enrollment) => enrollment.class === item._id && enrollment.status !== 'cancelled').length;
+  const waitlistCount = memory.waitlist.filter((entry) => entry.class === item._id && entry.status === 'waiting').length;
+  const coach = memory.coaches.find((coachItem) => coachItem._id === item.coach);
   return {
     ...item,
+    coach: coach || item.coach || null,
     currentStudents,
-    isEnrolled: Boolean(userId && memory.enrollments.some((enrollment) => enrollment.class === item._id && enrollment.user === userId && enrollment.status !== 'cancelled'))
+    waitlistCount,
+    isEnrolled: Boolean(userId && memory.enrollments.some((enrollment) => enrollment.class === item._id && enrollment.user === userId && enrollment.status !== 'cancelled')),
+    isBookmarked: Boolean(userId && memory.bookmarks.some((bookmark) => bookmark.class === item._id && bookmark.user === userId)),
+    userWaitlisted: Boolean(userId && memory.waitlist.some((entry) => entry.class === item._id && entry.user === userId && entry.status === 'waiting'))
   };
+}
+
+function normalizeCoachPayload(body) {
+  const specialties = Array.isArray(body.specialties)
+    ? body.specialties
+    : String(body.specialties || '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+  return {
+    name: String(body.name || '').trim(),
+    email: String(body.email || '').trim().toLowerCase(),
+    bio: String(body.bio || '').trim(),
+    photoUrl: String(body.photoUrl || '').trim(),
+    specialties
+  };
+}
+
+function reportRange(query) {
+  const now = new Date();
+  const start = query.startDate ? new Date(query.startDate) : new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = query.endDate ? new Date(query.endDate) : new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+  return { start, end };
+}
+
+function inRange(value, start, end) {
+  const date = new Date(value);
+  return !Number.isNaN(date.getTime()) && date >= start && date <= end;
 }
 
 router.post('/auth/register', validateRegister, async (req, res, next) => {
@@ -80,21 +117,180 @@ router.post('/auth/logout', memoryProtect, (req, res) => {
   res.json({ message: 'Logged out' });
 });
 
+router.get('/admin/metrics', memoryProtect, memoryAdminOnly, (req, res) => {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const activeEnrollments = memory.enrollments.filter((item) => item.status !== 'cancelled');
+  const totalCapacity = memory.classes.reduce((sum, item) => sum + Number(item.maxStudents || 0), 0);
+  const paidTransactions = (memory.payments || []).filter((item) => item.status === 'paid' && new Date(item.paidAt) >= monthStart && new Date(item.paidAt) < nextMonth);
+
+  res.json({
+    monthRevenue: paidTransactions.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    paidTransactions: paidTransactions.length,
+    newStudents: memory.users.filter((item) => item.role === 'user' && inRange(item.createdAt || new Date(), monthStart, nextMonth)).length,
+    upcomingClasses: memory.classes.filter((item) => new Date(item.startDate) >= now).slice(0, 5),
+    fillRate: totalCapacity > 0 ? Math.round((activeEnrollments.length / totalCapacity) * 100) : null
+  });
+});
+
+router.get('/admin/reports', memoryProtect, memoryAdminOnly, (req, res) => {
+  const { start, end } = reportRange(req.query);
+  const payments = (memory.payments || []).filter((item) => item.status === 'paid' && inRange(item.paidAt || item.createdAt, start, end));
+  const enrollments = memory.enrollments.filter((item) => inRange(item.createdAt || item.enrolledAt, start, end));
+  const cancelled = memory.enrollments.filter((item) => item.status === 'cancelled' && inRange(item.cancelledAt, start, end));
+  const classes = memory.classes.filter((item) => inRange(item.startDate, start, end));
+  const revenueByDay = new Map();
+  const enrollmentByDay = new Map();
+
+  payments.forEach((item) => {
+    const key = new Date(item.paidAt || item.createdAt).toISOString().slice(0, 10);
+    const current = revenueByDay.get(key) || { date: key, revenue: 0, transactions: 0 };
+    current.revenue += Number(item.amount || 0);
+    current.transactions += 1;
+    revenueByDay.set(key, current);
+  });
+
+  enrollments.forEach((item) => {
+    const key = new Date(item.createdAt || item.enrolledAt).toISOString().slice(0, 10);
+    enrollmentByDay.set(key, { date: key, enrollments: (enrollmentByDay.get(key)?.enrollments || 0) + 1 });
+  });
+
+  res.json({
+    range: { startDate: start.toISOString(), endDate: end.toISOString() },
+    summary: {
+      revenueTotal: payments.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+      paidTransactions: payments.length,
+      newEnrollments: enrollments.length,
+      cancelledEnrollments: cancelled.length,
+      activeStudents: new Set(memory.enrollments.filter((item) => item.status !== 'cancelled').map((item) => item.user)).size,
+      classesStarted: classes.length,
+      attendanceMarked: 0,
+      presentRate: null
+    },
+    revenueByDay: [...revenueByDay.values()].sort((a, b) => a.date.localeCompare(b.date)),
+    enrollmentByDay: [...enrollmentByDay.values()].sort((a, b) => a.date.localeCompare(b.date)),
+    classBreakdown: classes.map((item) => {
+      const activeEnrollments = memory.enrollments.filter((enrollment) => enrollment.class === item._id && enrollment.status !== 'cancelled').length;
+      const classPayments = payments.filter((payment) => payment.class === item._id);
+      return {
+        _id: item._id,
+        title: item.title,
+        coachName: item.coachName,
+        level: item.level,
+        startDate: item.startDate,
+        maxStudents: item.maxStudents,
+        activeEnrollments,
+        fillRate: item.maxStudents > 0 ? Math.round((activeEnrollments / item.maxStudents) * 100) : null,
+        revenue: classPayments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0),
+        paidTransactions: classPayments.length,
+        presentRate: null
+      };
+    })
+  });
+});
+
+router.get('/admin/audit-logs', memoryProtect, memoryAdminOnly, (req, res) => {
+  res.json([]);
+});
+
+router.get('/admin/transfers', memoryProtect, memoryAdminOnly, (req, res) => {
+  res.json([]);
+});
+
+router.get('/coaches', memoryProtect, memoryAdminOnly, (req, res) => {
+  const search = String(req.query.search || '').trim().toLowerCase();
+  const coaches = memory.coaches
+    .filter((item) => {
+      if (!search) return true;
+      return [item.name, item.email, item.bio].some((value) => String(value || '').toLowerCase().includes(search));
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+  res.json(coaches);
+});
+
+router.post('/coaches', memoryProtect, memoryAdminOnly, (req, res, next) => {
+  const payload = normalizeCoachPayload(req.body);
+  if (!payload.name) {
+    next(new ApiError(400, 'Coach name is required', 'VALIDATION_ERROR', ['name']));
+    return;
+  }
+
+  const coach = {
+    _id: newId('coach'),
+    ...payload,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  memory.coaches.push(coach);
+  res.status(201).json(coach);
+});
+
+router.patch('/coaches/:id', memoryProtect, memoryAdminOnly, (req, res, next) => {
+  const coach = memory.coaches.find((item) => item._id === req.params.id);
+  if (!coach) {
+    next(new ApiError(404, 'Coach not found', 'COACH_NOT_FOUND'));
+    return;
+  }
+
+  const payload = normalizeCoachPayload(req.body);
+  if (!payload.name) {
+    next(new ApiError(400, 'Coach name is required', 'VALIDATION_ERROR', ['name']));
+    return;
+  }
+
+  Object.assign(coach, payload, { updatedAt: new Date().toISOString() });
+  res.json(coach);
+});
+
 router.get('/classes', validateClassQuery, memoryOptionalAuth, (req, res) => {
-  const { search = '', level = '', page = 1, limit = 9 } = req.query;
+  const {
+    search = '',
+    level = '',
+    page = 1,
+    limit = 9,
+    minPrice,
+    maxPrice,
+    startDateFrom,
+    startDateTo,
+    coach = '',
+    location = '',
+    sortBy = 'startDate',
+    sortOrder = 'asc'
+  } = req.query;
   const pageNumber = Math.max(Number(page), 1);
   const limitNumber = Math.min(Math.max(Number(limit), 1), 50);
   const includePast = req.query.includePast === 'true' && req.user?.role === 'admin';
   const term = search.trim().toLowerCase();
+  const coachTerm = String(coach).trim().toLowerCase();
+  const locationTerm = String(location).trim().toLowerCase();
+  const from = startDateFrom ? new Date(startDateFrom) : null;
+  const to = startDateTo ? new Date(startDateTo) : null;
+  if (to && !Number.isNaN(to.getTime())) to.setHours(23, 59, 59, 999);
+  const direction = sortOrder === 'desc' ? -1 : 1;
 
   let classes = memory.classes
     .filter((item) => includePast || new Date(item.startDate) >= new Date())
     .filter((item) => !level || item.level === level)
+    .filter((item) => minPrice === undefined || Number(item.price || 0) >= Number(minPrice))
+    .filter((item) => maxPrice === undefined || Number(item.price || 0) <= Number(maxPrice))
+    .filter((item) => !from || Number.isNaN(from.getTime()) || new Date(item.startDate) >= from)
+    .filter((item) => !to || Number.isNaN(to.getTime()) || new Date(item.startDate) <= to)
+    .filter((item) => !coachTerm || String(item.coachName || '').toLowerCase().includes(coachTerm))
+    .filter((item) => !locationTerm || String(item.location || '').toLowerCase().includes(locationTerm))
     .filter((item) => {
       if (!term) return true;
-      return [item.title, item.coachName, item.description].some((value) => value.toLowerCase().includes(term));
+      return [item.title, item.coachName, item.description, item.location].some((value) => String(value || '').toLowerCase().includes(term));
     })
-    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+    .sort((a, b) => {
+      if (sortBy === 'price') return (Number(a.price || 0) - Number(b.price || 0)) * direction;
+      if (sortBy === 'popularity') {
+        const aCount = memory.enrollments.filter((item) => item.class === a._id && item.status !== 'cancelled').length;
+        const bCount = memory.enrollments.filter((item) => item.class === b._id && item.status !== 'cancelled').length;
+        return (bCount - aCount) * direction;
+      }
+      return (new Date(a.startDate) - new Date(b.startDate)) * direction;
+    });
 
   const total = classes.length;
   classes = classes.slice((pageNumber - 1) * limitNumber, pageNumber * limitNumber);
@@ -111,6 +307,12 @@ router.get('/classes', validateClassQuery, memoryOptionalAuth, (req, res) => {
 });
 
 router.post('/classes', memoryProtect, memoryAdminOnly, validateClassBody(), (req, res) => {
+  const overlap = memory.classes.find((item) => item.location.toLowerCase() === req.body.location.toLowerCase() && new Date(item.startDate).getTime() === new Date(req.body.startDate).getTime());
+  if (overlap) {
+    res.status(409).json({ message: 'Another class already uses this location at the same time.', code: 'CLASS_SCHEDULE_CONFLICT', fields: ['startDate', 'location'] });
+    return;
+  }
+
   const item = {
     _id: newId('class'),
     title: req.body.title,
@@ -121,6 +323,9 @@ router.post('/classes', memoryProtect, memoryAdminOnly, validateClassBody(), (re
     schedule: req.body.schedule,
     location: req.body.location,
     maxStudents: Number(req.body.maxStudents),
+    price: Number(req.body.price ?? process.env.DEFAULT_CLASS_PRICE ?? 500000),
+    imageUrl: req.body.imageUrl || '',
+    coach: req.body.coach || null,
     createdBy: req.user._id,
     updatedAt: new Date().toISOString()
   };
@@ -143,6 +348,36 @@ router.get('/classes/my/enrollments', memoryProtect, (req, res) => {
     .filter((item) => item.class);
 
   res.json(enrollments);
+});
+
+router.get('/classes/my/bookmarks', memoryProtect, (req, res) => {
+  const classes = memory.bookmarks
+    .filter((item) => item.user === req.user._id)
+    .map((item) => memory.classes.find((classItem) => classItem._id === item.class))
+    .filter(Boolean)
+    .map((item) => classPayload(item, req.user._id));
+
+  res.json(classes);
+});
+
+router.get('/classes/my/waitlist', memoryProtect, (req, res) => {
+  const waiting = memory.waitlist
+    .filter((item) => item.user === req.user._id && item.status === 'waiting')
+    .sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
+
+  res.json(waiting.map((item) => {
+    const klass = memory.classes.find((classItem) => classItem._id === item.class);
+    const position = memory.waitlist
+      .filter((entry) => entry.class === item.class && entry.status === 'waiting' && new Date(entry.joinedAt) <= new Date(item.joinedAt))
+      .length;
+
+    return {
+      _id: item._id,
+      joinedAt: item.joinedAt,
+      position,
+      class: klass ? classPayload(klass, req.user._id) : null
+    };
+  }).filter((item) => item.class));
 });
 
 router.get('/classes/:id', memoryOptionalAuth, (req, res, next) => {
@@ -172,11 +407,20 @@ router.patch('/classes/:id', memoryProtect, memoryAdminOnly, validateClassBody({
     return;
   }
 
-  ['title', 'description', 'coachName', 'level', 'schedule', 'location'].forEach((field) => {
+  const nextStartDate = req.body.startDate !== undefined ? new Date(req.body.startDate) : new Date(item.startDate);
+  const nextLocation = req.body.location !== undefined ? req.body.location : item.location;
+  const overlap = memory.classes.find((classItem) => classItem._id !== item._id && classItem.location.toLowerCase() === nextLocation.toLowerCase() && new Date(classItem.startDate).getTime() === nextStartDate.getTime());
+  if (overlap) {
+    next(new ApiError(409, 'Another class already uses this location at the same time.', 'CLASS_SCHEDULE_CONFLICT', ['startDate', 'location']));
+    return;
+  }
+
+  ['title', 'description', 'coachName', 'level', 'schedule', 'location', 'imageUrl', 'coach'].forEach((field) => {
     if (req.body[field] !== undefined) item[field] = req.body[field];
   });
   if (req.body.startDate !== undefined) item.startDate = new Date(req.body.startDate).toISOString();
   if (req.body.maxStudents !== undefined) item.maxStudents = Number(req.body.maxStudents);
+  if (req.body.price !== undefined) item.price = Number(req.body.price);
   item.updatedAt = new Date().toISOString();
 
   res.json(classPayload(item, req.user._id));
@@ -251,6 +495,128 @@ router.delete('/classes/:id/enroll', memoryProtect, (req, res, next) => {
   enrollment.status = 'cancelled';
   enrollment.cancelledAt = new Date().toISOString();
   res.json({ message: 'Enrollment cancelled' });
+});
+
+router.post('/classes/:id/waitlist', memoryProtect, (req, res, next) => {
+  const klass = memory.classes.find((item) => item._id === req.params.id);
+  if (!klass) {
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
+    return;
+  }
+
+  const existingEnrollment = memory.enrollments.find((item) => item.class === req.params.id && item.user === req.user._id && item.status !== 'cancelled');
+  if (existingEnrollment) {
+    next(new ApiError(409, 'You are already enrolled in this class', 'ALREADY_ENROLLED'));
+    return;
+  }
+
+  let entry = memory.waitlist.find((item) => item.class === req.params.id && item.user === req.user._id);
+  if (entry) {
+    entry.status = 'waiting';
+    entry.joinedAt = new Date().toISOString();
+  } else {
+    entry = {
+      _id: newId('wait'),
+      class: req.params.id,
+      user: req.user._id,
+      status: 'waiting',
+      joinedAt: new Date().toISOString(),
+      promotedAt: null
+    };
+    memory.waitlist.push(entry);
+  }
+
+  const position = memory.waitlist
+    .filter((item) => item.class === req.params.id && item.status === 'waiting' && new Date(item.joinedAt) <= new Date(entry.joinedAt))
+    .length;
+
+  res.status(201).json({ ...entry, position });
+});
+
+router.delete('/classes/:id/waitlist', memoryProtect, (req, res) => {
+  const entry = memory.waitlist.find((item) => item.class === req.params.id && item.user === req.user._id && item.status === 'waiting');
+  if (entry) entry.status = 'cancelled';
+  res.json({ message: 'Left waitlist' });
+});
+
+router.get('/classes/:id/waitlist', memoryProtect, memoryAdminOnly, (req, res) => {
+  const waiting = memory.waitlist
+    .filter((item) => item.class === req.params.id && item.status === 'waiting')
+    .sort((a, b) => new Date(a.joinedAt) - new Date(b.joinedAt));
+
+  res.json(waiting.map((item, index) => ({
+    ...item,
+    position: index + 1,
+    user: publicUser(memory.users.find((user) => user._id === item.user))
+  })).filter((item) => item.user));
+});
+
+router.post('/classes/:id/bookmark', memoryProtect, (req, res, next) => {
+  const klass = memory.classes.find((item) => item._id === req.params.id);
+  if (!klass) {
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
+    return;
+  }
+
+  const index = memory.bookmarks.findIndex((item) => item.class === req.params.id && item.user === req.user._id);
+  if (index >= 0) {
+    memory.bookmarks.splice(index, 1);
+    res.json({ bookmarked: false });
+    return;
+  }
+
+  memory.bookmarks.push({ _id: newId('bookmark'), class: req.params.id, user: req.user._id, createdAt: new Date().toISOString() });
+  res.status(201).json({ bookmarked: true });
+});
+
+router.get('/classes/:id/attendance', memoryProtect, memoryAdminOnly, (req, res, next) => {
+  const klass = memory.classes.find((item) => item._id === req.params.id);
+  if (!klass) {
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
+    return;
+  }
+
+  const students = memory.enrollments
+    .filter((enrollment) => enrollment.class === klass._id && enrollment.status !== 'cancelled')
+    .map((enrollment) => ({
+      id: enrollment._id,
+      enrolledAt: enrollment.enrolledAt,
+      user: publicUser(memory.users.find((user) => user._id === enrollment.user))
+    }))
+    .filter((enrollment) => enrollment.user);
+
+  res.json({
+    students,
+    attendance: memory.attendance.filter((item) => item.class === req.params.id)
+  });
+});
+
+router.put('/classes/:id/attendance', memoryProtect, memoryAdminOnly, (req, res) => {
+  const date = req.body.date ? new Date(req.body.date).toISOString() : new Date().toISOString();
+  const records = Array.isArray(req.body.records) ? req.body.records : [];
+
+  const saved = records.map((record) => {
+    const existing = memory.attendance.find((item) => item.class === req.params.id && item.user === record.user && new Date(item.date).toDateString() === new Date(date).toDateString());
+    if (existing) {
+      existing.status = record.status;
+      existing.date = date;
+      return existing;
+    }
+
+    const item = {
+      _id: newId('attendance'),
+      class: req.params.id,
+      user: record.user,
+      date,
+      status: record.status,
+      markedBy: req.user._id,
+      createdAt: new Date().toISOString()
+    };
+    memory.attendance.push(item);
+    return item;
+  });
+
+  res.json(saved);
 });
 
 router.get('/classes/:id/students', memoryProtect, memoryAdminOnly, (req, res, next) => {
