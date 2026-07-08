@@ -541,11 +541,23 @@ export const adminMetrics = asyncHandler(async (req, res) => {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const monthlyStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-  const [revenue, newStudents, upcomingClasses, classes, enrollmentCounts] = await Promise.all([
+  const [revenue, monthlyRevenue, newStudents, upcomingClasses, classes, enrollmentCounts] = await Promise.all([
     PaymentTransaction.aggregate([
       { $match: { status: 'paid', paidAt: { $gte: monthStart, $lt: nextMonth } } },
       { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } }
+    ]),
+    PaymentTransaction.aggregate([
+      { $match: { status: 'paid', paidAt: { $gte: monthlyStart, $lt: nextMonth } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m', date: '$paidAt' } },
+          revenue: { $sum: '$amount' },
+          transactions: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
     ]),
     mongoose.model('User').countDocuments({ role: 'user', createdAt: { $gte: monthStart, $lt: nextMonth } }),
     ClassModel.find({ startDate: { $gte: now } }).sort({ startDate: 1 }).limit(5),
@@ -562,6 +574,11 @@ export const adminMetrics = asyncHandler(async (req, res) => {
 
   res.json({
     monthRevenue: revenue[0]?.total || 0,
+    monthlyRevenue: monthlyRevenue.map((item) => ({
+      month: item._id,
+      revenue: item.revenue,
+      transactions: item.transactions
+    })),
     paidTransactions: revenue[0]?.count || 0,
     newStudents,
     upcomingClasses,

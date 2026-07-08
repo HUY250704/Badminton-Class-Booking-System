@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import Coach from '../models/Coach.js';
+import ClassModel from '../models/Class.js';
 import { ApiError } from '../utils/ApiError.js';
 import { writeAuditLog } from '../utils/audit.js';
 
@@ -32,8 +33,27 @@ export const listCoaches = asyncHandler(async (req, res) => {
       }
     : {};
 
-  const coaches = await Coach.find(filter).sort({ name: 1 }).limit(100);
-  res.json(coaches);
+  const coaches = await Coach.find(filter).sort({ name: 1 }).limit(100).lean();
+  const coachIds = coaches.map((coach) => coach._id);
+  const upcomingClasses = coachIds.length
+    ? await ClassModel.find({ coach: { $in: coachIds }, startDate: { $gte: new Date() } })
+      .select('title startDate schedule location level coach')
+      .sort({ startDate: 1 })
+      .lean()
+    : [];
+  const scheduleMap = new Map();
+  upcomingClasses.forEach((classItem) => {
+    const key = classItem.coach?.toString();
+    if (!key) return;
+    const list = scheduleMap.get(key) || [];
+    if (list.length < 5) list.push(classItem);
+    scheduleMap.set(key, list);
+  });
+
+  res.json(coaches.map((coach) => ({
+    ...coach,
+    teachingSchedule: scheduleMap.get(coach._id.toString()) || []
+  })));
 });
 
 export const createCoach = asyncHandler(async (req, res) => {

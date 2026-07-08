@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, BarChart3, CalendarDays, CheckCircle2, Download, Edit, Eye, Plus, Search, Trash2, UsersRound, XCircle } from 'lucide-react'
+import { Activity, BarChart3, CalendarDays, CheckCircle2, Download, Edit, Eye, Plus, Search, Trash2, UserRound, UsersRound, XCircle } from 'lucide-react'
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
 import { capacityPercent, formatDateTime, levelLabel } from '../utils/classUi'
@@ -95,6 +95,11 @@ export default function AdminDashboard() {
     queryFn: () => api.get('/admin/audit-logs').then((r) => r.data)
   })
 
+  const coaches = useQuery({
+    queryKey: ['coaches'],
+    queryFn: () => api.get('/coaches').then((r) => r.data)
+  })
+
   const reports = useQuery({
     queryKey: ['admin', 'reports', reportRange],
     queryFn: () => api.get('/admin/reports', { params: reportRange }).then((r) => r.data)
@@ -125,6 +130,9 @@ export default function AdminDashboard() {
   const pastCount = Math.max(classes.length - upcomingCount, 0)
   const reportSummary = reports.data?.summary || {}
   const maxDailyRevenue = Math.max(...(reports.data?.revenueByDay || []).map((item) => item.revenue), 0)
+  const monthlyRevenue = metrics.data?.monthlyRevenue || []
+  const maxMonthlyRevenue = Math.max(...monthlyRevenue.map((item) => item.revenue), 0)
+  const upcomingClasses = metrics.data?.upcomingClasses || []
 
   return (
     <div className="admin-layout">
@@ -149,6 +157,46 @@ export default function AdminDashboard() {
         <div className="stat-card"><span>New Students</span><strong>{metrics.data?.newStudents ?? 0}</strong></div>
         <div className="stat-card"><span>Overall Fill</span><strong>{metrics.data?.fillRate == null ? 'N/A' : `${metrics.data.fillRate}%`}</strong></div>
       </div>
+
+      <section className="admin-split">
+        <div className="report-chart">
+          <div className="panel-header compact">
+            <BarChart3 size={18} />
+            <h2>Monthly Revenue</h2>
+          </div>
+          <div className="chart-bars">
+            {monthlyRevenue.map((item) => (
+              <div className="chart-row" key={item.month}>
+                <span>{item.month.slice(5)}</span>
+                <div><strong style={{ width: `${maxMonthlyRevenue > 0 ? Math.max((item.revenue / maxMonthlyRevenue) * 100, 4) : 0}%` }} /></div>
+                <em>{Number(item.revenue).toLocaleString('vi-VN')}</em>
+              </div>
+            ))}
+            {!metrics.isLoading && monthlyRevenue.length === 0 && <p className="muted">No paid revenue in the last six months.</p>}
+          </div>
+        </div>
+
+        <div className="page-card admin-panel">
+          <div className="panel-header">
+            <span className="eyebrow">Opening soon</span>
+            <h2>Upcoming Classes</h2>
+          </div>
+          <div className="compact-list">
+            {upcomingClasses.map((item) => (
+              <article className="compact-row" key={item._id}>
+                <CalendarDays size={18} />
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{item.coachName} - {formatDateTime(item.startDate)}</span>
+                  <span>{item.location}</span>
+                </div>
+                <Link className="button button-secondary button-small" to={`/classes/${item._id}`}>Open</Link>
+              </article>
+            ))}
+            {!metrics.isLoading && upcomingClasses.length === 0 && <p className="muted">No upcoming classes scheduled.</p>}
+          </div>
+        </div>
+      </section>
 
       <section className="report-panel">
         <div className="panel-header report-header">
@@ -338,6 +386,30 @@ export default function AdminDashboard() {
       )}
 
       {remove.isError && <div className="alert alert-error">{getApiErrorMessage(remove.error, 'Could not delete class')}</div>}
+
+      <section className="page-card admin-panel">
+        <div className="panel-header">
+          <span className="eyebrow">Coach management</span>
+          <h2>Coach Directory</h2>
+        </div>
+        <div className="compact-list">
+          {(coaches.data || []).slice(0, 6).map((coach) => (
+            <article className="compact-row" key={coach._id}>
+              <div className="compact-avatar">
+                {coach.photoUrl ? <img src={coach.photoUrl} alt="" /> : <UserRound size={20} />}
+              </div>
+              <div>
+                <strong>{coach.name}</strong>
+                <span>{coach.bio || 'No bio yet.'}</span>
+                <span>{(coach.specialties || []).join(', ') || 'No specialties listed.'}</span>
+                <span>{coach.teachingSchedule?.[0] ? `Next: ${coach.teachingSchedule[0].title} - ${formatDateTime(coach.teachingSchedule[0].startDate)}` : 'No upcoming teaching schedule.'}</span>
+              </div>
+              <Link className="button button-secondary button-small" to="/admin/create">Assign</Link>
+            </article>
+          ))}
+          {!coaches.isLoading && (coaches.data || []).length === 0 && <p className="muted">No coach profiles yet. Create one from the class editor.</p>}
+        </div>
+      </section>
 
       <section className="admin-split">
         <div className="page-card admin-panel">
