@@ -47,7 +47,17 @@ export const uploadImage = asyncHandler(async (req, res) => {
   const folderName = ['avatars', 'classes', 'coaches'].includes(req.body.folder)
     ? req.body.folder
     : 'uploads';
-  const result = await uploadBuffer(req.file.buffer, `lin-badminton/${folderName}`);
+  let result;
+  try {
+    result = await uploadBuffer(req.file.buffer, `lin-badminton/${folderName}`);
+  } catch (error) {
+    const message = String(error?.message || '');
+    if (/invalid api_key/i.test(message) || /unknown api_key/i.test(message)) {
+      throw new ApiError(502, 'Cloudinary credentials are invalid. Check CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.', 'CLOUDINARY_INVALID_CREDENTIALS');
+    }
+
+    throw new ApiError(502, 'Could not upload image to Cloudinary. Please try again later.', 'CLOUDINARY_UPLOAD_FAILED');
+  }
 
   res.status(201).json({
     url: result.secure_url,

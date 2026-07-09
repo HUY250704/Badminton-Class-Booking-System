@@ -17,6 +17,51 @@ const translatedLevelLabels = {
   en: { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' }
 }
 
+const sampleClassTranslations = {
+  'Beginner Footwork Foundations': {
+    vi: {
+      title: 'Nền tảng di chuyển cơ bản',
+      description: 'Học cách cầm vợt, tư thế, nhịp split-step và các mẫu di chuyển an toàn cho những pha cầu đầu tiên.',
+      schedule: 'Thứ Ba & Thứ Năm, 18:00 - 19:30',
+      location: 'Sân NAPA 1'
+    },
+    en: {
+      title: 'Beginner Footwork Foundations',
+      description: 'Learn grip, stance, split-step timing, and safe movement patterns for your first rallies.',
+      schedule: 'Tue & Thu, 18:00 - 19:30',
+      location: 'NAPA Court 1'
+    }
+  },
+  'Intermediate Doubles Rotation': {
+    vi: {
+      title: 'Luân chuyển đôi trung cấp',
+      description: 'Rèn đội hình sắc bén hơn, chuyển đổi trước-sau và phòng thủ áp lực cho đánh đôi câu lạc bộ.',
+      schedule: 'Thứ Hai & Thứ Tư, 19:30 - 21:00',
+      location: 'Sân NAPA 2'
+    },
+    en: {
+      title: 'Intermediate Doubles Rotation',
+      description: 'Build sharper formations, front-back transitions, and pressure defense for club doubles.',
+      schedule: 'Mon & Wed, 19:30 - 21:00',
+      location: 'NAPA Court 2'
+    }
+  },
+  'Advanced Match Tempo': {
+    vi: {
+      title: 'Nhịp độ thi đấu nâng cao',
+      description: 'Bài tập cường độ cao cho đánh lừa, tốc độ hồi vị, biến hóa giao cầu và chọn chiến thuật cú đánh.',
+      schedule: 'Thứ Bảy, 08:00 - 10:00',
+      location: 'Nhà thi đấu hiệu suất NAPA'
+    },
+    en: {
+      title: 'Advanced Match Tempo',
+      description: 'High-intensity drills for deception, recovery speed, serve variation, and tactical shot selection.',
+      schedule: 'Sat, 08:00 - 10:00',
+      location: 'NAPA Performance Hall'
+    }
+  }
+}
+
 function getLocale() {
   return getLanguage() === 'en' ? 'en-US' : 'vi-VN'
 }
@@ -27,6 +72,12 @@ export function levelLabel(level) {
 
 export function classImage(level) {
   return levelImages[level] || levelImages.beginner
+}
+
+export function localizedClass(item = {}, language = getLanguage()) {
+  const translated = sampleClassTranslations[item.title]?.[language]
+  if (!translated) return item
+  return { ...item, ...translated }
 }
 
 export function capacityPercent(currentStudents = 0, maxStudents = 1) {

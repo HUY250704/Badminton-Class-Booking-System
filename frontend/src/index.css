@@ -1147,6 +1147,97 @@ img { display: block; max-width: 100%; }
   gap: 18px;
 }
 
+.inline-link {
+  color: var(--primary-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.coach-hero {
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr);
+  align-items: stretch;
+}
+
+.coach-photo {
+  min-height: 420px;
+  background: var(--surface-mid);
+}
+
+.coach-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.coach-summary {
+  padding: 36px;
+  display: grid;
+  align-content: center;
+  gap: 16px;
+}
+
+.coach-summary h1 {
+  margin: 0;
+  font-size: clamp(38px, 7vw, 72px);
+  line-height: 0.98;
+}
+
+.coach-summary > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1.45;
+}
+
+.coach-bio {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.coach-stats {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.coach-directory-card .class-body {
+  gap: 16px;
+}
+
+.coach-directory-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 360px));
+  justify-content: start;
+}
+
+.coach-directory-card {
+  min-width: 0;
+}
+
+.coach-card-image {
+  height: 210px;
+}
+
+.coach-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.coach-edit-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.coach-directory-card .coach-edit-form {
+  grid-template-columns: 1fr;
+}
+
+.coach-edit-wide {
+  grid-column: 1 / -1;
+}
+
 .profile-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1356,6 +1447,75 @@ img { display: block; max-width: 100%; }
   background: var(--surface);
 }
 
+.monthly-revenue-chart {
+  width: 100%;
+  height: 260px;
+  margin-top: 18px;
+}
+
+.chart-expand-trigger {
+  border-radius: 14px;
+  cursor: zoom-in;
+}
+
+.chart-expand-trigger:focus-visible {
+  outline: 3px solid rgba(163, 230, 53, 0.5);
+  outline-offset: 4px;
+}
+
+.chart-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(8px);
+}
+
+.chart-modal {
+  width: min(1080px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+  background: var(--surface);
+}
+
+.chart-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.chart-modal .monthly-revenue-chart {
+  height: min(560px, calc(100vh - 190px));
+  margin-top: 0;
+}
+
+.chart-tooltip {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  color: var(--text);
+  background: var(--surface-card-strong);
+  box-shadow: var(--shadow-card);
+}
+
+.chart-tooltip strong {
+  font-size: 13px;
+}
+
+.chart-tooltip span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .panel-header.compact {
   display: flex;
   align-items: center;
@@ -1515,6 +1675,9 @@ img { display: block; max-width: 100%; }
   .student-row { grid-template-columns: 52px 1fr; }
   .student-date, .attendance-actions { grid-column: 2; justify-content: flex-start; }
   .profile-hero { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+  .coach-hero, .coach-stats { grid-template-columns: 1fr; }
+  .coach-photo { min-height: 340px; }
+  .coach-edit-form { grid-template-columns: 1fr; }
   .profile-actions { display: grid; }
   .profile-actions .button { width: 100%; }
   .profile-form { grid-template-columns: 1fr; }
@@ -1524,6 +1687,9 @@ img { display: block; max-width: 100%; }
   .report-header { display: grid; }
   .transfer-reason { grid-column: auto; }
   .transfer-form .button { width: 100%; }
+  .chart-modal-backdrop { padding: 12px; }
+  .chart-modal { padding: 18px; }
+  .chart-modal .monthly-revenue-chart { height: min(460px, calc(100vh - 170px)); }
 }
 
 @media (max-width: 540px) {

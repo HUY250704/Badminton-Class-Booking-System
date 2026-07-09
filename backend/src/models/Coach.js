@@ -13,6 +13,26 @@ const coachSchema = new mongoose.Schema(
       lowercase: true,
       default: ''
     },
+    title: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    phone: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    birthday: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    gender: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     bio: {
       type: String,
       trim: true,
@@ -26,6 +46,15 @@ const coachSchema = new mongoose.Schema(
     specialties: {
       type: [String],
       default: []
+    },
+    certificates: {
+      type: [String],
+      default: []
+    },
+    yearsExperience: {
+      type: Number,
+      min: 0,
+      default: 0
     }
   },
   { timestamps: true }

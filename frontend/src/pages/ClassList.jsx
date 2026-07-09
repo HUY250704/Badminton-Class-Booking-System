@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CalendarDays, CreditCard, MapPin, Search, Sparkles, UserRound } from 'lucide-react'
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
-import { capacityPercent, capacityText, classImage, daysUntil, formatDate, formatDateTime, formatTime, levelLabel } from '../utils/classUi'
+import { capacityPercent, capacityText, classImage, daysUntil, formatDate, formatDateTime, formatTime, levelLabel, localizedClass } from '../utils/classUi'
 import { useTranslation } from '../utils/i18n'
 
 function fetchClasses({ queryKey }) {
@@ -51,7 +51,7 @@ export default function ClassList() {
     placeholderData: (previousData) => previousData
   })
 
-  const classes = data?.data || []
+  const classes = (data?.data || []).map((item) => localizedClass(item, language))
   const totalOpenSpots = classes.reduce((sum, item) => sum + Math.max(item.maxStudents - item.currentStudents, 0), 0)
   const nextClass = classes[0]
   const hasActiveSearch = Boolean(searchInput || coachLocationInput)
@@ -64,7 +64,7 @@ export default function ClassList() {
   return (
     <div className="stack">
       <section className="hero-panel">
-        <div className="eyebrow">Performance booking</div>
+        <div className="eyebrow">{t('heroBadge')}</div>
         <h1>{t('heroTitle')}</h1>
         <p>{t('heroDescription')}</p>
 
@@ -80,7 +80,7 @@ export default function ClassList() {
           <div className="search-panel compact">
             <MapPin size={20} />
             <input
-              placeholder={language === 'en' ? 'Search coach or location' : 'Tìm huấn luyện viên hoặc địa điểm'}
+              placeholder={t('searchCoachLocation')}
               value={coachLocationInput}
               onChange={(e) => setCoachLocationInput(e.target.value)}
             />
@@ -88,7 +88,7 @@ export default function ClassList() {
           {hasActiveSearch && (
             <button className="button button-secondary button-small" type="button" onClick={resetSearch}>{t('resetFilters')}</button>
           )}
-          {isFetching && <span className="status-badge">{language === 'en' ? 'Updating...' : 'Đang cập nhật...'}</span>}
+          {isFetching && <span className="status-badge">{t('updating')}</span>}
         </div>
 
         <div className="hero-stats" aria-label="Class highlights">
@@ -102,7 +102,7 @@ export default function ClassList() {
           </div>
           <div>
             <span>{t('nextSession')}</span>
-            <strong>{nextClass ? formatDate(nextClass.startDate) : 'TBD'}</strong>
+            <strong>{nextClass ? formatDate(nextClass.startDate) : t('tbd')}</strong>
           </div>
         </div>
       </section>

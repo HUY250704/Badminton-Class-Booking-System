@@ -13,6 +13,8 @@ import MyEnrollments from './pages/MyEnrollments'
 import Profile from './pages/Profile'
 import BookingSuccess from './pages/BookingSuccess'
 import PaymentHistory from './pages/PaymentHistory'
+import CoachDirectory from './pages/CoachDirectory'
+import CoachProfile from './pages/CoachProfile'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminCreateClass from './pages/AdminCreateClass'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -59,12 +61,14 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/classes" element={<ClassList />} />
+          <Route path="/coaches" element={<CoachDirectory />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/classes/:id" element={<ClassDetail />} />
+          <Route path="/coaches/:id" element={<CoachProfile />} />
           <Route path="/my/enrollments" element={<ProtectedRoute><MyEnrollments /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/booking-success" element={<ProtectedRoute><BookingSuccess /></ProtectedRoute>} />

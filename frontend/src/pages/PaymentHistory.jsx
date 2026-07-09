@@ -4,12 +4,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, CreditCard, FileText, RotateCcw } from 'lucide-react'
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
-import { formatDateTime } from '../utils/classUi'
+import { formatDateTime, localizedClass } from '../utils/classUi'
+import { useTranslation } from '../utils/i18n'
 
 export default function PaymentHistory() {
   const [searchParams] = useSearchParams()
   const pendingId = searchParams.get('pending')
   const qc = useQueryClient()
+  const { language, t } = useTranslation()
 
   const { data = [], isLoading, isError, error } = useQuery({
     queryKey: ['payments', 'my'],
@@ -37,55 +39,55 @@ export default function PaymentHistory() {
   return (
     <div className="stack">
       <section className="section-heading">
-        <span className="eyebrow">Payments</span>
-        <h1>Transaction History</h1>
-        <p>Review class payments and download invoice PDFs after successful payment.</p>
+        <span className="eyebrow">{t('payments')}</span>
+        <h1>{t('paymentsTitle')}</h1>
+        <p>{t('paymentsDescription')}</p>
       </section>
 
       {pendingId && (
         <div className="page-card payment-banner">
           <div>
-            <span className="eyebrow">Sandbox checkout</span>
-            <h2>Complete demo payment</h2>
-            <p className="muted">VNPay credentials are not configured, so this dev checkout can mark the transaction as paid.</p>
+            <span className="eyebrow">{t('sandboxCheckout')}</span>
+            <h2>{t('completeDemoPayment')}</h2>
+            <p className="muted">{t('sandboxHint')}</p>
           </div>
           <button className="button button-primary" disabled={completePayment.isPending} onClick={() => completePayment.mutate(pendingId)}>
-            <CheckCircle2 size={18} /> {completePayment.isPending ? 'Completing...' : 'Mark Paid'}
+            <CheckCircle2 size={18} /> {completePayment.isPending ? t('completing') : t('markPaid')}
           </button>
         </div>
       )}
 
-      {isError && <div className="alert alert-error">{getApiErrorMessage(error, 'Could not load payments')}</div>}
-      {completePayment.isError && <div className="alert alert-error">{getApiErrorMessage(completePayment.error, 'Could not complete payment')}</div>}
-      {completePayment.isSuccess && <div className="alert alert-success">Payment completed and invoice generated.</div>}
+      {isError && <div className="alert alert-error">{getApiErrorMessage(error, t('couldNotLoadPayments'))}</div>}
+      {completePayment.isError && <div className="alert alert-error">{getApiErrorMessage(completePayment.error, t('couldNotCompletePayment'))}</div>}
+      {completePayment.isSuccess && <div className="alert alert-success">{t('paymentCompleted')}</div>}
 
       {data.length === 0 ? (
         <div className="empty-state empty-state-action">
           <CreditCard size={24} />
-          <strong>No transactions yet</strong>
-          <span>Pay for a class with VNPay and your payment history will appear here.</span>
-          <Link className="button button-dark" to="/classes">Browse Classes</Link>
+          <strong>{t('noTransactions')}</strong>
+          <span>{t('paymentEmptyHint')}</span>
+          <Link className="button button-dark" to="/classes">{t('browseClasses')}</Link>
         </div>
       ) : (
         <div className="table-card">
           <table>
             <thead>
               <tr>
-                <th>Class</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Invoice</th>
+                <th>{t('classColumn')}</th>
+                <th>{t('amount')}</th>
+                <th>{t('status')}</th>
+                <th>{t('created')}</th>
+                <th>{t('invoice')}</th>
               </tr>
             </thead>
             <tbody>
               {data.map((item) => (
                 <tr key={item._id}>
                   <td>
-                    <strong>{item.class?.title || 'Deleted class'}</strong>
+                    <strong>{item.class ? localizedClass(item.class, language).title : t('deletedClass')}</strong>
                     <span>{item.providerRef}</span>
                   </td>
-                  <td><strong>{Number(item.amount).toLocaleString('vi-VN')} {item.currency}</strong></td>
+                  <td><strong>{Number(item.amount).toLocaleString(language === 'en' ? 'en-US' : 'vi-VN')} {item.currency}</strong></td>
                   <td><span className={item.status === 'paid' ? 'status-badge success' : 'status-badge'}>{item.status}</span></td>
                   <td><strong>{formatDateTime(item.createdAt)}</strong></td>
                   <td>
@@ -95,10 +97,10 @@ export default function PaymentHistory() {
                       </button>
                     ) : item.status === 'pending' ? (
                       <button className="button button-secondary button-small" disabled={completePayment.isPending} onClick={() => completePayment.mutate(item._id)}>
-                        <RotateCcw size={16} /> Complete
+                        <RotateCcw size={16} /> {t('complete')}
                       </button>
                     ) : (
-                      <span className="muted">N/A</span>
+                      <span className="muted">{t('notAvailable')}</span>
                     )}
                   </td>
                 </tr>

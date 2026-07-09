@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Coach Profile | Lin-Badminton</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+        .header-font {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .accent-bg {
+            background-color: #dcfce7;
+        }
+        .accent-text {
+            color: #166534;
+        }
+        .navy-bg {
+            background-color: #0f172a;
+        }
+        .navy-text {
+            color: #0f172a;
+        }
+        .shadow-soft {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0f172a", // Dark navy/black from ref
+                        secondary: "#dcfce7", // Light green accent
+                        background: "#f9fafb",
+                        surface: "#ffffff"
+                    },
+                    borderRadius: {
+                        'xl': '1rem',
+                        '2xl': '1.5rem'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-primary transition-colors duration-300 pb-24 md:pb-0">
+<!-- Top AppBar Component -->
+<header class="fixed top-0 w-full z-50 bg-white border-b border-gray-100 h-16 flex justify-between items-center px-4 md:px-10">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 flex items-center justify-center">
+<img alt="Logo" class="w-full h-full object-contain" onerror="this.src='https://img.icons8.com/ios-filled/50/0f172a/badminton.png'" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7G9zYJ5_p7X5v1-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y_Y-Y"/>
+</div>
+<span class="font-bold text-lg header-font tracking-tight">Lin-Badminton</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-gray-100 transition-colors" id="theme-toggle">
+<span class="material-symbols-outlined text-gray-600">dark_mode</span>
+</button>
+<button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+<span class="material-symbols-outlined text-gray-600">logout</span>
+</button>
+</div>
+</header>
+<main class="pt-20 max-w-5xl mx-auto px-4 md:px-10 space-y-8 pb-10">
+<!-- Back Button -->
+<div class="pt-4">
+<button class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-all shadow-sm">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+            Back to coaches
+        </button>
+</div>
+<!-- Hero Section -->
+<section class="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
+<div class="p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-8">
+<div class="relative w-40 h-40 md:w-48 md:h-48 shrink-0">
+<img alt="Coach Nguyễn Văn B" class="w-full h-full object-cover rounded-2xl shadow-md border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg9zo31UhBQdIfFpUy4fJOHoMwlpN9AL-G1AsNpAFe0Ntp0-2QAZg-Q2Hw0CUG3SAfy6wLdCy84ljxSM7xLWYakWvEaMTWWOLM0P2X056vYLVeY4MjtGokaqejI2uJVASZwOKnfnnJhvJ70aeApqzWssTx5vbKzRyMYypvjlWxf6ib2dZe24UgZZHYEJPOUPrQLp8V4SzH0NxyEbo5HlGef1GxUdC0Fg6eYkzfNfXfDbfB-oxAtFOxujHVXu0E08anyfH0WC4KoiU"/>
+</div>
+<div class="flex-grow text-center md:text-left space-y-4">
+<div class="space-y-1">
+<h2 class="text-3xl md:text-4xl font-bold header-font">Coach Nguyễn Văn B</h2>
+<p class="text-gray-500 font-medium">Senior Badminton Coach | Huấn luyện viên Cấp cao</p>
+</div>
+<div class="flex flex-wrap justify-center md:justify-start gap-2">
+<span class="px-3 py-1 accent-bg accent-text rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                        Verified Coach
+                    </span>
+<span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg font-bold text-xs uppercase tracking-wider">
+                        Elite Level
+                    </span>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-4 max-w-sm mx-auto md:mx-0">
+<div class="bg-gray-50 p-4 rounded-xl">
+<p class="text-2xl font-bold header-font">10+</p>
+<p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Years Experience</p>
+</div>
+<div class="bg-gray-50 p-4 rounded-xl">
+<p class="text-2xl font-bold header-font">500+</p>
+<p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Total Students</p>
+</div>
+</div>
+</div>
+<div class="shrink-0 w-full md:w-auto">
+<button class="w-full md:w-auto px-8 py-4 navy-bg text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-lg">
+                    Book Appointment
+                </button>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Details Column -->
+<div class="space-y-8">
+<!-- Personal Info -->
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
+<h3 class="font-bold text-lg mb-6 header-font flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-400">info</span>
+                    Personal Info
+                </h3>
+<div class="space-y-4 text-sm">
+<div class="flex justify-between border-b border-gray-50 pb-3">
+<span class="text-gray-500">Birthday / Ngày sinh</span>
+<span class="font-semibold">12/08/1990</span>
+</div>
+<div class="flex justify-between border-b border-gray-50 pb-3">
+<span class="text-gray-500">Gender / Giới tính</span>
+<span class="font-semibold">Male / Nam</span>
+</div>
+<div class="flex justify-between border-b border-gray-50 pb-3">
+<span class="text-gray-500">Email</span>
+<span class="font-semibold text-blue-600">nguyen.van.b@procourt.vn</span>
+</div>
+<div class="flex justify-between pb-1">
+<span class="text-gray-500">Phone / SĐT</span>
+<span class="font-semibold">+84 901 234 567</span>
+</div>
+</div>
+</div>
+<!-- Achievements -->
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
+<h3 class="font-bold text-lg mb-6 header-font flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-400">workspace_premium</span>
+                    Certificates
+                </h3>
+<ul class="space-y-4">
+<li class="flex gap-4">
+<div class="w-8 h-8 rounded-lg accent-bg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-sm accent-text">school</span>
+</div>
+<div>
+<p class="font-bold text-sm">BWF Level 2 Certificate</p>
+<p class="text-xs text-gray-500 mt-0.5">Badminton World Federation</p>
+</div>
+</li>
+<li class="flex gap-4">
+<div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-sm text-orange-600">emoji_events</span>
+</div>
+<div>
+<p class="font-bold text-sm">2012 Youth Champion</p>
+<p class="text-xs text-gray-500 mt-0.5">Men's Singles Gold</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<!-- Main Column -->
+<div class="md:col-span-2 space-y-8">
+<!-- Classes -->
+<div>
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-bold text-xl header-font">Ongoing Classes</h3>
+<button class="text-sm font-bold text-blue-600 hover:underline">View all</button>
+</div>
+<div class="space-y-4">
+<!-- Class Card 1 -->
+<div class="bg-white p-4 rounded-2xl shadow-soft border border-gray-100 flex gap-4 hover:border-blue-200 transition-all group">
+<div class="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-xl overflow-hidden relative">
+<img alt="Class" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzlDfFWUbnCcegKHRQjC8n2v_RfVOcnyIhtyPxbzr2elJTzuS9co-vJJypG91inorExczLvcLfkwhStTI4PIfgBiT7PCen058k5EaG8zUewarC1NkffNs5nV20tJbajAmubPttd-UNPsuOPMNoEPBDVoED9vyQpfZX1588y-w9rjPNtNHUh9c2f27s37sCoqlxsRWaOezaD54oMpAFSoBS1GLznz8c4E5mzN079sFmgP405398uMc3aG8tpMENIKv0vmMBboJehY"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 accent-bg accent-text text-[8px] font-bold rounded uppercase">Advanced</div>
+</div>
+<div class="flex-grow py-1 space-y-2">
+<h4 class="font-bold text-base md:text-lg group-hover:text-blue-600 transition-colors">Elite Footwork Mastery</h4>
+<div class="flex items-center gap-2 text-xs text-gray-500">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>Mon-Wed-Fri 18:00 - 20:00</span>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-bold uppercase text-gray-400">
+<span>Enrollment</span>
+<span>15/20</span>
+</div>
+<div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+<div class="bg-green-500 h-full w-[75%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Class Card 2 -->
+<div class="bg-white p-4 rounded-2xl shadow-soft border border-gray-100 flex gap-4 hover:border-blue-200 transition-all group">
+<div class="w-24 h-24 md:w-32 md:h-32 shrink-0 rounded-xl overflow-hidden relative">
+<img alt="Class" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzTskobTQIgj4aGwhzxTlOHC1zvrz_wID3X5yE8OQReeR3X6LxPZ7t_sGBAM4yJJz8gAfMK-Lpz6PKxiGvBnqRu66pVXtl-oxIKVicgq6GLs7jFsXMf0s8ljNK-kX-z1CghGGd5m0mT0M99RXrcZJxpqmbtz5l02fPWQ8LnN4cesxT4bt65nMJiBib0gDkh8QwyDVarWvZ3tNf45tWXVBpQR-yKD-SOfLBSJ0jSckARossSm6P0F4eIFkxtf0u9eII7LYFBiFiELE"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 bg-orange-50 text-orange-700 text-[8px] font-bold rounded uppercase">Intermediate</div>
+</div>
+<div class="flex-grow py-1 space-y-2">
+<h4 class="font-bold text-base md:text-lg group-hover:text-blue-600 transition-colors">Offensive Smashing Clinic</h4>
+<div class="flex items-center gap-2 text-xs text-gray-500">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>Tue-Thu 19:00 - 21:00</span>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-bold uppercase text-gray-400">
+<span>Enrollment</span>
+<span>18/20</span>
+</div>
+<div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+<div class="bg-orange-500 h-full w-[90%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Reviews -->
+<div class="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
+<h3 class="font-bold text-xl mb-6 header-font">Student Reviews</h3>
+<div class="space-y-6">
+<div class="pb-6 border-b border-gray-50 last:border-0 last:pb-0">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full navy-bg text-white flex items-center justify-center font-bold text-xs">ML</div>
+<div>
+<p class="font-bold text-sm">Minh Long</p>
+<p class="text-[10px] text-gray-400 font-bold uppercase">Advanced Student</p>
+</div>
+</div>
+<div class="flex text-yellow-400">
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<p class="text-sm text-gray-600 leading-relaxed italic">
+                            "Coach B is incredibly detail-oriented. My court movement has improved significantly in just 2 months. Highly recommended for competitive players!"
+                        </p>
+</div>
+<div class="pb-6 border-b border-gray-50 last:border-0 last:pb-0">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full accent-bg accent-text flex items-center justify-center font-bold text-xs">TH</div>
+<div>
+<p class="font-bold text-sm">Thu Hà</p>
+<p class="text-[10px] text-gray-400 font-bold uppercase">Foundation Student</p>
+</div>
+</div>
+<div class="flex text-yellow-400">
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 0;">star</span>
+</div>
+</div>
+<p class="text-sm text-gray-600 leading-relaxed italic">
+                            "Great for beginners. He is patient and explains the mechanics very clearly. The kids love his weekend classes!"
+                        </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-white border-t border-gray-100 flex justify-around items-center h-20 pb-safe shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+<a class="flex flex-col items-center justify-center text-gray-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-bold mt-1 uppercase tracking-tighter">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-400" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-[10px] font-bold mt-1 uppercase tracking-tighter">Schedule</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-[10px] font-bold mt-1 uppercase tracking-tighter">Profile</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-400" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold mt-1 uppercase tracking-tighter">Settings</span>
+</a>
+</nav>
+<script>
+    // Simple theme toggle visual feedback
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.addEventListener('click', () => {
+        const icon = themeToggle.querySelector('span');
+        if (icon.innerText === 'dark_mode') {
+            icon.innerText = 'light_mode';
+            document.documentElement.classList.add('dark');
+        } else {
+            icon.innerText = 'dark_mode';
+            document.documentElement.classList.remove('dark');
+        }
+    });
+</script>
+</body></html>

@@ -11,14 +11,65 @@ function normalizeCoachPayload(body) {
       .split(',')
       .map((item) => item.trim())
       .filter(Boolean);
+  const certificates = Array.isArray(body.certificates)
+    ? body.certificates
+    : String(body.certificates || '')
+      .split('\n')
+      .map((item) => item.trim())
+      .filter(Boolean);
 
   return {
     name: String(body.name || '').trim(),
     email: String(body.email || '').trim().toLowerCase(),
+    title: String(body.title || '').trim(),
+    phone: String(body.phone || '').trim(),
+    birthday: String(body.birthday || '').trim(),
+    gender: String(body.gender || '').trim(),
     bio: String(body.bio || '').trim(),
     photoUrl: String(body.photoUrl || '').trim(),
-    specialties
+    specialties,
+    certificates,
+    yearsExperience: Math.max(Number(body.yearsExperience || 0), 0)
   };
+}
+
+async function attachCoachStats(coaches) {
+  const coachIds = coaches.map((coach) => coach._id);
+  const classQuery = coachIds.length ? { coach: { $in: coachIds } } : null;
+  const [upcomingClasses, allClasses] = classQuery
+    ? await Promise.all([
+      ClassModel.find({ ...classQuery, startDate: { $gte: new Date() } })
+        .select('title startDate schedule location level coach maxStudents')
+        .sort({ startDate: 1 })
+        .lean(),
+      ClassModel.find(classQuery)
+        .select('coach maxStudents')
+        .lean()
+    ])
+    : [[], []];
+  const scheduleMap = new Map();
+  upcomingClasses.forEach((classItem) => {
+    const key = classItem.coach?.toString();
+    if (!key) return;
+    const list = scheduleMap.get(key) || [];
+    if (list.length < 5) list.push(classItem);
+    scheduleMap.set(key, list);
+  });
+  const classCountMap = new Map();
+  const studentCapacityMap = new Map();
+  allClasses.forEach((classItem) => {
+    const key = classItem.coach?.toString();
+    if (!key) return;
+    classCountMap.set(key, (classCountMap.get(key) || 0) + 1);
+    studentCapacityMap.set(key, (studentCapacityMap.get(key) || 0) + Number(classItem.maxStudents || 0));
+  });
+
+  return coaches.map((coach) => ({
+    ...coach,
+    teachingSchedule: scheduleMap.get(coach._id.toString()) || [],
+    classCount: classCountMap.get(coach._id.toString()) || 0,
+    totalStudents: studentCapacityMap.get(coach._id.toString()) || 0
+  }));
 }
 
 export const listCoaches = asyncHandler(async (req, res) => {
@@ -34,26 +85,17 @@ export const listCoaches = asyncHandler(async (req, res) => {
     : {};
 
   const coaches = await Coach.find(filter).sort({ name: 1 }).limit(100).lean();
-  const coachIds = coaches.map((coach) => coach._id);
-  const upcomingClasses = coachIds.length
-    ? await ClassModel.find({ coach: { $in: coachIds }, startDate: { $gte: new Date() } })
-      .select('title startDate schedule location level coach')
-      .sort({ startDate: 1 })
-      .lean()
-    : [];
-  const scheduleMap = new Map();
-  upcomingClasses.forEach((classItem) => {
-    const key = classItem.coach?.toString();
-    if (!key) return;
-    const list = scheduleMap.get(key) || [];
-    if (list.length < 5) list.push(classItem);
-    scheduleMap.set(key, list);
-  });
+  res.json(await attachCoachStats(coaches));
+});
 
-  res.json(coaches.map((coach) => ({
-    ...coach,
-    teachingSchedule: scheduleMap.get(coach._id.toString()) || []
-  })));
+export const getCoachById = asyncHandler(async (req, res) => {
+  const coach = await Coach.findById(req.params.id).lean();
+  if (!coach) {
+    throw new ApiError(404, 'Coach not found', 'COACH_NOT_FOUND');
+  }
+
+  const [payload] = await attachCoachStats([coach]);
+  res.json(payload);
 });
 
 export const createCoach = asyncHandler(async (req, res) => {
@@ -80,6 +122,11 @@ export const updateCoach = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Coach not found', 'COACH_NOT_FOUND');
   }
 
+  const isOwnCoachProfile = req.user?.role === 'coach' && coach.email && coach.email === req.user.email;
+  if (req.user?.role !== 'admin' && !isOwnCoachProfile) {
+    throw new ApiError(403, 'Only admins or the assigned coach can edit this profile.', 'COACH_UPDATE_FORBIDDEN');
+  }
+
   const payload = normalizeCoachPayload(req.body);
   if (!payload.name) {
     throw new ApiError(400, 'Coach name is required', 'VALIDATION_ERROR', ['name']);
@@ -95,5 +142,6 @@ export const updateCoach = asyncHandler(async (req, res) => {
     metadata: { name: coach.name }
   });
 
-  res.json(coach);
+  const [coachWithStats] = await attachCoachStats([coach.toObject()]);
+  res.json(coachWithStats);
 });

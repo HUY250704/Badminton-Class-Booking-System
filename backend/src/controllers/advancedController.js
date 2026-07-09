@@ -87,10 +87,6 @@ export const createPayment = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
-  if (classItem.startDate <= new Date()) {
-    throw new ApiError(400, 'Cannot pay for a class that has already started.', 'CLASS_ALREADY_STARTED');
-  }
-
   const currentStudents = await Enrollment.countDocuments({ class: classItem._id, ...activeEnrollmentFilter });
   if (currentStudents >= classItem.maxStudents) {
     throw new ApiError(409, 'Class is full. Join the waitlist instead.', 'CLASS_FULL');

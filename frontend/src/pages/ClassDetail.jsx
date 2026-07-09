@@ -6,13 +6,15 @@ import api from '../api/axios'
 import { broadcastEnrollmentChange, invalidateEnrollmentQueries } from '../api/enrollmentEvents'
 import { getApiErrorMessage } from '../api/errors'
 import { getUser } from '../hooks/useAuth'
-import { capacityPercent, capacityText, classImage, daysUntil, formatDateTime, formatTime, levelLabel } from '../utils/classUi'
+import { capacityPercent, capacityText, classImage, daysUntil, formatDateTime, formatTime, levelLabel, localizedClass } from '../utils/classUi'
+import { useTranslation } from '../utils/i18n'
 
 export default function ClassDetail() {
   const { id } = useParams()
   const qc = useQueryClient()
   const navigate = useNavigate()
   const user = getUser()
+  const { language, t } = useTranslation()
   const [actionLock, setActionLock] = useState('')
   const [notice, setNotice] = useState('')
   const [reviewText, setReviewText] = useState('')
@@ -44,7 +46,7 @@ export default function ClassDetail() {
     onSuccess: (result) => {
       invalidateEnrollmentQueries(qc, id)
       broadcastEnrollmentChange(id)
-      setNotice(result?.alreadyCancelled ? 'This class was already cancelled earlier.' : 'Enrollment cancelled.')
+      setNotice(result?.alreadyCancelled ? t('alreadyCancelled') : t('enrollmentCancelled'))
     },
     onSettled: () => setActionLock('')
   })
@@ -70,7 +72,7 @@ export default function ClassDetail() {
     mutationFn: () => api.post(`/classes/${id}/waitlist`).then((r) => r.data),
     onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ['class', id] })
-      setNotice(`You joined the waitlist at position ${result.position}.`)
+      setNotice(`${t('joinedWaitlistPosition')} ${result.position}.`)
     }
   })
 
@@ -92,18 +94,20 @@ export default function ClassDetail() {
   })
 
   if (isLoading) return <div className="page-card skeleton-card tall" />
-  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, 'Could not load class')}</div>
-  if (!data) return <div className="alert alert-error">Could not load class details.</div>
+  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, t('couldNotLoadClass'))}</div>
+  if (!data) return <div className="alert alert-error">{t('couldNotLoadClassDetails')}</div>
 
-  const isFull = (data?.currentStudents ?? 0) >= (data?.maxStudents ?? 1)
-  const hasStarted = data?.startDate ? new Date(data.startDate) <= new Date() : false
-  const reviewAvailableAt = data?.startDate ? new Date(new Date(data.startDate).getTime() + 2 * 60 * 60 * 1000) : null
+  const classItem = localizedClass(data, language)
+
+  const isFull = (classItem?.currentStudents ?? 0) >= (classItem?.maxStudents ?? 1)
+  const hasStarted = classItem?.startDate ? new Date(classItem.startDate) <= new Date() : false
+  const reviewAvailableAt = classItem?.startDate ? new Date(new Date(classItem.startDate).getTime() + 2 * 60 * 60 * 1000) : null
   const canReview = Boolean(reviewAvailableAt && reviewAvailableAt <= new Date())
-  const percent = capacityPercent(data?.currentStudents, data?.maxStudents)
+  const percent = capacityPercent(classItem?.currentStudents, classItem?.maxStudents)
   const actionError = enroll.error || cancel.error || remove.error || payment.error || waitlist.error || bookmark.error || review.error
   const isEnrolling = actionLock === 'enroll' || enroll.isPending
   const isCancelling = actionLock === 'cancel' || cancel.isPending
-  const price = Number(data.price ?? 500000).toLocaleString('vi-VN')
+  const price = Number(classItem.price ?? 500000).toLocaleString(language === 'en' ? 'en-US' : 'vi-VN')
 
   function handleEnroll() {
     if (actionLock || enroll.isPending || isFull || hasStarted) return
@@ -114,7 +118,7 @@ export default function ClassDetail() {
 
   function handleCancel() {
     if (actionLock || cancel.isPending) return
-    if (!confirm('Are you sure you want to cancel this class?')) return
+    if (!confirm(t('confirmCancelClass'))) return
     setNotice('')
     setActionLock('cancel')
     cancel.mutate()
@@ -122,32 +126,32 @@ export default function ClassDetail() {
 
   return (
     <div className="stack">
-      <Link className="button button-secondary button-fit" to="/classes"><ArrowLeft size={18} /> Back to classes</Link>
+      <Link className="button button-secondary button-fit" to="/classes"><ArrowLeft size={18} /> {t('backToClasses')}</Link>
       <div className="detail-layout">
         <section className="detail-hero page-card">
-          <img src={data.imageUrl || classImage(data.level)} alt={`${data.title} badminton training`} />
+          <img src={classItem.imageUrl || classImage(classItem.level)} alt={`${classItem.title} badminton training`} />
           <div className="detail-overlay">
             <div className="overlay-badges">
-              <span className={`level-badge ${data.level}`}>{levelLabel(data.level)}</span>
-              {data.isEnrolled && <span className="status-badge success"><CheckCircle2 size={16} /> Booked</span>}
+              <span className={`level-badge ${classItem.level}`}>{levelLabel(classItem.level)}</span>
+              {classItem.isEnrolled && <span className="status-badge success"><CheckCircle2 size={16} /> {t('booked')}</span>}
             </div>
-            <h1>{data.title}</h1>
-            <p>{data.description}</p>
+            <h1>{classItem.title}</h1>
+            <p>{classItem.description}</p>
           </div>
         </section>
 
         <aside className="booking-panel page-card">
           <div className="panel-header">
-            <span className="eyebrow">Booking status</span>
-            <h2>{data.isEnrolled ? 'You are in' : capacityText(data.currentStudents, data.maxStudents)}</h2>
-            <p className="muted">{daysUntil(data.startDate)} at {formatTime(data.startDate)}</p>
+            <span className="eyebrow">{t('bookingStatus')}</span>
+            <h2>{classItem.isEnrolled ? t('youAreIn') : capacityText(classItem.currentStudents, classItem.maxStudents)}</h2>
+            <p className="muted">{daysUntil(classItem.startDate)} {language === 'en' ? 'at' : 'lúc'} {formatTime(classItem.startDate)}</p>
           </div>
           <div className="capacity-row">
-            <span>Class fee</span>
+            <span>{t('classFee')}</span>
             <strong>{price} VND</strong>
           </div>
           <div className="capacity-row">
-            <span>{data.currentStudents}/{data.maxStudents} enrolled</span>
+            <span>{classItem.currentStudents}/{classItem.maxStudents} {t('enrolledCount')}</span>
             <strong>{percent}%</strong>
           </div>
           <div className="progress-track large">
@@ -156,93 +160,101 @@ export default function ClassDetail() {
 
           {!user && (
             <div className="button-stack">
-              <Link className="button button-primary button-full" to="/login">Login to Enroll</Link>
-              <Link className="button button-secondary button-full" to="/register">Create Account</Link>
+              <Link className="button button-primary button-full" to="/login">{t('loginToEnroll')}</Link>
+              <Link className="button button-secondary button-full" to="/register">{t('createAccountAction')}</Link>
             </div>
           )}
-          {user?.role !== 'admin' && !data.isEnrolled && (
+          {user?.role !== 'admin' && !classItem.isEnrolled && (
             <div className="button-stack">
               <button className="button button-primary button-full" disabled={!user || isFull || hasStarted || payment.isPending} onClick={() => payment.mutate()}>
-                <CreditCard size={18} /> {payment.isPending ? 'Preparing payment...' : 'Pay with VNPay'}
+                <CreditCard size={18} /> {payment.isPending ? t('preparingPayment') : t('payWithVnpay')}
               </button>
               <button className="button button-secondary button-full" disabled={!user || isFull || hasStarted || isEnrolling} onClick={handleEnroll}>
-                {isFull ? 'Class Full' : hasStarted ? 'Class Started' : isEnrolling ? 'Enrolling...' : 'Enroll without payment'}
+                {isFull ? t('classFull') : hasStarted ? t('classStarted') : isEnrolling ? t('enrolling') : t('enrollWithoutPayment')}
               </button>
               {isFull && (
                 <button className="button button-dark button-full" disabled={!user || data.userWaitlisted || waitlist.isPending} onClick={() => waitlist.mutate()}>
-                  {data.userWaitlisted ? `On waitlist (${data.waitlistCount})` : waitlist.isPending ? 'Joining waitlist...' : 'Join Waitlist'}
+                  {classItem.userWaitlisted ? `${t('onWaitlist')} (${classItem.waitlistCount})` : waitlist.isPending ? t('joiningWaitlist') : t('joinWaitlist')}
                 </button>
               )}
             </div>
           )}
           {user?.role !== 'admin' && (
             <button className="button button-secondary button-full" disabled={!user || bookmark.isPending} onClick={() => bookmark.mutate()}>
-              <Heart size={18} /> {data.isBookmarked ? 'Remove Bookmark' : 'Bookmark Class'}
+              <Heart size={18} /> {classItem.isBookmarked ? t('removeBookmark') : t('bookmarkClass')}
             </button>
           )}
-          {user?.role !== 'admin' && data.isEnrolled && (
+          {user?.role !== 'admin' && classItem.isEnrolled && (
             <button className="button button-secondary button-full" disabled={isCancelling} onClick={handleCancel}>
-              {isCancelling ? 'Cancelling...' : 'Cancel Enrollment'}
+              {isCancelling ? t('cancelling') : t('cancelEnrollment')}
             </button>
           )}
           {user?.role === 'admin' && (
             <div className="button-stack">
-              <Link className="button button-dark button-full" to={`/admin/${data._id}/students`}>View Students</Link>
-              <Link className="button button-secondary button-full" to={`/admin/create?id=${data._id}`}>Edit Class</Link>
+              <Link className="button button-dark button-full" to={`/admin/${classItem._id}/students`}>{t('viewStudents')}</Link>
+              <Link className="button button-secondary button-full" to={`/admin/create?id=${classItem._id}`}>{t('editClass')}</Link>
               <button className="button button-danger button-full" disabled={remove.isPending} onClick={() => {
-                if (confirm('Delete this class?')) remove.mutate()
+                if (confirm(t('deletePrompt'))) remove.mutate()
               }}>
-                {remove.isPending ? 'Deleting...' : 'Delete Class'}
+                {remove.isPending ? t('deleting') : t('deleteClass')}
               </button>
             </div>
           )}
           {notice && <div className="alert alert-success">{notice}</div>}
-          {actionError && <div className="alert alert-error">{getApiErrorMessage(actionError, 'Operation failed')}</div>}
+          {actionError && <div className="alert alert-error">{getApiErrorMessage(actionError, t('operationFailed'))}</div>}
         </aside>
 
         <section className="page-card info-grid">
-          <div><UserRound size={20} /><span>Coach</span><strong>{data.coach?.name || data.coachName}</strong></div>
-          <div><CalendarDays size={20} /><span>Start</span><strong>{formatDateTime(data.startDate)}</strong></div>
-          <div><Clock3 size={20} /><span>Schedule</span><strong>{data.schedule}</strong></div>
-          <div><MapPin size={20} /><span>Location</span><strong>{data.location}</strong></div>
-          <div><UsersRound size={20} /><span>Capacity</span><strong>{data.currentStudents}/{data.maxStudents}</strong></div>
-          <div><Star size={20} /><span>Rating</span><strong>{data.averageRating ? `${data.averageRating}/5 (${data.reviewCount})` : 'No reviews'}</strong></div>
+          <div>
+            <UserRound size={20} />
+            <span>{t('coach')}</span>
+            <strong>
+              {classItem.coach?._id
+                ? <Link className="inline-link" to={`/coaches/${classItem.coach._id}`}>{classItem.coach.name || classItem.coachName}</Link>
+                : (classItem.coach?.name || classItem.coachName)}
+            </strong>
+          </div>
+          <div><CalendarDays size={20} /><span>{t('start')}</span><strong>{formatDateTime(classItem.startDate)}</strong></div>
+          <div><Clock3 size={20} /><span>{t('schedule')}</span><strong>{classItem.schedule}</strong></div>
+          <div><MapPin size={20} /><span>{t('location')}</span><strong>{classItem.location}</strong></div>
+          <div><UsersRound size={20} /><span>{t('capacity')}</span><strong>{classItem.currentStudents}/{classItem.maxStudents}</strong></div>
+          <div><Star size={20} /><span>{t('rating')}</span><strong>{classItem.averageRating ? `${classItem.averageRating}/5 (${classItem.reviewCount})` : t('noReviews')}</strong></div>
         </section>
       </div>
 
       <section className="page-card review-panel">
         <div className="panel-header">
-          <span className="eyebrow">Class feedback</span>
-          <h2>Reviews</h2>
+          <span className="eyebrow">{t('classFeedback')}</span>
+          <h2>{t('reviews')}</h2>
         </div>
-        {data.coach?.bio && (
+        {classItem.coach?.bio && (
           <div className="alert alert-success">
-            <strong>{data.coach.name}</strong> - {data.coach.bio}
+            <strong>{classItem.coach.name}</strong> - {classItem.coach.bio}
           </div>
         )}
-        {user?.role !== 'admin' && data.isEnrolled && canReview && (
+        {user?.role !== 'admin' && classItem.isEnrolled && canReview && (
           <form className="review-form" onSubmit={(e) => { e.preventDefault(); review.mutate() }}>
             <label className="field">
-              <span>Rating</span>
+              <span>{t('rating')}</span>
               <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
-                {[5, 4, 3, 2, 1].map((value) => <option key={value} value={value}>{value} stars</option>)}
+                {[5, 4, 3, 2, 1].map((value) => <option key={value} value={value}>{value} {t('stars')}</option>)}
               </select>
             </label>
             <label className="field">
-              <span>Comment</span>
-              <textarea rows="3" value={reviewText} onChange={(e) => setReviewText(e.target.value)} placeholder="Share your experience" />
+              <span>{t('comment')}</span>
+              <textarea rows="3" value={reviewText} onChange={(e) => setReviewText(e.target.value)} placeholder={t('shareExperience')} />
             </label>
-            <button className="button button-primary button-fit" disabled={review.isPending} type="submit">Submit Review</button>
+            <button className="button button-primary button-fit" disabled={review.isPending} type="submit">{t('submitReview')}</button>
           </form>
         )}
         <div className="review-list">
           {(reviews.data || []).map((item) => (
             <article className="review-item" key={item._id}>
-              <strong>{item.user?.name || 'Student'} - {item.rating}/5</strong>
-              <p>{item.comment || 'No comment'}</p>
+              <strong>{item.user?.name || t('student')} - {item.rating}/5</strong>
+              <p>{item.comment || t('noComment')}</p>
             </article>
           ))}
-          {!reviews.isLoading && (reviews.data || []).length === 0 && <p className="muted">No reviews yet.</p>}
+          {!reviews.isLoading && (reviews.data || []).length === 0 && <p className="muted">{t('noReviews')}</p>}
         </div>
       </section>
     </div>

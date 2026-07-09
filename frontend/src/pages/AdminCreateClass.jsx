@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, CalendarDays, Image, MapPin, Plus, UserRound } from 'lucide-react'
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
-import { capacityPercent, classImage, formatDateTime, levelLabel } from '../utils/classUi'
+import { capacityPercent, capacityText, classImage, formatDateTime, levelLabel } from '../utils/classUi'
+import { useTranslation } from '../utils/i18n'
 
 const initialForm = {
   title: '',
@@ -35,6 +36,7 @@ export default function AdminCreateClass() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [searchParams] = useSearchParams()
+  const { language, t } = useTranslation()
   const editId = searchParams.get('id')
 
   const existingClass = useQuery({
@@ -132,7 +134,7 @@ export default function AdminCreateClass() {
   function submitCoach(event) {
     event.preventDefault()
     if (!coachDraft.name.trim()) {
-      setFormError('Coach name is required.')
+      setFormError(t('coachNameRequired'))
       return
     }
     createCoach.mutate({
@@ -158,22 +160,22 @@ export default function AdminCreateClass() {
     }
 
     if (!payload.title || !payload.description || !payload.coachName || !payload.schedule || !payload.location) {
-      setFormError('Please fill in all class details.')
+      setFormError(t('fillClassDetails'))
       return
     }
 
     if (!Number.isInteger(payload.maxStudents) || payload.maxStudents < 1) {
-      setFormError('Max students must be a positive whole number.')
+      setFormError(t('maxStudentsPositive'))
       return
     }
 
     if (!Number.isFinite(payload.price) || payload.price < 0) {
-      setFormError('Class price must be a non-negative number.')
+      setFormError(t('priceNonNegative'))
       return
     }
 
     if (new Date(payload.startDate) < new Date()) {
-      setFormError('Start date cannot be in the past.')
+      setFormError(t('startDatePast'))
       return
     }
 
@@ -183,18 +185,18 @@ export default function AdminCreateClass() {
       try {
         const result = await existingClass.refetch()
         if (result.isError) {
-          setFormError(getApiErrorMessage(result.error, 'Could not refresh class details before saving. Please try again.'))
+          setFormError(getApiErrorMessage(result.error, t('refreshBeforeSavingFailed')))
           return
         }
         latestClass = result.data || latestClass
       } catch {
-        setFormError('Could not refresh class details before saving. Please try again.')
+        setFormError(t('refreshBeforeSavingFailed'))
         return
       }
 
       const currentStudents = latestClass?.currentStudents || 0
       if (payload.maxStudents < currentStudents) {
-        setFormError(`This class currently has ${currentStudents} enrolled students. Max students cannot be lower than ${currentStudents}.`)
+        setFormError(`${t('maxStudentsLowerThanCurrent')} (${currentStudents}).`)
         return
       }
       payload.updatedAt = latestClass?.updatedAt || loadedUpdatedAt
@@ -204,64 +206,64 @@ export default function AdminCreateClass() {
   }
 
   if (existingClass.isLoading) return <div className="page-card skeleton-card tall" />
-  if (existingClass.isError) return <div className="alert alert-error">{getApiErrorMessage(existingClass.error, 'Could not load class')}</div>
+  if (existingClass.isError) return <div className="alert alert-error">{getApiErrorMessage(existingClass.error, t('couldNotLoadClass'))}</div>
 
   return (
     <div className="form-page">
       <section className="section-heading">
-        <span className="eyebrow">Admin portal</span>
-        <h1>{editId ? 'Edit Class' : 'Create Class'}</h1>
-        <p>{editId ? 'Update class information and capacity.' : 'Add a new upcoming badminton training session.'}</p>
+        <span className="eyebrow">{t('adminPortal')}</span>
+        <h1>{editId ? t('editClassTitle') : t('createClassTitle')}</h1>
+        <p>{editId ? t('updateClassInfo') : t('addTrainingSession')}</p>
       </section>
 
       <div className="editor-layout">
         <form className="page-card admin-form" onSubmit={submit}>
-          <label className="field"><span>Title</span><input required value={form.title} onChange={(e) => update('title', e.target.value)} placeholder="Smash Fundamentals" /></label>
-          <label className="field"><span>Description</span><textarea required rows="4" value={form.description} onChange={(e) => update('description', e.target.value)} placeholder="What students will practice in this session." /></label>
+          <label className="field"><span>{t('title')}</span><input required value={form.title} onChange={(e) => update('title', e.target.value)} placeholder={language === 'en' ? 'Smash Fundamentals' : 'Nền tảng đập cầu'} /></label>
+          <label className="field"><span>{t('description')}</span><textarea required rows="4" value={form.description} onChange={(e) => update('description', e.target.value)} placeholder={language === 'en' ? 'What students will practice in this session.' : 'Nội dung học viên sẽ luyện tập trong buổi này.'} /></label>
           <div className="form-grid">
             <label className="field">
-              <span>Coach profile</span>
+              <span>{t('coachProfile')}</span>
               <select value={form.coach} onChange={(e) => selectCoach(e.target.value)}>
-                <option value="">Use typed coach name</option>
+                <option value="">{t('useTypedCoachName')}</option>
                 {(coaches.data || []).map((coach) => (
                   <option key={coach._id} value={coach._id}>{coach.name}</option>
                 ))}
               </select>
             </label>
-            <label className="field"><span>Coach name</span><input required value={form.coachName} onChange={(e) => update('coachName', e.target.value)} placeholder="Coach name" /></label>
+            <label className="field"><span>{t('coachName')}</span><input required value={form.coachName} onChange={(e) => update('coachName', e.target.value)} placeholder={t('coachName')} /></label>
             <label className="field">
-              <span>Level</span>
+              <span>{t('level')}</span>
               <select value={form.level} onChange={(e) => update('level', e.target.value)}>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
+                <option value="beginner">{levelLabel('beginner')}</option>
+                <option value="intermediate">{levelLabel('intermediate')}</option>
+                <option value="advanced">{levelLabel('advanced')}</option>
               </select>
             </label>
-            <label className="field"><span>Start Date</span><input required type="datetime-local" value={form.startDate} onChange={(e) => update('startDate', e.target.value)} /></label>
-            <label className="field"><span>Schedule</span><input required value={form.schedule} onChange={(e) => update('schedule', e.target.value)} placeholder="Every Tue, 7:00 PM" /></label>
-            <label className="field"><span>Location</span><input required value={form.location} onChange={(e) => update('location', e.target.value)} placeholder="Court 3, NAPA" /></label>
-            <label className="field"><span>Max Students</span><input required min={editId ? Math.max(existingClass.data?.currentStudents || 1, 1) : 1} type="number" value={form.maxStudents} onChange={(e) => update('maxStudents', e.target.value)} /></label>
-            <label className="field"><span>Price (VND)</span><input required min="0" step="1000" type="number" value={form.price} onChange={(e) => update('price', e.target.value)} /></label>
+            <label className="field"><span>{t('startDate')}</span><input required type="datetime-local" value={form.startDate} onChange={(e) => update('startDate', e.target.value)} /></label>
+            <label className="field"><span>{t('schedule')}</span><input required value={form.schedule} onChange={(e) => update('schedule', e.target.value)} placeholder={language === 'en' ? 'Every Tue, 7:00 PM' : 'Mỗi Thứ Ba, 19:00'} /></label>
+            <label className="field"><span>{t('location')}</span><input required value={form.location} onChange={(e) => update('location', e.target.value)} placeholder={language === 'en' ? 'Court 3, NAPA' : 'Sân 3, NAPA'} /></label>
+            <label className="field"><span>{t('maxStudents')}</span><input required min={editId ? Math.max(existingClass.data?.currentStudents || 1, 1) : 1} type="number" value={form.maxStudents} onChange={(e) => update('maxStudents', e.target.value)} /></label>
+            <label className="field"><span>{t('priceVnd')}</span><input required min="0" step="1000" type="number" value={form.price} onChange={(e) => update('price', e.target.value)} /></label>
             <label className="field">
-              <span>Class image URL</span>
+              <span>{t('classImageUrl')}</span>
               <input value={form.imageUrl} onChange={(e) => update('imageUrl', e.target.value)} placeholder="https://..." />
             </label>
             <label className="field">
-              <span>Upload class image</span>
+              <span>{t('uploadClassImage')}</span>
               <input type="file" accept="image/*" onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) uploadClassImage.mutate(file)
               }} />
             </label>
           </div>
-          {uploadClassImage.isPending && <div className="alert alert-success">Uploading class image...</div>}
-          {uploadClassImage.isError && <div className="alert alert-error">{getApiErrorMessage(uploadClassImage.error, 'Could not upload class image')}</div>}
+          {uploadClassImage.isPending && <div className="alert alert-success">{t('uploadingClassImage')}</div>}
+          {uploadClassImage.isError && <div className="alert alert-error">{getApiErrorMessage(uploadClassImage.error, t('couldNotUploadClassImage'))}</div>}
           <div className="form-actions">
-            <Link className="button button-secondary" to={editId ? `/classes/${editId}` : '/admin'}><ArrowLeft size={18} /> Cancel</Link>
-            <button className="button button-primary" disabled={save.isPending || existingClass.isFetching} type="submit">{save.isPending ? 'Saving...' : editId ? 'Save Changes' : 'Create Class'}</button>
+            <Link className="button button-secondary" to={editId ? `/classes/${editId}` : '/admin'}><ArrowLeft size={18} /> {t('cancel')}</Link>
+            <button className="button button-primary" disabled={save.isPending || existingClass.isFetching} type="submit">{save.isPending ? t('saving') : editId ? t('saveChanges') : t('createClass')}</button>
           </div>
           {formError && <div className="alert alert-error">{formError}</div>}
-          {save.isError && <div className="alert alert-error">{getApiErrorMessage(save.error, 'Could not save class')}</div>}
+          {save.isError && <div className="alert alert-error">{getApiErrorMessage(save.error, t('couldNotSaveClass'))}</div>}
         </form>
 
         <aside className="class-card preview-card">
@@ -270,45 +272,45 @@ export default function AdminCreateClass() {
             <span className={`level-badge ${form.level}`}>{levelLabel(form.level)}</span>
           </div>
           <div className="class-body">
-            <span className="eyebrow">Live preview</span>
-            <h2>{form.title || 'Class title'}</h2>
-            <p>{form.description || 'Class description will appear here as students browse upcoming sessions.'}</p>
+            <span className="eyebrow">{t('livePreview')}</span>
+            <h2>{form.title || t('classTitle')}</h2>
+            <p>{form.description || t('classDescriptionPreview')}</p>
             <div className="meta-list">
-              <span><UserRound size={18} /> {form.coachName || 'Coach'}</span>
-              <span><MapPin size={18} /> {form.location || 'Location'}</span>
+              <span><UserRound size={18} /> {form.coachName || t('coach')}</span>
+              <span><MapPin size={18} /> {form.location || t('location')}</span>
               <span><CalendarDays size={18} /> {formatDateTime(form.startDate)}</span>
             </div>
             <div className="capacity-row">
-              <span>{existingClass.data?.currentStudents || 0}/{Number(form.maxStudents) || 1} spots filled</span>
-              <strong>{Math.max((Number(form.maxStudents) || 1) - (existingClass.data?.currentStudents || 0), 0)} spots left</strong>
+              <span>{existingClass.data?.currentStudents || 0}/{Number(form.maxStudents) || 1} {t('spotsFilled')}</span>
+              <strong>{capacityText(existingClass.data?.currentStudents || 0, Number(form.maxStudents) || 1)}</strong>
             </div>
             <div className="capacity-row">
-              <span>Class fee</span>
-              <strong>{Number(form.price || 0).toLocaleString('vi-VN')} VND</strong>
+              <span>{t('classFee')}</span>
+              <strong>{Number(form.price || 0).toLocaleString(language === 'en' ? 'en-US' : 'vi-VN')} VND</strong>
             </div>
             <div className="progress-track">
               <div className="progress-fill" style={{ width: `${capacityPercent(existingClass.data?.currentStudents || 0, Number(form.maxStudents) || 1)}%` }} />
             </div>
           </div>
           <form className="class-body" onSubmit={submitCoach}>
-            <span className="eyebrow">Coach entity</span>
-            <h2>Create Coach</h2>
-            <label className="field"><span>Name</span><input value={coachDraft.name} onChange={(e) => setCoachDraft((draft) => ({ ...draft, name: e.target.value }))} placeholder="Coach name" /></label>
-            <label className="field"><span>Email</span><input type="email" value={coachDraft.email} onChange={(e) => setCoachDraft((draft) => ({ ...draft, email: e.target.value }))} placeholder="coach@napa.vn" /></label>
-            <label className="field"><span>Bio</span><textarea rows="3" value={coachDraft.bio} onChange={(e) => setCoachDraft((draft) => ({ ...draft, bio: e.target.value }))} placeholder="Short coaching profile" /></label>
-            <label className="field"><span>Photo URL</span><div className="field-control"><Image size={18} /><input value={coachDraft.photoUrl} onChange={(e) => setCoachDraft((draft) => ({ ...draft, photoUrl: e.target.value }))} placeholder="https://..." /></div></label>
+            <span className="eyebrow">{t('coachEntity')}</span>
+            <h2>{t('createCoach')}</h2>
+            <label className="field"><span>{t('name')}</span><input value={coachDraft.name} onChange={(e) => setCoachDraft((draft) => ({ ...draft, name: e.target.value }))} placeholder={t('coachName')} /></label>
+            <label className="field"><span>{t('email')}</span><input type="email" value={coachDraft.email} onChange={(e) => setCoachDraft((draft) => ({ ...draft, email: e.target.value }))} placeholder="coach@napa.vn" /></label>
+            <label className="field"><span>{t('bio')}</span><textarea rows="3" value={coachDraft.bio} onChange={(e) => setCoachDraft((draft) => ({ ...draft, bio: e.target.value }))} placeholder={language === 'en' ? 'Short coaching profile' : 'Hồ sơ huấn luyện ngắn'} /></label>
+            <label className="field"><span>{t('photoUrl')}</span><div className="field-control"><Image size={18} /><input value={coachDraft.photoUrl} onChange={(e) => setCoachDraft((draft) => ({ ...draft, photoUrl: e.target.value }))} placeholder="https://..." /></div></label>
             <label className="field">
-              <span>Upload coach photo</span>
+              <span>{t('uploadCoachPhoto')}</span>
               <input type="file" accept="image/*" onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) uploadCoachPhoto.mutate(file)
               }} />
             </label>
-            <label className="field"><span>Specialties</span><input value={coachDraft.specialties} onChange={(e) => setCoachDraft((draft) => ({ ...draft, specialties: e.target.value }))} placeholder="Footwork, Doubles" /></label>
-            <button className="button button-secondary" disabled={createCoach.isPending} type="submit"><Plus size={18} /> {createCoach.isPending ? 'Creating...' : 'Create Coach'}</button>
-            {uploadCoachPhoto.isPending && <div className="alert alert-success">Uploading coach photo...</div>}
-            {uploadCoachPhoto.isError && <div className="alert alert-error">{getApiErrorMessage(uploadCoachPhoto.error, 'Could not upload coach photo')}</div>}
-            {createCoach.isError && <div className="alert alert-error">{getApiErrorMessage(createCoach.error, 'Could not create coach')}</div>}
+            <label className="field"><span>{t('specialties')}</span><input value={coachDraft.specialties} onChange={(e) => setCoachDraft((draft) => ({ ...draft, specialties: e.target.value }))} placeholder={language === 'en' ? 'Footwork, Doubles' : 'Di chuyển, Đánh đôi'} /></label>
+            <button className="button button-secondary" disabled={createCoach.isPending} type="submit"><Plus size={18} /> {createCoach.isPending ? t('creating') : t('createCoach')}</button>
+            {uploadCoachPhoto.isPending && <div className="alert alert-success">{t('uploadingCoachPhoto')}</div>}
+            {uploadCoachPhoto.isError && <div className="alert alert-error">{getApiErrorMessage(uploadCoachPhoto.error, t('couldNotUploadCoachPhoto'))}</div>}
+            {createCoach.isError && <div className="alert alert-error">{getApiErrorMessage(createCoach.error, t('couldNotCreateCoach'))}</div>}
           </form>
         </aside>
       </div>

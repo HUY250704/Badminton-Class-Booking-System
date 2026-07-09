@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CalendarDays, CheckCircle2, MapPin, UserRound, UsersRound } from 'lucide-react'
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
-import { formatDateTime } from '../utils/classUi'
+import { formatDateTime, localizedClass } from '../utils/classUi'
 import { useTranslation } from '../utils/i18n'
 
 export default function BookingSuccess() {
@@ -24,7 +24,7 @@ export default function BookingSuccess() {
     enabled: Boolean(classId),
     placeholderData: stateClass
   })
-  const klass = data || stateClass
+  const klass = localizedClass(data || stateClass, language)
 
   return (
     <div className="success-page">

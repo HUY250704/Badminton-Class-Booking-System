@@ -4,10 +4,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowRightLeft, CalendarDays, Heart, Hourglass, MapPin, Search, UserRound } from 'lucide-react'
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
-import { capacityPercent, classImage, daysUntil, formatDateTime, levelLabel } from '../utils/classUi'
+import { capacityPercent, classImage, daysUntil, formatDateTime, levelLabel, localizedClass } from '../utils/classUi'
+import { useTranslation } from '../utils/i18n'
 
 export default function MyEnrollments() {
   const qc = useQueryClient()
+  const { t, language } = useTranslation()
   const [transferDraft, setTransferDraft] = useState({ fromClass: '', toClass: '', reason: '' })
 
   const { data = [], isLoading, isError, error } = useQuery({
@@ -53,12 +55,12 @@ export default function MyEnrollments() {
   }, [transfers.data])
 
   if (isLoading) return <div className="page-card skeleton-card tall" />
-  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, 'Could not load enrollments')}</div>
+  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, language === 'en' ? 'Could not load enrollments' : 'Không thể tải lớp đã đăng ký')}</div>
 
   const activeEnrollments = data.filter((item) => item.class)
   const archivedCount = data.length - activeEnrollments.length
   const upcomingCount = activeEnrollments.filter((item) => new Date(item.class.startDate) >= new Date()).length
-  const transferOptions = (classesQuery.data || []).filter((klass) => {
+  const transferOptions = (classesQuery.data || []).map((klass) => localizedClass(klass, language)).filter((klass) => {
     if (!transferDraft.fromClass || klass._id === transferDraft.fromClass) return false
     return new Date(klass.startDate) >= new Date() && (klass.currentStudents ?? 0) < (klass.maxStudents ?? 1)
   })
@@ -72,43 +74,43 @@ export default function MyEnrollments() {
   return (
     <div className="stack">
       <section className="section-heading">
-        <span className="eyebrow">Student dashboard</span>
+        <span className="eyebrow">{t('studentDashboard')}</span>
         <div className="heading-row">
           <div>
-            <h1>My Classes</h1>
-            <p>Track the badminton sessions you have booked.</p>
+            <h1>{t('myClasses')}</h1>
+            <p>{t('trackBookedSessions')}</p>
           </div>
-          <Link className="button button-primary" to="/classes"><Search size={18} /> Explore Classes</Link>
+          <Link className="button button-primary" to="/classes"><Search size={18} /> {t('exploreClasses')}</Link>
         </div>
       </section>
 
       <div className="stats-grid">
-        <div className="stat-card"><span>Booked Classes</span><strong>{data.length}</strong></div>
-        <div className="stat-card"><span>Upcoming</span><strong>{upcomingCount}</strong></div>
-        <div className="stat-card"><span>Completed</span><strong>{Math.max(activeEnrollments.length - upcomingCount, 0)}</strong></div>
-        <div className="stat-card"><span>Saved</span><strong>{bookmarks.data?.length ?? 0}</strong></div>
-        <div className="stat-card"><span>Waitlist</span><strong>{waitlist.data?.length ?? 0}</strong></div>
-        <div className="stat-card"><span>Transfer Requests</span><strong>{transferStats.pending}/{transferStats.decided}</strong></div>
+        <div className="stat-card"><span>{t('bookedClasses')}</span><strong>{data.length}</strong></div>
+        <div className="stat-card"><span>{t('upcoming')}</span><strong>{upcomingCount}</strong></div>
+        <div className="stat-card"><span>{t('completed')}</span><strong>{Math.max(activeEnrollments.length - upcomingCount, 0)}</strong></div>
+        <div className="stat-card"><span>{t('saved')}</span><strong>{bookmarks.data?.length ?? 0}</strong></div>
+        <div className="stat-card"><span>{t('onWaitlist')}</span><strong>{waitlist.data?.length ?? 0}</strong></div>
+        <div className="stat-card"><span>{t('transferRequests')}</span><strong>{transferStats.pending}/{transferStats.decided}</strong></div>
       </div>
 
       {archivedCount > 0 && (
         <div className="alert alert-error">
-          {archivedCount} enrollment{archivedCount === 1 ? '' : 's'} no longer have class details available.
+          {archivedCount} {t('archivedEnrollments')}
         </div>
       )}
 
       {data.length === 0 && (
         <div className="empty-state empty-state-action">
           <CalendarDays size={24} />
-          <strong>No enrollments yet</strong>
-          <span>Choose a class that matches your level and reserve a spot in seconds.</span>
-          <Link className="button button-dark" to="/classes">Browse upcoming classes</Link>
+          <strong>{t('noEnrollmentsYet')}</strong>
+          <span>{t('browseClassesHint')}</span>
+          <Link className="button button-dark" to="/classes">{t('browseUpcomingClasses')}</Link>
         </div>
       )}
 
       <div className="card-grid">
         {activeEnrollments.map((item) => {
-          const klass = item.class
+          const klass = localizedClass(item.class, language)
           return (
             <article className="class-card compact" key={item.id}>
               <div className="class-image">
@@ -124,16 +126,16 @@ export default function MyEnrollments() {
                 </div>
                 <div className="class-quick-row">
                   <span>{daysUntil(klass.startDate)}</span>
-                  <span className="status-badge success">Booked</span>
+                  <span className="status-badge success">{t('booked')}</span>
                 </div>
                 <div className="capacity-row">
-                  <span>{klass.currentStudents}/{klass.maxStudents} spots filled</span>
-                  <strong>Booked {formatDateTime(item.enrolledAt)}</strong>
+                  <span>{klass.currentStudents}/{klass.maxStudents} {t('spotsFilled')}</span>
+                  <strong>{t('booked')} {formatDateTime(item.enrolledAt)}</strong>
                 </div>
                 <div className="progress-track">
                   <div className="progress-fill" style={{ width: `${capacityPercent(klass.currentStudents, klass.maxStudents)}%` }} />
                 </div>
-                <Link className="button button-dark" to={`/classes/${klass._id}`}>Open Class</Link>
+                <Link className="button button-dark" to={`/classes/${klass._id}`}>{t('openClass')}</Link>
               </div>
             </article>
           )
@@ -143,41 +145,42 @@ export default function MyEnrollments() {
       <section className="admin-split">
         <div className="page-card admin-panel">
           <div className="panel-header">
-            <span className="eyebrow">Saved classes</span>
-            <h2><Heart size={20} /> Bookmarks</h2>
+            <span className="eyebrow">{t('savedClasses')}</span>
+            <h2><Heart size={20} /> {t('bookmarks')}</h2>
           </div>
           <div className="compact-list">
-            {(bookmarks.data || []).slice(0, 5).map((klass) => (
-              <article className="compact-row" key={klass._id}>
+            {(bookmarks.data || []).slice(0, 5).map((item) => {
+              const klass = localizedClass(item, language)
+              return <article className="compact-row" key={klass._id}>
                 <Heart size={18} />
                 <div>
                   <strong>{klass.title}</strong>
                   <span>{klass.coachName} - {formatDateTime(klass.startDate)}</span>
                 </div>
-                <Link className="button button-secondary button-small" to={`/classes/${klass._id}`}>Open</Link>
+                <Link className="button button-secondary button-small" to={`/classes/${klass._id}`}>{t('open')}</Link>
               </article>
-            ))}
-            {!bookmarks.isLoading && (bookmarks.data || []).length === 0 && <p className="muted">No bookmarked classes yet.</p>}
+            })}
+            {!bookmarks.isLoading && (bookmarks.data || []).length === 0 && <p className="muted">{t('noBookmarkedClasses')}</p>}
           </div>
         </div>
 
         <div className="page-card admin-panel">
           <div className="panel-header">
-            <span className="eyebrow">Waiting list</span>
-            <h2><Hourglass size={20} /> Queue Position</h2>
+            <span className="eyebrow">{t('waitingList')}</span>
+            <h2><Hourglass size={20} /> {t('queuePosition')}</h2>
           </div>
           <div className="compact-list">
             {(waitlist.data || []).slice(0, 5).map((item) => (
               <article className="compact-row" key={item._id}>
                 <Hourglass size={18} />
                 <div>
-                  <strong>{item.class?.title || 'Class'}</strong>
-                  <span>Position #{item.position} - {item.class ? formatDateTime(item.class.startDate) : 'Schedule pending'}</span>
+                  <strong>{item.class ? localizedClass(item.class, language).title : t('classColumn')}</strong>
+                  <span>{t('position')} #{item.position} - {item.class ? formatDateTime(item.class.startDate) : t('schedulePending')}</span>
                 </div>
-                {item.class && <Link className="button button-secondary button-small" to={`/classes/${item.class._id}`}>Open</Link>}
+                {item.class && <Link className="button button-secondary button-small" to={`/classes/${item.class._id}`}>{t('open')}</Link>}
               </article>
             ))}
-            {!waitlist.isLoading && (waitlist.data || []).length === 0 && <p className="muted">No waitlist entries yet.</p>}
+            {!waitlist.isLoading && (waitlist.data || []).length === 0 && <p className="muted">{t('noWaitlistEntries')}</p>}
           </div>
         </div>
       </section>
@@ -185,46 +188,46 @@ export default function MyEnrollments() {
       {activeEnrollments.length > 0 && (
         <section className="page-card transfer-panel">
           <div className="panel-header">
-            <span className="eyebrow">Schedule changes</span>
-            <h2>Request a Class Transfer</h2>
+            <span className="eyebrow">{t('scheduleChanges')}</span>
+            <h2>{t('requestTransfer')}</h2>
           </div>
           <form className="transfer-form" onSubmit={submitTransfer}>
             <label className="field">
-              <span>Current class</span>
+              <span>{t('currentClass')}</span>
               <select value={transferDraft.fromClass} onChange={(e) => setTransferDraft((draft) => ({ ...draft, fromClass: e.target.value, toClass: '' }))}>
-                <option value="">Choose class</option>
+                <option value="">{t('chooseClass')}</option>
                 {activeEnrollments.map((item) => (
-                  <option key={item.class._id} value={item.class._id}>{item.class.title}</option>
+                  <option key={item.class._id} value={item.class._id}>{localizedClass(item.class, language).title}</option>
                 ))}
               </select>
             </label>
             <label className="field">
-              <span>Move to</span>
+              <span>{t('moveTo')}</span>
               <select value={transferDraft.toClass} onChange={(e) => setTransferDraft((draft) => ({ ...draft, toClass: e.target.value }))}>
-                <option value="">Choose available class</option>
+                <option value="">{t('chooseAvailableClass')}</option>
                 {transferOptions.map((klass) => (
                   <option key={klass._id} value={klass._id}>{klass.title} - {formatDateTime(klass.startDate)}</option>
                 ))}
               </select>
             </label>
             <label className="field transfer-reason">
-              <span>Reason</span>
-              <textarea rows="3" value={transferDraft.reason} onChange={(e) => setTransferDraft((draft) => ({ ...draft, reason: e.target.value }))} placeholder="Why do you need to move?" />
+              <span>{t('reason')}</span>
+              <textarea rows="3" value={transferDraft.reason} onChange={(e) => setTransferDraft((draft) => ({ ...draft, reason: e.target.value }))} placeholder={t('transferReasonPlaceholder')} />
             </label>
             <button className="button button-primary" disabled={createTransfer.isPending || !transferDraft.fromClass || !transferDraft.toClass} type="submit">
-              <ArrowRightLeft size={18} /> {createTransfer.isPending ? 'Sending...' : 'Request Transfer'}
+              <ArrowRightLeft size={18} /> {createTransfer.isPending ? t('sending') : t('requestTransferButton')}
             </button>
           </form>
-          {createTransfer.isError && <div className="alert alert-error">{getApiErrorMessage(createTransfer.error, 'Could not request transfer')}</div>}
-          {createTransfer.isSuccess && <div className="alert alert-success">Transfer request sent for admin review.</div>}
+          {createTransfer.isError && <div className="alert alert-error">{getApiErrorMessage(createTransfer.error, language === 'en' ? 'Could not request transfer' : 'Không thể gửi yêu cầu chuyển lớp')}</div>}
+          {createTransfer.isSuccess && <div className="alert alert-success">{t('transferSent')}</div>}
           <div className="transfer-list">
             {(transfers.data || []).map((item) => (
               <article className="transfer-item" key={item._id}>
-                <strong>{item.fromClass?.title || 'Old class'} to {item.toClass?.title || 'New class'}</strong>
+                <strong>{item.fromClass ? localizedClass(item.fromClass, language).title : t('oldClass')} {t('toLower')} {item.toClass ? localizedClass(item.toClass, language).title : t('newClass')}</strong>
                 <span className={item.status === 'approved' ? 'status-badge success' : 'status-badge'}>{item.status}</span>
               </article>
             ))}
-            {!transfers.isLoading && (transfers.data || []).length === 0 && <p className="muted">No transfer requests yet.</p>}
+            {!transfers.isLoading && (transfers.data || []).length === 0 && <p className="muted">{t('noTransferRequests')}</p>}
           </div>
         </section>
       )}

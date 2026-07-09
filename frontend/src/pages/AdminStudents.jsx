@@ -5,10 +5,12 @@ import { ArrowLeft, CheckCircle2, Eye, Mail, Trash2, UserRound, XCircle } from '
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
 import { formatDateTime } from '../utils/classUi'
+import { useTranslation } from '../utils/i18n'
 
 export default function AdminStudents() {
   const { id } = useParams()
   const qc = useQueryClient()
+  const { t } = useTranslation()
   const { data = [], isLoading, isError, error } = useQuery({
     queryKey: ['class-students', id],
     queryFn: () => api.get(`/classes/${id}/students`).then((r) => r.data)
@@ -48,25 +50,25 @@ export default function AdminStudents() {
   })
 
   if (isLoading) return <div className="page-card skeleton-card tall" />
-  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, 'Could not load students')}</div>
+  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, t('couldNotLoadStudents'))}</div>
 
   return (
     <div className="stack">
       <section className="section-heading">
-        <span className="eyebrow">Admin roster</span>
+        <span className="eyebrow">{t('adminRoster')}</span>
         <div className="heading-row">
           <div>
-            <h1>Students</h1>
-            <p>{data.length} enrolled student{data.length === 1 ? '' : 's'} in this class.</p>
+            <h1>{t('students')}</h1>
+            <p>{data.length} {t('enrolledStudentsCount')}</p>
           </div>
           <div className="form-actions">
-            <Link className="button button-secondary" to="/admin"><ArrowLeft size={18} /> Back to Admin</Link>
-            <Link className="button button-dark" to={`/classes/${id}`}><Eye size={18} /> Class Detail</Link>
+            <Link className="button button-secondary" to="/admin"><ArrowLeft size={18} /> {t('backToAdmin')}</Link>
+            <Link className="button button-dark" to={`/classes/${id}`}><Eye size={18} /> {t('classDetail')}</Link>
           </div>
         </div>
       </section>
 
-      {data.length === 0 && <div className="empty-state">No students enrolled yet.</div>}
+      {data.length === 0 && <div className="empty-state">{t('noStudentsYet')}</div>}
 
       <div className="roster-list">
         {data.map((item) => (
@@ -76,22 +78,22 @@ export default function AdminStudents() {
               <h2>{item.user.name}</h2>
               <p><Mail size={16} /> {item.user.email}</p>
             </div>
-            <span className="student-date">Enrolled {formatDateTime(item.enrolledAt)}</span>
+            <span className="student-date">{t('enrolledAt')} {formatDateTime(item.enrolledAt)}</span>
             <div className="attendance-actions">
-              <span className="status-badge">{attendanceMap.get(item.user._id) || 'unmarked'}</span>
+              <span className="status-badge">{t(attendanceMap.get(item.user._id) || 'unmarked')}</span>
               <span className="status-badge">
                 {attendanceStats.get(item.user._id)?.total
                   ? `${Math.round((attendanceStats.get(item.user._id).present / attendanceStats.get(item.user._id).total) * 100)}%`
                   : '0%'}
               </span>
-              <button title="Present" aria-label={`Mark ${item.user.name} present`} disabled={markAttendance.isPending} onClick={() => markAttendance.mutate({ user: item.user._id, status: 'present' })}><CheckCircle2 size={18} /></button>
-              <button title="Absent" aria-label={`Mark ${item.user.name} absent`} disabled={markAttendance.isPending} onClick={() => markAttendance.mutate({ user: item.user._id, status: 'absent' })}><XCircle size={18} /></button>
+              <button title={t('present')} aria-label={`${t('present')} ${item.user.name}`} disabled={markAttendance.isPending} onClick={() => markAttendance.mutate({ user: item.user._id, status: 'present' })}><CheckCircle2 size={18} /></button>
+              <button title={t('absent')} aria-label={`${t('absent')} ${item.user.name}`} disabled={markAttendance.isPending} onClick={() => markAttendance.mutate({ user: item.user._id, status: 'absent' })}><XCircle size={18} /></button>
               <button
-                title="Remove student"
-                aria-label={`Remove ${item.user.name} from class`}
+                title={t('removeStudent')}
+                aria-label={`${t('removeStudent')} ${item.user.name}`}
                 disabled={removeStudent.isPending}
                 onClick={() => {
-                  if (window.confirm(`Remove ${item.user.name} from this class?`)) {
+                  if (window.confirm(`${t('removeStudentConfirm')} ${item.user.name}`)) {
                     removeStudent.mutate(item.user._id)
                   }
                 }}
@@ -102,8 +104,8 @@ export default function AdminStudents() {
           </article>
         ))}
       </div>
-      {markAttendance.isError && <div className="alert alert-error">{getApiErrorMessage(markAttendance.error, 'Could not mark attendance')}</div>}
-      {removeStudent.isError && <div className="alert alert-error">{getApiErrorMessage(removeStudent.error, 'Could not remove student')}</div>}
+      {markAttendance.isError && <div className="alert alert-error">{getApiErrorMessage(markAttendance.error, t('couldNotMarkAttendance'))}</div>}
+      {removeStudent.isError && <div className="alert alert-error">{getApiErrorMessage(removeStudent.error, t('couldNotRemoveStudent'))}</div>}
     </div>
   )
 }

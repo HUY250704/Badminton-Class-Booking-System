@@ -5,9 +5,11 @@ import { CalendarDays, Image, Lock, Mail, Phone, ShieldCheck, UserRound } from '
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
 import { changePassword, getUser, updateProfile } from '../hooks/useAuth'
+import { useTranslation } from '../utils/i18n'
 
 export default function Profile() {
   const user = getUser()
+  const { t } = useTranslation()
   const [profile, setProfile] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
@@ -15,8 +17,8 @@ export default function Profile() {
   })
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '' })
   const isStudent = user?.role !== 'admin'
-  const displayName = user?.role === 'admin' ? 'Admin' : user?.name
-  const roleLabel = user?.role === 'admin' ? 'Admin' : 'User'
+  const displayName = user?.role === 'admin' ? t('admin') : user?.name
+  const roleLabel = user?.role === 'admin' ? t('admin') : t('user')
   const { data = [] } = useQuery({
     queryKey: ['my-enrollments'],
     queryFn: () => api.get('/classes/my/enrollments').then((r) => r.data),
@@ -58,83 +60,83 @@ export default function Profile() {
         </div>
         <div>
           <span className="eyebrow">{roleLabel}</span>
-          <h1>{profile.name || displayName || 'Lin-Badminton Member'}</h1>
-          <p><Mail size={18} /> {user?.email || 'No email available'}</p>
+          <h1>{profile.name || displayName || t('linBadmintonMember')}</h1>
+          <p><Mail size={18} /> {user?.email || t('noEmailAvailable')}</p>
         </div>
       </section>
 
       <section className="stats-grid">
-        <div className="stat-card"><span>Role</span><strong>{roleLabel}</strong></div>
-        <div className="stat-card"><span>Booked</span><strong>{isStudent ? activeEnrollments.length : 'Admin'}</strong></div>
-        <div className="stat-card"><span>Upcoming</span><strong>{isStudent ? upcomingCount : 'All'}</strong></div>
+        <div className="stat-card"><span>{t('role')}</span><strong>{roleLabel}</strong></div>
+        <div className="stat-card"><span>{t('booked')}</span><strong>{isStudent ? activeEnrollments.length : t('admin')}</strong></div>
+        <div className="stat-card"><span>{t('upcoming')}</span><strong>{isStudent ? upcomingCount : t('all')}</strong></div>
       </section>
 
       <section className="page-card profile-panel">
         <div className="panel-header">
-          <span className="eyebrow">Account</span>
-          <h2>Quick Actions</h2>
+          <span className="eyebrow">{t('account')}</span>
+          <h2>{t('quickActions')}</h2>
         </div>
         <div className="profile-actions">
           {user?.role === 'admin' ? (
-            <Link className="button button-dark" to="/admin"><ShieldCheck size={18} /> Open Admin Portal</Link>
+            <Link className="button button-dark" to="/admin"><ShieldCheck size={18} /> {t('openAdminPortal')}</Link>
           ) : (
-            <Link className="button button-dark" to="/my/enrollments"><CalendarDays size={18} /> View My Classes</Link>
+            <Link className="button button-dark" to="/my/enrollments"><CalendarDays size={18} /> {t('viewMyClasses')}</Link>
           )}
-          <Link className="button button-secondary" to="/classes">Explore Classes</Link>
+          <Link className="button button-secondary" to="/classes">{t('exploreClasses')}</Link>
         </div>
       </section>
 
       <section className="page-card profile-panel">
         <div className="panel-header">
-          <span className="eyebrow">Profile</span>
-          <h2>Edit Personal Info</h2>
+          <span className="eyebrow">{t('profileTitle')}</span>
+          <h2>{t('editPersonalInfo')}</h2>
         </div>
         <form className="profile-form" onSubmit={(event) => { event.preventDefault(); saveProfile.mutate() }}>
           <label className="field">
-            <span>Name</span>
+            <span>{t('name')}</span>
             <div className="field-control"><UserRound size={18} /><input value={profile.name} onChange={(e) => setProfile((draft) => ({ ...draft, name: e.target.value }))} /></div>
           </label>
           <label className="field">
-            <span>Phone</span>
-            <div className="field-control"><Phone size={18} /><input value={profile.phone} onChange={(e) => setProfile((draft) => ({ ...draft, phone: e.target.value }))} placeholder="Optional" /></div>
+            <span>{t('phone')}</span>
+            <div className="field-control"><Phone size={18} /><input value={profile.phone} onChange={(e) => setProfile((draft) => ({ ...draft, phone: e.target.value }))} placeholder={t('optional')} /></div>
           </label>
           <label className="field profile-wide">
-            <span>Avatar URL</span>
+            <span>{t('avatarUrl')}</span>
             <div className="field-control"><Image size={18} /><input value={profile.avatarUrl} onChange={(e) => setProfile((draft) => ({ ...draft, avatarUrl: e.target.value }))} placeholder="https://..." /></div>
           </label>
           <label className="field profile-wide">
-            <span>Upload avatar</span>
+            <span>{t('uploadAvatar')}</span>
             <input type="file" accept="image/*" onChange={(e) => {
               const file = e.target.files?.[0]
               if (file) uploadAvatar.mutate(file)
             }} />
           </label>
-          <button className="button button-primary" disabled={saveProfile.isPending} type="submit">{saveProfile.isPending ? 'Saving...' : 'Save Profile'}</button>
+          <button className="button button-primary" disabled={saveProfile.isPending} type="submit">{saveProfile.isPending ? t('saving') : t('saveProfile')}</button>
         </form>
-        {uploadAvatar.isPending && <div className="alert alert-success">Uploading avatar...</div>}
-        {uploadAvatar.isError && <div className="alert alert-error">{getApiErrorMessage(uploadAvatar.error, 'Could not upload avatar')}</div>}
-        {saveProfile.isError && <div className="alert alert-error">{getApiErrorMessage(saveProfile.error, 'Could not save profile')}</div>}
-        {saveProfile.isSuccess && <div className="alert alert-success">Profile updated.</div>}
+        {uploadAvatar.isPending && <div className="alert alert-success">{t('uploadAvatarPending')}</div>}
+        {uploadAvatar.isError && <div className="alert alert-error">{getApiErrorMessage(uploadAvatar.error, t('couldNotUploadAvatar'))}</div>}
+        {saveProfile.isError && <div className="alert alert-error">{getApiErrorMessage(saveProfile.error, t('couldNotSaveProfile'))}</div>}
+        {saveProfile.isSuccess && <div className="alert alert-success">{t('profileUpdated')}</div>}
       </section>
 
       <section className="page-card profile-panel">
         <div className="panel-header">
-          <span className="eyebrow">Security</span>
-          <h2>Change Password</h2>
+          <span className="eyebrow">{t('security')}</span>
+          <h2>{t('changePassword')}</h2>
         </div>
         <form className="profile-form" onSubmit={(event) => { event.preventDefault(); savePassword.mutate() }}>
           <label className="field">
-            <span>Current password</span>
+            <span>{t('currentPassword')}</span>
             <div className="field-control"><Lock size={18} /><input type="password" value={passwords.currentPassword} onChange={(e) => setPasswords((draft) => ({ ...draft, currentPassword: e.target.value }))} /></div>
           </label>
           <label className="field">
-            <span>New password</span>
+            <span>{t('newPassword')}</span>
             <div className="field-control"><Lock size={18} /><input minLength="6" type="password" value={passwords.newPassword} onChange={(e) => setPasswords((draft) => ({ ...draft, newPassword: e.target.value }))} /></div>
           </label>
-          <button className="button button-primary" disabled={savePassword.isPending || passwords.newPassword.length < 6} type="submit">{savePassword.isPending ? 'Saving...' : 'Change Password'}</button>
+          <button className="button button-primary" disabled={savePassword.isPending || passwords.newPassword.length < 6} type="submit">{savePassword.isPending ? t('saving') : t('changePassword')}</button>
         </form>
-        {savePassword.isError && <div className="alert alert-error">{getApiErrorMessage(savePassword.error, 'Could not change password')}</div>}
-        {savePassword.isSuccess && <div className="alert alert-success">Password changed. Your session was refreshed.</div>}
+        {savePassword.isError && <div className="alert alert-error">{getApiErrorMessage(savePassword.error, t('couldNotChangePassword'))}</div>}
+        {savePassword.isSuccess && <div className="alert alert-success">{t('passwordChanged')}</div>}
       </section>
     </div>
   )

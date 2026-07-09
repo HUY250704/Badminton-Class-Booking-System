@@ -50,9 +50,35 @@ function normalizeCoachPayload(body) {
   return {
     name: String(body.name || '').trim(),
     email: String(body.email || '').trim().toLowerCase(),
+    title: String(body.title || '').trim(),
+    phone: String(body.phone || '').trim(),
+    birthday: String(body.birthday || '').trim(),
+    gender: String(body.gender || '').trim(),
     bio: String(body.bio || '').trim(),
     photoUrl: String(body.photoUrl || '').trim(),
-    specialties
+    specialties,
+    certificates: Array.isArray(body.certificates)
+      ? body.certificates
+      : String(body.certificates || '')
+        .split('\n')
+        .map((item) => item.trim())
+        .filter(Boolean),
+    yearsExperience: Math.max(Number(body.yearsExperience || 0), 0)
+  };
+}
+
+function coachPayload(coach) {
+  const relatedClasses = memory.classes.filter((item) => item.coach === coach._id);
+  const upcomingClasses = relatedClasses
+    .filter((item) => new Date(item.startDate) >= new Date())
+    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+    .slice(0, 5);
+
+  return {
+    ...coach,
+    teachingSchedule: upcomingClasses,
+    classCount: relatedClasses.length,
+    totalStudents: relatedClasses.reduce((sum, item) => sum + Number(item.maxStudents || 0), 0)
   };
 }
 
@@ -198,7 +224,7 @@ router.get('/admin/transfers', memoryProtect, memoryAdminOnly, (req, res) => {
   res.json([]);
 });
 
-router.get('/coaches', memoryProtect, memoryAdminOnly, (req, res) => {
+router.get('/coaches', (req, res) => {
   const search = String(req.query.search || '').trim().toLowerCase();
   const coaches = memory.coaches
     .filter((item) => {
@@ -206,7 +232,17 @@ router.get('/coaches', memoryProtect, memoryAdminOnly, (req, res) => {
       return [item.name, item.email, item.bio].some((value) => String(value || '').toLowerCase().includes(search));
     })
     .sort((a, b) => a.name.localeCompare(b.name));
-  res.json(coaches);
+  res.json(coaches.map(coachPayload));
+});
+
+router.get('/coaches/:id', (req, res, next) => {
+  const coach = memory.coaches.find((item) => item._id === req.params.id);
+  if (!coach) {
+    next(new ApiError(404, 'Coach not found', 'COACH_NOT_FOUND'));
+    return;
+  }
+
+  res.json(coachPayload(coach));
 });
 
 router.post('/coaches', memoryProtect, memoryAdminOnly, (req, res, next) => {
@@ -448,11 +484,6 @@ router.post('/classes/:id/enroll', memoryProtect, (req, res, next) => {
   const item = memory.classes.find((classItem) => classItem._id === req.params.id);
   if (!item) {
     next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
-    return;
-  }
-
-  if (new Date(item.startDate) <= new Date()) {
-    next(new ApiError(400, 'Cannot enroll in a class that has already started.', 'CLASS_ALREADY_STARTED'));
     return;
   }
 

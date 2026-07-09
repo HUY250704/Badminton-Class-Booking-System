@@ -42,10 +42,6 @@ export const enrollInClass = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
-  if (classItem.startDate <= new Date()) {
-    throw new ApiError(400, 'Cannot enroll in a class that has already started.', 'CLASS_ALREADY_STARTED');
-  }
-
   // Use a transaction when available to avoid race conditions causing over-enrollment.
   let enrollment;
   const session = await mongoose.startSession();

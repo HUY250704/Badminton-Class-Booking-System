@@ -48,6 +48,7 @@ export default function Header() {
       </Link>
       <nav className="nav-links">
         <NavLink to="/classes">{t('classes', 'Classes')}</NavLink>
+        <NavLink to="/coaches">{t('coaches', 'Coaches')}</NavLink>
         {user ? (
           <>
             <NavLink to="/my/enrollments">{t('myClasses', 'My Classes')}</NavLink>
