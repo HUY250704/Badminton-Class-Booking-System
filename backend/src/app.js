@@ -8,6 +8,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import coachRoutes from './routes/coachRoutes.js';
 import memoryRoutes from './memory/routes.js';
+import { stripeWebhook } from './controllers/advancedController.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
 
@@ -41,6 +42,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.post('/api/payments/stripe-webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 app.use(express.json());
 app.use('/api', rateLimiter({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),

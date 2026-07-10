@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CalendarDays, CheckCircle2, MapPin, UserRound, UsersRound } from 'lucide-react'
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
@@ -10,7 +10,10 @@ import { useTranslation } from '../utils/i18n'
 export default function BookingSuccess() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
+  const qc = useQueryClient()
   const { t, language } = useTranslation()
+  const sessionId = searchParams.get('session_id')
+  const [confirmedSessionId, setConfirmedSessionId] = useState('')
   const [storedClassId] = useState(() => {
     const value = localStorage.getItem('lastBookingClassId')
     if (value) localStorage.removeItem('lastBookingClassId')
@@ -24,6 +27,23 @@ export default function BookingSuccess() {
     enabled: Boolean(classId),
     placeholderData: stateClass
   })
+
+  const confirmStripeSession = useMutation({
+    mutationFn: (id) => api.post(`/payments/stripe-sessions/${id}/confirm`).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['payments', 'my'] })
+      qc.invalidateQueries({ queryKey: ['my-enrollments'] })
+      qc.invalidateQueries({ queryKey: ['classes'], exact: false, refetchType: 'all' })
+      if (classId) qc.invalidateQueries({ queryKey: ['class', classId] })
+    }
+  })
+
+  useEffect(() => {
+    if (!sessionId || confirmedSessionId === sessionId || confirmStripeSession.isPending) return
+    setConfirmedSessionId(sessionId)
+    confirmStripeSession.mutate(sessionId)
+  }, [sessionId, confirmedSessionId, confirmStripeSession, setConfirmedSessionId])
+
   const klass = localizedClass(data || stateClass, language)
 
   return (
@@ -34,6 +54,9 @@ export default function BookingSuccess() {
         <h1>{t('readyForCourt', language === 'en' ? 'You are ready for court' : 'Bạn đã sẵn sàng cho sân')}</h1>
         <p className="muted">{t('bookingSuccessDescription', language === 'en' ? 'Your class enrollment has been saved. You can review or cancel it from My Classes.' : 'Đăng ký lớp học của bạn đã được lưu. Bạn có thể xem hoặc hủy từ mục Lớp của tôi.')}</p>
         {isError && <div className="alert alert-error">{getApiErrorMessage(error, 'Could not refresh class details')}</div>}
+        {confirmStripeSession.isPending && <div className="alert alert-success">{t('confirmingPayment', 'Confirming payment...')}</div>}
+        {confirmStripeSession.isError && <div className="alert alert-error">{getApiErrorMessage(confirmStripeSession.error, t('couldNotCompletePayment', 'Could not complete payment'))}</div>}
+        {confirmStripeSession.isSuccess && <div className="alert alert-success">{t('paymentCompleted', 'Payment completed and invoice generated.')}</div>}
 
         <div className="success-details">
           <div><UserRound size={20} /><span>{t('classes', 'Class')}</span><strong>{klass?.title || t('selectedClass', language === 'en' ? 'Selected class' : 'Lớp đã chọn')}</strong></div>

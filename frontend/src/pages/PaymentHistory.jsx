@@ -34,6 +34,15 @@ export default function PaymentHistory() {
     setTimeout(() => URL.revokeObjectURL(url), 30000)
   }
 
+  function resumeCheckout(item) {
+    if (item.checkoutUrl) {
+      window.location.href = item.checkoutUrl
+      return
+    }
+
+    completePayment.mutate(item._id)
+  }
+
   if (isLoading) return <div className="page-card skeleton-card tall" />
 
   return (
@@ -96,8 +105,8 @@ export default function PaymentHistory() {
                         <FileText size={16} /> PDF
                       </button>
                     ) : item.status === 'pending' ? (
-                      <button className="button button-secondary button-small" disabled={completePayment.isPending} onClick={() => completePayment.mutate(item._id)}>
-                        <RotateCcw size={16} /> {t('complete')}
+                      <button className="button button-secondary button-small" disabled={completePayment.isPending} onClick={() => resumeCheckout(item)}>
+                        <RotateCcw size={16} /> {item.checkoutUrl ? t('resumeCheckout') : t('complete')}
                       </button>
                     ) : (
                       <span className="muted">{t('notAvailable')}</span>

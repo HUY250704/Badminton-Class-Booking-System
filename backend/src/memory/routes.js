@@ -39,6 +39,39 @@ function classPayload(item, userId) {
   };
 }
 
+function classPrice(item) {
+  return Number(item.price || process.env.DEFAULT_CLASS_PRICE || 500000);
+}
+
+function paymentPayload(item) {
+  const klass = memory.classes.find((classItem) => classItem._id === item.class);
+  return {
+    ...item,
+    class: klass || null,
+    invoice: null
+  };
+}
+
+function enrollUserInMemoryClass(classId, userId) {
+  const existing = memory.enrollments.find((item) => item.class === classId && item.user === userId);
+  if (existing) {
+    existing.status = 'active';
+    existing.cancelledAt = null;
+    return existing;
+  }
+
+  const enrollment = {
+    _id: newId('enroll'),
+    class: classId,
+    user: userId,
+    enrolledAt: new Date().toISOString(),
+    status: 'active',
+    cancelledAt: null
+  };
+  memory.enrollments.push(enrollment);
+  return enrollment;
+}
+
 function normalizeCoachPayload(body) {
   const specialties = Array.isArray(body.specialties)
     ? body.specialties
@@ -422,6 +455,43 @@ router.get('/classes/my/waitlist', memoryProtect, (req, res) => {
   }).filter((item) => item.class));
 });
 
+router.get('/payments/my', memoryProtect, (req, res) => {
+  const payments = (memory.payments || [])
+    .filter((item) => item.user === req.user._id)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map(paymentPayload);
+
+  res.json(payments);
+});
+
+router.post('/payments/:transactionId/simulate-success', memoryProtect, (req, res, next) => {
+  const transaction = (memory.payments || []).find((item) => item._id === req.params.transactionId && item.user === req.user._id);
+  if (!transaction) {
+    next(new ApiError(404, 'Transaction not found', 'TRANSACTION_NOT_FOUND'));
+    return;
+  }
+
+  const klass = memory.classes.find((item) => item._id === transaction.class);
+  if (!klass) {
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
+    return;
+  }
+
+  const currentStudents = memory.enrollments.filter((item) => item.class === klass._id && item.status !== 'cancelled').length;
+  const alreadyActive = memory.enrollments.some((item) => item.class === klass._id && item.user === req.user._id && item.status !== 'cancelled');
+  if (!alreadyActive && currentStudents >= klass.maxStudents) {
+    next(new ApiError(409, 'Class became full before payment was completed.', 'CLASS_FULL'));
+    return;
+  }
+
+  const enrollment = enrollUserInMemoryClass(klass._id, req.user._id);
+  transaction.status = 'paid';
+  transaction.enrollment = enrollment._id;
+  transaction.paidAt = transaction.paidAt || new Date().toISOString();
+
+  res.json(paymentPayload(transaction));
+});
+
 router.get('/classes/:id', memoryOptionalAuth, (req, res, next) => {
   const item = memory.classes.find((classItem) => classItem._id === req.params.id);
   if (!item) {
@@ -514,6 +584,50 @@ router.post('/classes/:id/enroll', memoryProtect, (req, res, next) => {
   };
   memory.enrollments.push(enrollment);
   res.status(201).json(enrollment);
+});
+
+router.post('/classes/:id/payments', memoryProtect, (req, res, next) => {
+  const item = memory.classes.find((classItem) => classItem._id === req.params.id);
+  if (!item) {
+    next(new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND'));
+    return;
+  }
+
+  const currentStudents = memory.enrollments.filter((enrollment) => enrollment.class === item._id && enrollment.status !== 'cancelled').length;
+  if (currentStudents >= item.maxStudents) {
+    next(new ApiError(409, 'Class is full. Join the waitlist instead.', 'CLASS_FULL'));
+    return;
+  }
+
+  const existingEnrollment = memory.enrollments.find((enrollment) => enrollment.class === item._id && enrollment.user === req.user._id && enrollment.status !== 'cancelled');
+  if (existingEnrollment) {
+    next(new ApiError(409, 'You are already enrolled in this class', 'ALREADY_ENROLLED'));
+    return;
+  }
+
+  const transaction = {
+    _id: newId('pay'),
+    user: req.user._id,
+    class: item._id,
+    enrollment: null,
+    amount: classPrice(item),
+    currency: String(process.env.STRIPE_CURRENCY || 'vnd').toUpperCase(),
+    provider: 'stripe',
+    providerRef: `MEMORY-${item._id}-${Date.now()}`,
+    checkoutUrl: '',
+    status: 'pending',
+    paidAt: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  memory.payments.push(transaction);
+
+  res.status(201).json({
+    transaction,
+    checkoutUrl: `${process.env.CLIENT_URL || 'http://localhost:5173'}/payments?pending=${transaction._id}`,
+    sandboxReady: false,
+    provider: transaction.provider
+  });
 });
 
 router.delete('/classes/:id/enroll', memoryProtect, (req, res, next) => {

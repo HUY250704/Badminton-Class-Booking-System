@@ -1,9 +1,9 @@
 import express from 'express';
 import {
+  confirmStripeSessionPayment,
   downloadInvoice,
   myPayments,
-  simulatePaymentSuccess,
-  vnpayReturn
+  simulatePaymentSuccess
 } from '../controllers/advancedController.js';
 import { protect } from '../middleware/auth.js';
 import { validateObjectId } from '../middleware/validate.js';
@@ -11,7 +11,7 @@ import { validateObjectId } from '../middleware/validate.js';
 const router = express.Router();
 
 router.get('/my', protect, myPayments);
-router.get('/vnpay-return', vnpayReturn);
+router.post('/stripe-sessions/:sessionId/confirm', protect, confirmStripeSessionPayment);
 router.post('/:transactionId/simulate-success', validateObjectId('transactionId'), protect, simulatePaymentSuccess);
 router.get('/invoices/:invoiceId.pdf', validateObjectId('invoiceId'), protect, downloadInvoice);
 

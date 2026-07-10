@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
+import Stripe from 'stripe';
 import Attendance from '../models/Attendance.js';
 import AuditLog from '../models/AuditLog.js';
 import Bookmark from '../models/Bookmark.js';
@@ -15,12 +16,31 @@ import { ApiError } from '../utils/ApiError.js';
 import { writeAuditLog } from '../utils/audit.js';
 import { paymentConfirmationEmail, sendEmail } from '../utils/email.js';
 import { createInvoicePdfBuffer } from '../utils/pdf.js';
-import { createVnpayCheckoutUrl, verifyVnpayReturn } from '../utils/vnpay.js';
 
 const activeEnrollmentFilter = { status: { $ne: 'cancelled' } };
 
+function getStripeClient() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new ApiError(500, 'Stripe secret key is not configured.', 'STRIPE_NOT_CONFIGURED');
+  }
+
+  return new Stripe(process.env.STRIPE_SECRET_KEY);
+}
+
+function clientUrl() {
+  return process.env.CLIENT_URL || 'http://localhost:5173';
+}
+
+function pendingPaymentUrl(transactionId) {
+  return `${clientUrl()}/payments?pending=${transactionId}`;
+}
+
 function classPrice(classItem) {
   return Number(classItem.price || process.env.DEFAULT_CLASS_PRICE || 500000);
+}
+
+function stripeCurrency() {
+  return String(process.env.STRIPE_CURRENCY || 'vnd').toLowerCase();
 }
 
 function invoiceNumber() {
@@ -81,6 +101,49 @@ async function enrollPaidStudent({ classId, userId, session = null }) {
   return enrollment;
 }
 
+async function markTransactionPaid(transaction, actorId = null) {
+  if (transaction.status === 'paid') {
+    const invoice = await createOrReuseInvoice(transaction);
+    return { transaction, invoice, alreadyPaid: true };
+  }
+
+  const dbSession = await mongoose.startSession();
+  try {
+    await dbSession.withTransaction(async () => {
+      const classItem = await ClassModel.findById(transaction.class).session(dbSession);
+      if (!classItem) {
+        throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
+      }
+
+      const currentStudents = await Enrollment.countDocuments({ class: classItem._id, ...activeEnrollmentFilter }).session(dbSession);
+      if (currentStudents >= classItem.maxStudents) {
+        throw new ApiError(409, 'Class became full before payment was completed.', 'CLASS_FULL');
+      }
+
+      const enrollment = await enrollPaidStudent({ classId: transaction.class, userId: transaction.user, session: dbSession });
+      transaction.status = 'paid';
+      transaction.enrollment = enrollment._id;
+      transaction.paidAt = new Date();
+      await transaction.save({ session: dbSession });
+    });
+  } finally {
+    dbSession.endSession();
+  }
+
+  const invoice = await createOrReuseInvoice(transaction);
+  await sendPaymentNotification(transaction, invoice);
+  await Waitlist.updateOne({ class: transaction.class, user: transaction.user }, { status: 'cancelled' });
+  await writeAuditLog({
+    actor: actorId || transaction.user,
+    action: 'payment.paid',
+    targetType: 'PaymentTransaction',
+    targetId: transaction._id,
+    metadata: { classId: transaction.class, amount: transaction.amount, provider: transaction.provider }
+  });
+
+  return { transaction, invoice, alreadyPaid: false };
+}
+
 export const createPayment = asyncHandler(async (req, res) => {
   const classItem = await ClassModel.findById(req.params.id);
   if (!classItem) {
@@ -97,35 +160,68 @@ export const createPayment = asyncHandler(async (req, res) => {
     throw new ApiError(409, 'You are already enrolled in this class', 'ALREADY_ENROLLED');
   }
 
-  const providerRef = `CLS-${classItem._id}-${Date.now()}`;
+  const provider = 'stripe';
+  const providerRef = `STRIPE-${classItem._id}-${Date.now()}`;
   const amount = classPrice(classItem);
-  const checkoutUrl = createVnpayCheckoutUrl({
-    amount,
-    orderId: providerRef,
-    orderInfo: `Lin-Badminton ${classItem.title}`,
-    ipAddr: req.ip
-  });
 
   const transaction = await PaymentTransaction.create({
     user: req.user._id,
     class: classItem._id,
     amount,
+    currency: stripeCurrency().toUpperCase(),
+    provider,
     providerRef,
-    checkoutUrl
+    checkoutUrl: ''
   });
+
+  let session = null;
+  if (process.env.STRIPE_SECRET_KEY) {
+    const stripe = getStripeClient();
+    session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: stripeCurrency(),
+            product_data: {
+              name: classItem.title,
+              description: `Lin-Badminton - ${classItem.schedule || classItem.location || 'Class booking'}`
+            },
+            unit_amount: Math.round(amount)
+          },
+          quantity: 1
+        }
+      ],
+      mode: 'payment',
+      client_reference_id: transaction._id.toString(),
+      metadata: {
+        transactionId: transaction._id.toString(),
+        classId: classItem._id.toString(),
+        userId: req.user._id.toString()
+      },
+      success_url: `${clientUrl()}/booking-success?classId=${classItem._id}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${clientUrl()}/payments?transaction=${transaction._id}&status=cancelled`
+    });
+  }
+
+  const checkoutUrl = session?.url || pendingPaymentUrl(transaction._id);
+  if (session?.id) transaction.providerRef = session.id;
+  transaction.checkoutUrl = session?.url || '';
+  await transaction.save();
 
   await writeAuditLog({
     actor: req.user._id,
     action: 'payment.created',
     targetType: 'PaymentTransaction',
     targetId: transaction._id,
-    metadata: { classId: classItem._id, amount }
+    metadata: { classId: classItem._id, amount, provider }
   });
 
   res.status(201).json({
     transaction,
-    checkoutUrl: checkoutUrl || `${process.env.CLIENT_URL || 'http://localhost:5173'}/payments?pending=${transaction._id}`,
-    sandboxReady: Boolean(checkoutUrl)
+    checkoutUrl,
+    sandboxReady: Boolean(session?.url),
+    provider
   });
 });
 
@@ -139,75 +235,75 @@ export const simulatePaymentSuccess = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Transaction not found', 'TRANSACTION_NOT_FOUND');
   }
 
-  if (transaction.status === 'paid') {
-    const invoice = await createOrReuseInvoice(transaction);
-    res.json({ transaction, invoice });
-    return;
-  }
-
-  const session = await mongoose.startSession();
-  try {
-    await session.withTransaction(async () => {
-      const classItem = await ClassModel.findById(transaction.class).session(session);
-      if (!classItem) {
-        throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
-      }
-
-      const currentStudents = await Enrollment.countDocuments({ class: classItem._id, ...activeEnrollmentFilter }).session(session);
-      if (currentStudents >= classItem.maxStudents) {
-        throw new ApiError(409, 'Class became full before payment was completed.', 'CLASS_FULL');
-      }
-
-      const enrollment = await enrollPaidStudent({ classId: transaction.class, userId: transaction.user, session });
-      transaction.status = 'paid';
-      transaction.enrollment = enrollment._id;
-      transaction.paidAt = new Date();
-      await transaction.save({ session });
-    });
-  } finally {
-    session.endSession();
-  }
-
-  const invoice = await createOrReuseInvoice(transaction);
-  await sendPaymentNotification(transaction, invoice);
-  await Waitlist.updateOne({ class: transaction.class, user: transaction.user }, { status: 'cancelled' });
-  await writeAuditLog({
-    actor: req.user._id,
-    action: 'payment.paid',
-    targetType: 'PaymentTransaction',
-    targetId: transaction._id,
-    metadata: { classId: transaction.class, amount: transaction.amount }
-  });
-
+  const { invoice } = await markTransactionPaid(transaction, req.user._id);
   res.json({ transaction, invoice });
 });
 
-export const vnpayReturn = asyncHandler(async (req, res) => {
-  const providerRef = req.query.vnp_TxnRef;
-  const responseCode = req.query.vnp_ResponseCode;
+export const confirmStripeSessionPayment = asyncHandler(async (req, res) => {
+  const stripe = getStripeClient();
+  const session = await stripe.checkout.sessions.retrieve(req.params.sessionId);
+  const transactionId = session.metadata?.transactionId || session.client_reference_id;
 
-  if (!verifyVnpayReturn(req.query)) {
-    throw new ApiError(400, 'VNPay signature is invalid.', 'VNPAY_SIGNATURE_INVALID');
+  if (!transactionId) {
+    throw new ApiError(400, 'Stripe session is missing transaction metadata.', 'STRIPE_SESSION_INVALID');
   }
 
-  const transaction = await PaymentTransaction.findOne({ providerRef });
+  if (session.payment_status !== 'paid') {
+    throw new ApiError(409, 'Stripe payment is not complete yet.', 'PAYMENT_NOT_COMPLETE');
+  }
+
+  const transaction = await PaymentTransaction.findOne({
+    _id: transactionId,
+    user: req.user._id
+  });
 
   if (!transaction) {
     throw new ApiError(404, 'Transaction not found', 'TRANSACTION_NOT_FOUND');
   }
 
-  transaction.status = responseCode === '00' ? 'paid' : 'failed';
-  transaction.paidAt = responseCode === '00' ? new Date() : null;
-  await transaction.save();
+  transaction.providerRef = session.id;
+  const { invoice } = await markTransactionPaid(transaction, req.user._id);
+  res.json({ transaction, invoice });
+});
 
-  if (transaction.status === 'paid') {
-    await enrollPaidStudent({ classId: transaction.class, userId: transaction.user });
-    const invoice = await createOrReuseInvoice(transaction);
-    await sendPaymentNotification(transaction, invoice);
+export const stripeWebhook = asyncHandler(async (req, res) => {
+  const stripe = getStripeClient();
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (error) {
+    res.status(400).send(`Webhook Error: ${error.message}`);
+    return;
   }
 
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-  res.redirect(`${clientUrl}/payments?transaction=${transaction._id}&status=${transaction.status}`);
+  if (event.type === 'checkout.session.completed') {
+    const checkoutSession = event.data.object;
+    const transactionId = checkoutSession.metadata?.transactionId || checkoutSession.client_reference_id;
+    const transaction = await PaymentTransaction.findById(transactionId);
+
+    if (transaction) {
+      transaction.providerRef = checkoutSession.id;
+      await markTransactionPaid(transaction, transaction.user);
+    }
+  }
+
+  if (event.type === 'checkout.session.expired') {
+    await PaymentTransaction.updateOne(
+      { providerRef: event.data.object.id, status: 'pending' },
+      { status: 'cancelled' }
+    );
+  }
+
+  if (event.type === 'payment_intent.payment_failed') {
+    await PaymentTransaction.updateOne(
+      { providerRef: event.data.object.metadata?.checkout_session_id, status: 'pending' },
+      { status: 'failed' }
+    );
+  }
+
+  res.json({ received: true });
 });
 
 export const myPayments = asyncHandler(async (req, res) => {

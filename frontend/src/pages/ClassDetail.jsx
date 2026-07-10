@@ -100,7 +100,6 @@ export default function ClassDetail() {
   const classItem = localizedClass(data, language)
 
   const isFull = (classItem?.currentStudents ?? 0) >= (classItem?.maxStudents ?? 1)
-  const hasStarted = classItem?.startDate ? new Date(classItem.startDate) <= new Date() : false
   const reviewAvailableAt = classItem?.startDate ? new Date(new Date(classItem.startDate).getTime() + 2 * 60 * 60 * 1000) : null
   const canReview = Boolean(reviewAvailableAt && reviewAvailableAt <= new Date())
   const percent = capacityPercent(classItem?.currentStudents, classItem?.maxStudents)
@@ -110,7 +109,7 @@ export default function ClassDetail() {
   const price = Number(classItem.price ?? 500000).toLocaleString(language === 'en' ? 'en-US' : 'vi-VN')
 
   function handleEnroll() {
-    if (actionLock || enroll.isPending || isFull || hasStarted) return
+    if (actionLock || enroll.isPending || isFull) return
     setNotice('')
     setActionLock('enroll')
     enroll.mutate()
@@ -166,11 +165,11 @@ export default function ClassDetail() {
           )}
           {user?.role !== 'admin' && !classItem.isEnrolled && (
             <div className="button-stack">
-              <button className="button button-primary button-full" disabled={!user || isFull || hasStarted || payment.isPending} onClick={() => payment.mutate()}>
-                <CreditCard size={18} /> {payment.isPending ? t('preparingPayment') : t('payWithVnpay')}
+              <button className="button button-primary button-full" disabled={!user || isFull || payment.isPending} onClick={() => payment.mutate()}>
+                <CreditCard size={18} /> {payment.isPending ? t('preparingPayment') : t('payWithStripe')}
               </button>
-              <button className="button button-secondary button-full" disabled={!user || isFull || hasStarted || isEnrolling} onClick={handleEnroll}>
-                {isFull ? t('classFull') : hasStarted ? t('classStarted') : isEnrolling ? t('enrolling') : t('enrollWithoutPayment')}
+              <button className="button button-secondary button-full" disabled={!user || isFull || isEnrolling} onClick={handleEnroll}>
+                {isFull ? t('classFull') : isEnrolling ? t('enrolling') : t('enrollWithoutPayment')}
               </button>
               {isFull && (
                 <button className="button button-dark button-full" disabled={!user || data.userWaitlisted || waitlist.isPending} onClick={() => waitlist.mutate()}>

@@ -28,8 +28,8 @@ const paymentTransactionSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ['vnpay', 'manual'],
-      default: 'vnpay'
+      enum: ['stripe', 'manual'],
+      default: 'stripe'
     },
     providerRef: {
       type: String,
