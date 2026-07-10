@@ -9,8 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const backendRoot = path.resolve(__dirname, '../..');
 const defaultServiceAccountPath = './lin-badminton-firebase-adminsdk-fbsvc-a0a38da221.json';
-const configuredServiceAccountPath =
-  process.env.FIREBASE_SERVICE_ACCOUNT || defaultServiceAccountPath;
+const configuredServiceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT;
 
 function resolveServiceAccountPath(configuredValue) {
   return path.isAbsolute(configuredValue)
@@ -19,7 +18,7 @@ function resolveServiceAccountPath(configuredValue) {
 }
 
 function serviceAccountFromConfiguredValue() {
-  const configuredValue = configuredServiceAccountPath.trim();
+  const configuredValue = (configuredServiceAccountPath || defaultServiceAccountPath).trim();
 
   try {
     if (configuredValue.startsWith('{')) {
@@ -54,12 +53,20 @@ function serviceAccountFromEnvFields() {
 
 export function firebaseAuth() {
   if (!getApps().length) {
+    const hasEnvFields =
+      process.env.FIREBASE_PROJECT_ID &&
+      process.env.FIREBASE_CLIENT_EMAIL &&
+      process.env.FIREBASE_PRIVATE_KEY;
+    const hasServiceAccountFile =
+      configuredServiceAccountPath || fs.existsSync(resolveServiceAccountPath(defaultServiceAccountPath));
+    const serviceAccount = hasEnvFields
+      ? serviceAccountFromEnvFields()
+      : hasServiceAccountFile
+        ? serviceAccountFromConfiguredValue()
+        : serviceAccountFromEnvFields();
+
     initializeApp({
-      credential: cert(
-        process.env.FIREBASE_SERVICE_ACCOUNT || fs.existsSync(resolveServiceAccountPath(defaultServiceAccountPath))
-          ? serviceAccountFromConfiguredValue()
-          : serviceAccountFromEnvFields()
-      )
+      credential: cert(serviceAccount)
     });
   }
 
