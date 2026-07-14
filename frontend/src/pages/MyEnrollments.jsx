@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+﻿import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowRightLeft, CalendarDays, Heart, Hourglass, MapPin, Search, UserRound } from 'lucide-react'
@@ -55,12 +55,12 @@ export default function MyEnrollments() {
   }, [transfers.data])
 
   if (isLoading) return <div className="page-card skeleton-card tall" />
-  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, language === 'en' ? 'Could not load enrollments' : 'Không thể tải lớp đã đăng ký')}</div>
+  if (isError) return <div className="alert alert-error">{getApiErrorMessage(error, language === 'en' ? 'Could not load enrollments' : 'KhĂ´ng thá»ƒ táº£i lá»›p Ä‘Ă£ Ä‘Äƒng kĂ½')}</div>
 
   const activeEnrollments = data.filter((item) => item.class)
   const archivedCount = data.length - activeEnrollments.length
   const upcomingCount = activeEnrollments.filter((item) => new Date(item.class.startDate) >= new Date()).length
-  const transferOptions = (classesQuery.data || []).map((klass) => localizedClass(klass, language)).filter((klass) => {
+  const allClasses = (classesQuery.data || []).map((klass) => localizedClass(klass, language)); const transferOptions = allClasses.filter((klass) => {
     if (!transferDraft.fromClass || klass._id === transferDraft.fromClass) return false
     return new Date(klass.startDate) >= new Date() && (klass.currentStudents ?? 0) < (klass.maxStudents ?? 1)
   })
@@ -203,12 +203,20 @@ export default function MyEnrollments() {
             </label>
             <label className="field">
               <span>{t('moveTo')}</span>
-              <select value={transferDraft.toClass} onChange={(e) => setTransferDraft((draft) => ({ ...draft, toClass: e.target.value }))}>
-                <option value="">{t('chooseAvailableClass')}</option>
-                {transferOptions.map((klass) => (
-                  <option key={klass._id} value={klass._id}>{klass.title} - {formatDateTime(klass.startDate)}</option>
-                ))}
-              </select>
+              {!transferDraft.fromClass ? (
+                <p className="muted hint-text">{t('selectCurrentClassFirst')}</p>
+              ) : classesQuery.isLoading ? (
+                <p className="muted hint-text">{language === 'en' ? 'Loading available classes...' : 'Đang tải lớp...'}</p>
+              ) : transferOptions.length === 0 ? (
+                <p className="muted hint-text">{language === 'en' ? 'No eligible classes available for transfer.' : 'Không có lớp nào đủ điều kiện để chuyển sang.'}</p>
+              ) : (
+                <select value={transferDraft.toClass} onChange={(e) => setTransferDraft((draft) => ({ ...draft, toClass: e.target.value }))}>
+                  <option value="">{t('chooseAvailableClass')}</option>
+                  {transferOptions.map((klass) => (
+                    <option key={klass._id} value={klass._id}>{klass.title} - {formatDateTime(klass.startDate)}</option>
+                  ))}
+                </select>
+              )}
             </label>
             <label className="field transfer-reason">
               <span>{t('reason')}</span>
@@ -218,7 +226,7 @@ export default function MyEnrollments() {
               <ArrowRightLeft size={18} /> {createTransfer.isPending ? t('sending') : t('requestTransferButton')}
             </button>
           </form>
-          {createTransfer.isError && <div className="alert alert-error">{getApiErrorMessage(createTransfer.error, language === 'en' ? 'Could not request transfer' : 'Không thể gửi yêu cầu chuyển lớp')}</div>}
+          {createTransfer.isError && <div className="alert alert-error">{getApiErrorMessage(createTransfer.error, language === 'en' ? 'Could not request transfer' : 'KhĂ´ng thá»ƒ gá»­i yĂªu cáº§u chuyá»ƒn lá»›p')}</div>}
           {createTransfer.isSuccess && <div className="alert alert-success">{t('transferSent')}</div>}
           <div className="transfer-list">
             {(transfers.data || []).map((item) => (
@@ -234,3 +242,5 @@ export default function MyEnrollments() {
     </div>
   )
 }
+
+
