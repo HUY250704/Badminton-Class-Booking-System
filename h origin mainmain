@@ -1,0 +1,212 @@
+[33mcommit 02bb82b750e1952cc466af3c87a54cb022886b59[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jul 14 15:04:16 2026 +0700
+
+    fix: correct error messages in review logic and update waitlist schema default date
+
+[33mcommit 7e1f90186778c138cd202fcd52e79ed52eca898e[m
+Merge: a0e2c2d 54b35c5
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jul 14 14:48:24 2026 +0700
+
+    Merge branch 'main' of https://github.com/HUY250704/Badminton-Class-Booking-System
+
+[33mcommit a0e2c2d2d94a2bb0de50635b7db621c6fe14f253[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jul 14 14:48:16 2026 +0700
+
+    fix: update coach data access in selectCoach function to prevent errors
+
+[33mcommit d4b672c67622bcd4829bf55f4d7a87312e510560[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jul 14 14:47:07 2026 +0700
+
+    feat: implement waitlist management and coach email validation with pagination support
+
+[33mcommit 54b35c52b695ae8657c4c8b27e40bff49df66e1e[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Huy <phammaihuy94@gmail.com>
+Date:   Tue Jul 14 13:48:28 2026 +0700
+
+    Update README.md
+
+[33mcommit 3257b8e66b5bd7b00138684452c3717a67bf07a2[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jul 14 11:25:34 2026 +0700
+
+    feat: enhance class and coach management with pagination, filtering, and improved search functionality
+
+[33mcommit 2afeb9d714fc555d677ae3e7cb638b1c5f826ee7[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jul 14 10:23:46 2026 +0700
+
+    feat: refactor authentication handling to use useAuthUser hook and notify on auth changes
+
+[33mcommit 382d5ae01707ca6c0304499829a9bd5ec52eafe2[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Fri Jul 10 15:45:10 2026 +0700
+
+    feat: update Firebase service account handling to prioritize environment variables
+
+[33mcommit a8dc6a4f7742150166d8823b643edac168ec9dc0[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Fri Jul 10 15:29:16 2026 +0700
+
+    feat: add Firebase service account configuration file for backend integration
+
+[33mcommit f11ec260f02da241e2bdd22601d618cc29afbed4[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Fri Jul 10 15:06:12 2026 +0700
+
+    feat: update Firebase configuration to support service account from environment variables
+
+[33mcommit 2b3bc1bf99a019dbff9d193f0a0c96709c36957b[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Fri Jul 10 10:23:15 2026 +0700
+
+    feat: integrate Stripe payment processing and update related functionality
+
+[33mcommit c9dfbdc2022c4cf7e832e1de9d0810f0e2e72646[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Thu Jul 9 13:41:44 2026 +0700
+
+    feat: add Coach Directory and Coach Profile pages with CRUD functionality for coaches
+
+[33mcommit 27cc84f603fa887ea2fd28725c5c273f0145093c[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Wed Jul 8 16:29:56 2026 +0700
+
+    feat: integrate Firebase for authentication and configuration
+    
+    - Added Firebase Admin SDK to backend for server-side authentication.
+    - Created firebase.js in backend to handle service account configuration and initialization.
+    - Implemented Firebase client SDK in frontend for user authentication.
+    - Created firebase.js in frontend to manage Firebase configuration and Google authentication.
+
+[33mcommit 58ba031aaf95b39d8f79b9f58c0da9c2a98d47a3[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Wed Jul 8 13:37:41 2026 +0700
+
+    feat: add monthly revenue tracking and upcoming classes display in admin dashboard
+
+[33mcommit 905b7e8d0c2ef733c6bf7d1c9d8eb5bb8b7a77b2[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Wed Jul 8 11:15:02 2026 +0700
+
+    feat: add class reminder functionality and payment processing integration
+    
+    - Implemented class reminder system in reminders.js to send email notifications to users before classes start.
+    - Created vnpay.js for handling VNPay payment gateway integration, including checkout URL generation and return verification.
+    - Added ForgotPassword, GoogleCallback, PaymentHistory, and ResetPassword components to the frontend for user authentication and payment history management.
+    - Introduced i18n.js for internationalization support, providing translations for both Vietnamese and English.
+
+[33mcommit a74aaac38354714af74859290b3f525a7e2c3c9d[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jun 30 11:33:05 2026 +0700
+
+    fix: update user display name logic in Header component
+
+[33mcommit 8096b7000e22a6614173a6b1333e7386d373b037[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jun 30 11:11:08 2026 +0700
+
+    feat: enhance SEO with meta tags, robots.txt, and sitemap.xml
+
+[33mcommit 6e0d5d17ac1f27c16f8a8538345ff8260c9efe48[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jun 30 11:00:33 2026 +0700
+
+    Refactor code structure for improved readability and maintainability
+
+[33mcommit f47976ea09779062915e3bb037a2ad9ce1dec777[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jun 30 10:40:11 2026 +0700
+
+    fix: update PWA asset references to use a single logo file
+
+[33mcommit 1b775029c57805912b901e978f728ca5eda1ae91[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jun 30 10:36:28 2026 +0700
+
+    Refactor code structure for improved readability and maintainability
+
+[33mcommit 2a1a47ba5a3b3be5c42286027813807b47607f6f[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Tue Jun 30 09:33:36 2026 +0700
+
+    feat: implement logout functionality and session management
+    
+    - Added logout endpoint to authController to handle user logout and token version increment.
+    - Updated auth middleware to check token version for session expiration.
+    - Enhanced enrollment and class controllers to filter out cancelled enrollments.
+    - Introduced activeEnrollmentFilter for consistent handling of enrollment status across controllers.
+    - Updated user model to include tokenVersion for session management.
+    - Modified frontend components to handle logout and session expiration messages.
+    - Implemented enrollment event broadcasting for real-time updates on class enrollments.
+    - Improved error handling and user feedback in various components.
+
+[33mcommit 210ce8eddafd7c6658115cc06dffd3242cd29b8e[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Fri Jun 26 14:40:56 2026 +0700
+
+    feat: add CORS configuration and environment variables for backend
+
+[33mcommit ccf7e6dd753594d8674801057733dad93df92a9f[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Fri Jun 26 10:45:38 2026 +0700
+
+    Refactor error handling and validation across the application
+    
+    - Introduced ApiError class for consistent error handling in controllers and middleware.
+    - Updated enrollmentController to use ApiError for error responses.
+    - Enhanced memory routes with validation middleware for class registration and login.
+    - Implemented validation middleware for class queries and body in class routes.
+    - Improved error handling in auth middleware and error middleware.
+    - Added validation functions for user registration and login inputs.
+    - Created a new NotFound component for handling 404 errors in the frontend.
+    - Updated frontend API error handling to provide user-friendly messages.
+    - Refactored class creation and enrollment pages to improve form validation and error display.
+    - Added tests for validation logic to ensure robustness.
+
+[33mcommit d6d6507b6b4f5eb4b6088e5891ab349a7e3e5941[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Fri Jun 26 10:44:55 2026 +0700
+
+    feat: update header to display user role or name in profile link
+
+[33mcommit f685eea9981b8338db17e18cbf3c031fc518ade1[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Thu Jun 25 15:37:19 2026 +0700
+
+    feat: enhance class filtering and admin dashboard functionality
+
+[33mcommit 2d46a786bef909f5b9a83cb5ff95af4fd14092a8[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Thu Jun 25 13:52:53 2026 +0700
+
+    docs: update README with Vietnamese translations and additional details
+
+[33mcommit 3d746b1a85f73994705ef5da5968632621cdda04[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Thu Jun 25 13:48:59 2026 +0700
+
+    chore: remove example environment configuration file
+
+[33mcommit 7cfbff9952559c1da4a059be80848fb4d7fbe99a[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Thu Jun 25 10:56:46 2026 +0700
+
+    docs: update README with project overview, tech stack, features, and API details
+
+[33mcommit 088a89732249193c45f8af65a0d51492c7717eb4[m
+Author: MaiHuy <phammaihuy94@gmail.com>
+Date:   Thu Jun 25 10:44:13 2026 +0700
+
+    feat: add registration page and related functionalities
+    
+    - Implemented a new registration page (Register.jsx) for user sign-up.
+    - Integrated user registration with backend using React Query.
+    - Added form validation and error handling for registration.
+    - Created utility functions for class UI management (classUi.js).
+    - Configured Vercel rewrites for frontend routing.
+    - Set up Vite configuration for the frontend development server.
+    - Initialized package.json and package-lock.json for project dependencies.
