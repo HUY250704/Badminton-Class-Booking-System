@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+﻿import crypto from 'crypto';
 import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
 import Stripe from 'stripe';
@@ -483,10 +483,10 @@ export const upsertReview = asyncHandler(async (req, res) => {
   const reviewAvailableAt = new Date(classItem.startDate.getTime() + reviewDelayHours * 60 * 60 * 1000);
 
   if (classItem.startDate > now) {
-    throw new ApiError(400, 'You can only review after the class has started.', 'CLASS_NOT_STARTED');
+    throw new ApiError(400, 'You can only review after the class starts.', 'CLASS_NOT_STARTED');
   }
   if (reviewAvailableAt > now) {
-    throw new ApiError(400, 'You can review after the class has finished.', 'CLASS_NOT_FINISHED');
+    throw new ApiError(400, `Reviews open ${reviewDelayHours} hours after the class starts.`, 'CLASS_NOT_FINISHED');
   }
 
   const enrollment = await Enrollment.findOne({ class: classItem._id, user: req.user._id, ...activeEnrollmentFilter });
@@ -715,7 +715,7 @@ export const adminMetrics = asyncHandler(async (req, res) => {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const monthlyStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
   const [revenue, monthlyRevenue, newStudents, upcomingClasses, classes, enrollmentCounts] = await Promise.all([
     PaymentTransaction.aggregate([
@@ -723,7 +723,7 @@ export const adminMetrics = asyncHandler(async (req, res) => {
       { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } }
     ]),
     PaymentTransaction.aggregate([
-      { $match: { status: 'paid', paidAt: { $gte: monthlyStart, $lt: nextMonth } } },
+      { $match: { status: 'paid', paidAt: { $gte: sixMonthsAgo, $lt: nextMonth } } },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m', date: '$paidAt' } },
@@ -999,3 +999,7 @@ export const updateUserRole = asyncHandler(async (req, res) => {
     phone: user.phone || ''
   });
 });
+
+
+
+

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 
 const waitlistSchema = new mongoose.Schema(
   {
@@ -19,7 +19,7 @@ const waitlistSchema = new mongoose.Schema(
     },
     joinedAt: {
       type: Date,
-      default: Date.now
+      default: () => new Date()
     },
     promotedAt: {
       type: Date,
