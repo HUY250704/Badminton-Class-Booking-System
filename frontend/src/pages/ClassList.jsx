@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { CalendarDays, CreditCard, MapPin, Search, Sparkles, UserRound } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, CreditCard, MapPin, Search, Sparkles, UserRound } from 'lucide-react'
 import api from '../api/axios'
 import { getApiErrorMessage } from '../api/errors'
 import { capacityPercent, capacityText, classImage, daysUntil, formatDate, formatDateTime, formatTime, levelLabel, localizedClass } from '../utils/classUi'
 import { useTranslation } from '../utils/i18n'
+
+const PAGE_SIZE = 9
 
 function fetchClasses({ queryKey }) {
   const [_key, filters] = queryKey
   return api.get('/classes', {
     params: {
       ...filters,
-      limit: 1000
+      limit: PAGE_SIZE
     }
   }).then((r) => r.data)
 }
@@ -35,26 +37,44 @@ function useDebouncedValue(value, delay = 300) {
 export default function ClassList() {
   const [searchInput, setSearchInput] = useState('')
   const [coachLocationInput, setCoachLocationInput] = useState('')
+  const [viewMode, setViewMode] = useState('upcoming')
+  const [page, setPage] = useState(1)
+  const [nowIso] = useState(() => new Date().toISOString())
   const search = useDebouncedValue(searchInput)
   const coachLocation = useDebouncedValue(coachLocationInput)
   const { language, t } = useTranslation()
+  const classQuery = {
+    search,
+    coachLocation,
+    page,
+    sortBy: 'startDate',
+    sortOrder: viewMode === 'past' ? 'desc' : 'asc'
+  }
+
+  if (viewMode !== 'upcoming') {
+    classQuery.includePast = true
+  }
+
+  if (viewMode === 'past') {
+    classQuery.startDateTo = nowIso
+  }
 
   const { data, isLoading, isFetching, isError, error } = useQuery({
-    queryKey: ['classes', {
-      search,
-      coachLocation,
-      includePast: true,
-      sortBy: 'startDate',
-      sortOrder: 'asc'
-    }],
+    queryKey: ['classes', classQuery],
     queryFn: fetchClasses,
     placeholderData: (previousData) => previousData
   })
 
   const classes = (data?.data || []).map((item) => localizedClass(item, language))
+  const pagination = data?.pagination || { page, limit: PAGE_SIZE, total: classes.length, pages: 1 }
+  const totalPages = Math.max(pagination.pages || 1, 1)
   const totalOpenSpots = classes.reduce((sum, item) => sum + Math.max(item.maxStudents - item.currentStudents, 0), 0)
   const nextClass = classes[0]
   const hasActiveSearch = Boolean(searchInput || coachLocationInput)
+
+  useEffect(() => {
+    setPage(1)
+  }, [search, coachLocation, viewMode])
 
   function resetSearch() {
     setSearchInput('')
@@ -91,10 +111,26 @@ export default function ClassList() {
           {isFetching && <span className="status-badge">{t('updating')}</span>}
         </div>
 
+        <div className="filter-pills" aria-label={t('classDateFilter', 'Class date filter')}>
+          {['upcoming', 'all', 'past'].map((mode) => (
+            <button
+              className={viewMode === mode ? 'active' : ''}
+              key={mode}
+              type="button"
+              onClick={() => setViewMode(mode)}
+            >
+              {t(
+                mode === 'all' ? 'allClasses' : mode === 'past' ? 'pastClasses' : 'upcomingClasses',
+                mode === 'all' ? 'All classes' : mode === 'past' ? 'Past classes' : 'Upcoming classes'
+              )}
+            </button>
+          ))}
+        </div>
+
         <div className="hero-stats" aria-label="Class highlights">
           <div>
-            <span>{t('upcoming')}</span>
-            <strong>{data?.pagination?.total ?? classes.length}</strong>
+            <span>{viewMode === 'past' ? t('pastClasses', 'Past classes') : viewMode === 'all' ? t('allClasses', 'All classes') : t('upcoming')}</span>
+            <strong>{pagination.total ?? classes.length}</strong>
           </div>
           <div>
             <span>{t('openSpots')}</span>
@@ -161,6 +197,32 @@ export default function ClassList() {
           )
         })}
       </div>
+
+      {!isLoading && totalPages > 1 && (
+        <div className="pagination" aria-label={t('pagination', 'Pagination')}>
+          <button
+            className="button button-secondary button-small"
+            type="button"
+            disabled={page <= 1 || isFetching}
+            onClick={() => setPage((current) => Math.max(current - 1, 1))}
+            title={t('previousPage', 'Previous page')}
+            aria-label={t('previousPage', 'Previous page')}
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span>{t('page', 'Page')} {pagination.page} / {totalPages}</span>
+          <button
+            className="button button-secondary button-small"
+            type="button"
+            disabled={page >= totalPages || isFetching}
+            onClick={() => setPage((current) => Math.min(current + 1, totalPages))}
+            title={t('nextPage', 'Next page')}
+            aria-label={t('nextPage', 'Next page')}
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

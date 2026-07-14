@@ -2,6 +2,11 @@ import axios from 'axios'
 import { queryClient } from './queryClient'
 
 const AUTH_CHANGE_EVENT = 'auth-change'
+const PUBLIC_AUTH_PATHS = ['/login', '/register', '/forgot-password', '/reset-password']
+
+function isPublicAuthPath(pathname) {
+  return PUBLIC_AUTH_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+}
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
@@ -26,7 +31,7 @@ api.interceptors.response.use(
       sessionStorage.setItem('authMessage', 'Session expired. Please log in again.')
       queryClient.clear()
 
-      if (!['/login', '/register'].includes(window.location.pathname)) {
+      if (!isPublicAuthPath(window.location.pathname) && !error.config?.skipAuthRedirect) {
         window.location.replace('/login')
       }
     }

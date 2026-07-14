@@ -61,5 +61,6 @@ const coachSchema = new mongoose.Schema(
 );
 
 coachSchema.index({ name: 'text', bio: 'text' });
+coachSchema.index({ email: 1 });
 
 export default mongoose.model('Coach', coachSchema);

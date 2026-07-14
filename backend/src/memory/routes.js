@@ -362,7 +362,7 @@ router.get('/classes', validateClassQuery, memoryOptionalAuth, (req, res) => {
       if (sortBy === 'popularity') {
         const aCount = memory.enrollments.filter((item) => item.class === a._id && item.status !== 'cancelled').length;
         const bCount = memory.enrollments.filter((item) => item.class === b._id && item.status !== 'cancelled').length;
-        return (bCount - aCount) * direction;
+        return (aCount - bCount) * direction;
       }
       return (new Date(a.startDate) - new Date(b.startDate)) * direction;
     });
@@ -547,6 +547,10 @@ router.delete('/classes/:id', memoryProtect, memoryAdminOnly, (req, res, next) =
 
   memory.classes.splice(index, 1);
   memory.enrollments = memory.enrollments.filter((item) => item.class !== req.params.id);
+  memory.waitlist = memory.waitlist.filter((item) => item.class !== req.params.id);
+  memory.bookmarks = memory.bookmarks.filter((item) => item.class !== req.params.id);
+  memory.attendance = memory.attendance.filter((item) => item.class !== req.params.id);
+  memory.payments = memory.payments.filter((item) => item.class !== req.params.id);
   res.json({ message: 'Class deleted' });
 });
 

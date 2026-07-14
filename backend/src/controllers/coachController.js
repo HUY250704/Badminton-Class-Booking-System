@@ -74,17 +74,16 @@ async function attachCoachStats(coaches) {
 
 export const listCoaches = asyncHandler(async (req, res) => {
   const search = String(req.query.search || '').trim();
+  const isEmailSearch = search.includes('@');
   const filter = search
-    ? {
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { bio: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } }
-        ]
-      }
+    ? isEmailSearch
+      ? { email: search.toLowerCase() }
+      : { $text: { $search: search } }
     : {};
+  const projection = search && !isEmailSearch ? { score: { $meta: 'textScore' } } : {};
+  const sort = search && !isEmailSearch ? { score: { $meta: 'textScore' }, name: 1 } : { name: 1 };
 
-  const coaches = await Coach.find(filter).sort({ name: 1 }).limit(100).lean();
+  const coaches = await Coach.find(filter, projection).sort(sort).limit(100).lean();
   res.json(await attachCoachStats(coaches));
 });
 

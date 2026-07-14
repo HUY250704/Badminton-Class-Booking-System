@@ -1,8 +1,12 @@
 import asyncHandler from 'express-async-handler';
+import Attendance from '../models/Attendance.js';
+import Invoice from '../models/Invoice.js';
 import ClassModel from '../models/Class.js';
 import Enrollment from '../models/Enrollment.js';
 import Bookmark from '../models/Bookmark.js';
+import PaymentTransaction from '../models/PaymentTransaction.js';
 import Review from '../models/Review.js';
+import TransferRequest from '../models/TransferRequest.js';
 import Waitlist from '../models/Waitlist.js';
 import { ApiError } from '../utils/ApiError.js';
 import { writeAuditLog } from '../utils/audit.js';
@@ -79,6 +83,8 @@ export const getClasses = asyncHandler(async (req, res) => {
   const pageNumber = Math.max(Number(page), 1);
   const limitNumber = Math.min(Math.max(Number(limit), 1), 1000);
   const includePast = req.query.includePast === 'true';
+  const direction = sortOrder === 'desc' ? -1 : 1;
+  const startIndex = (pageNumber - 1) * limitNumber;
 
   const filter = includePast ? {} : { startDate: { $gte: new Date() } };
 
@@ -144,32 +150,40 @@ export const getClasses = asyncHandler(async (req, res) => {
     }
   }
 
-  const [classes, total] = await Promise.all([
-    ClassModel.find(filter)
+  const total = await ClassModel.countDocuments(filter);
+  let pagedClasses;
+
+  if (sortBy === 'popularity') {
+    const classes = await ClassModel.find(filter)
       .populate('createdBy', 'name email')
       .populate('coach', 'name email bio photoUrl specialties')
-      .sort({ startDate: 1 }),
-    ClassModel.countDocuments(filter)
-  ]);
+      .sort({ startDate: 1, _id: 1 });
 
-  const enriched = await attachCounts(classes, req.user?._id);
-  const direction = sortOrder === 'desc' ? -1 : 1;
-  const sortedClasses = [...enriched].sort((left, right) => {
-    if (sortBy === 'price') {
-      return (Number(left.price ?? 0) - Number(right.price ?? 0)) * direction;
-    }
+    const enriched = await attachCounts(classes, req.user?._id);
+    pagedClasses = enriched
+      .sort((left, right) => {
+        const popularityDelta = (Number(left.currentStudents ?? 0) - Number(right.currentStudents ?? 0)) * direction;
+        if (popularityDelta !== 0) return popularityDelta;
 
-    if (sortBy === 'popularity') {
-      return ((right.currentStudents ?? 0) - (left.currentStudents ?? 0)) * direction;
-    }
+        const leftDate = new Date(left.startDate).getTime();
+        const rightDate = new Date(right.startDate).getTime();
+        return leftDate - rightDate;
+      })
+      .slice(startIndex, startIndex + limitNumber);
+  } else {
+    const sortField = sortBy === 'price' ? 'price' : 'startDate';
+    const sortSpec = sortField === 'price'
+      ? { price: direction, startDate: 1, _id: 1 }
+      : { startDate: direction, _id: 1 };
+    const classes = await ClassModel.find(filter)
+      .populate('createdBy', 'name email')
+      .populate('coach', 'name email bio photoUrl specialties')
+      .sort(sortSpec)
+      .skip(startIndex)
+      .limit(limitNumber);
 
-    const leftDate = new Date(left.startDate).getTime();
-    const rightDate = new Date(right.startDate).getTime();
-    return (leftDate - rightDate) * direction;
-  });
-
-  const startIndex = (pageNumber - 1) * limitNumber;
-  const pagedClasses = sortedClasses.slice(startIndex, startIndex + limitNumber);
+    pagedClasses = await attachCounts(classes, req.user?._id);
+  }
 
   res.json({
     data: pagedClasses,
@@ -309,7 +323,21 @@ export const deleteClass = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
-  await Enrollment.deleteMany({ class: classItem._id });
+  await Promise.all([
+    Enrollment.deleteMany({ class: classItem._id }),
+    Waitlist.deleteMany({ class: classItem._id }),
+    Bookmark.deleteMany({ class: classItem._id }),
+    Review.deleteMany({ class: classItem._id }),
+    Attendance.deleteMany({ class: classItem._id }),
+    PaymentTransaction.deleteMany({ class: classItem._id }),
+    Invoice.deleteMany({ class: classItem._id }),
+    TransferRequest.deleteMany({
+      $or: [
+        { fromClass: classItem._id },
+        { toClass: classItem._id }
+      ]
+    })
+  ]);
   await classItem.deleteOne();
   await writeAuditLog({
     actor: req.user._id,

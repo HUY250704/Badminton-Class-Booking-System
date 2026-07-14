@@ -8,6 +8,6 @@ const router = express.Router();
 router.get('/', listCoaches);
 router.get('/:id', validateObjectId('id'), getCoachById);
 router.post('/', protect, adminOnly, createCoach);
-router.patch('/:id', validateObjectId('id'), protect, adminOnly, updateCoach);
+router.patch('/:id', validateObjectId('id'), protect, updateCoach);
 
 export default router;
