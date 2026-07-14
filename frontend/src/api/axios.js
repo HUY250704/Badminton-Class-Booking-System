@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { queryClient } from './queryClient'
 
+const AUTH_CHANGE_EVENT = 'auth-change'
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 })
@@ -20,6 +22,7 @@ api.interceptors.response.use(
     if (error?.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+      window.dispatchEvent(new Event(AUTH_CHANGE_EVENT))
       sessionStorage.setItem('authMessage', 'Session expired. Please log in again.')
       queryClient.clear()
 

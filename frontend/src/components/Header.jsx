@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { LogOut, Moon, Sun, UserRound } from 'lucide-react'
-import { getUser, logout as logoutUser } from '../hooks/useAuth'
+import { logout as logoutUser, useAuthUser } from '../hooks/useAuth'
 import badmintonLogo from '../assets/logo.png'
 import { useTranslation } from '../utils/i18n'
 
 export default function Header() {
-  const user = getUser()
+  const user = useAuthUser()
   const navigate = useNavigate()
   const { language, toggleLanguage, t } = useTranslation()
   const displayName = user?.role === 'admin' ? t('admin', 'Admin') : user?.name

@@ -1,17 +1,26 @@
 import api from '../api/axios'
+import { useEffect, useState } from 'react'
 import { signInWithPopup } from 'firebase/auth'
 import { firebaseAuth, firebaseGoogleProvider, isFirebaseConfigured } from '../config/firebase'
+
+export const AUTH_CHANGE_EVENT = 'auth-change'
+
+function notifyAuthChange() {
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT))
+}
 
 export function saveAuth(payload) {
   if (payload?.token) {
     localStorage.setItem('token', payload.token)
     localStorage.setItem('user', JSON.stringify(payload.user))
+    notifyAuthChange()
   }
 }
 
 export function clearAuth() {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
+  notifyAuthChange()
 }
 
 export function getUser() {
@@ -20,6 +29,32 @@ export function getUser() {
   } catch {
     return null
   }
+}
+
+export function useAuthUser() {
+  const [user, setUser] = useState(() => getUser())
+
+  useEffect(() => {
+    function refreshUser() {
+      setUser(getUser())
+    }
+
+    function handleStorage(event) {
+      if (event.key === null || event.key === 'user' || event.key === 'token') {
+        refreshUser()
+      }
+    }
+
+    window.addEventListener(AUTH_CHANGE_EVENT, refreshUser)
+    window.addEventListener('storage', handleStorage)
+
+    return () => {
+      window.removeEventListener(AUTH_CHANGE_EVENT, refreshUser)
+      window.removeEventListener('storage', handleStorage)
+    }
+  }, [])
+
+  return user
 }
 
 export async function login(email, password) {
@@ -89,6 +124,7 @@ export async function updateProfile(data) {
   const res = await api.patch('/auth/me', data)
   const current = getUser() || {}
   localStorage.setItem('user', JSON.stringify({ ...current, ...res.data }))
+  notifyAuthChange()
   return res.data
 }
 
