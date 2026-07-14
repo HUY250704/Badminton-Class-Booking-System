@@ -33,6 +33,19 @@ function normalizeCoachPayload(body) {
   };
 }
 
+async function ensureCoachEmailAvailable(email, excludeCoachId = null) {
+  if (!email) return;
+
+  const existing = await Coach.findOne({
+    email,
+    ...(excludeCoachId ? { _id: { $ne: excludeCoachId } } : {})
+  }).select('_id');
+
+  if (existing) {
+    throw new ApiError(409, 'Coach email is already in use', 'COACH_EMAIL_ALREADY_EXISTS', ['email']);
+  }
+}
+
 async function attachCoachStats(coaches) {
   const coachIds = coaches.map((coach) => coach._id);
   const classQuery = coachIds.length ? { coach: { $in: coachIds } } : null;
@@ -74,6 +87,9 @@ async function attachCoachStats(coaches) {
 
 export const listCoaches = asyncHandler(async (req, res) => {
   const search = String(req.query.search || '').trim();
+  const pageNumber = Math.max(Number(req.query.page || 1), 1);
+  const limitNumber = Math.min(Math.max(Number(req.query.limit || 20), 1), 100);
+  const startIndex = (pageNumber - 1) * limitNumber;
   const isEmailSearch = search.includes('@');
   const filter = search
     ? isEmailSearch
@@ -83,8 +99,20 @@ export const listCoaches = asyncHandler(async (req, res) => {
   const projection = search && !isEmailSearch ? { score: { $meta: 'textScore' } } : {};
   const sort = search && !isEmailSearch ? { score: { $meta: 'textScore' }, name: 1 } : { name: 1 };
 
-  const coaches = await Coach.find(filter, projection).sort(sort).limit(100).lean();
-  res.json(await attachCoachStats(coaches));
+  const [coaches, total] = await Promise.all([
+    Coach.find(filter, projection).sort(sort).skip(startIndex).limit(limitNumber).lean(),
+    Coach.countDocuments(filter)
+  ]);
+
+  res.json({
+    data: await attachCoachStats(coaches),
+    pagination: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+      pages: Math.ceil(total / limitNumber)
+    }
+  });
 });
 
 export const getCoachById = asyncHandler(async (req, res) => {
@@ -102,6 +130,7 @@ export const createCoach = asyncHandler(async (req, res) => {
   if (!payload.name) {
     throw new ApiError(400, 'Coach name is required', 'VALIDATION_ERROR', ['name']);
   }
+  await ensureCoachEmailAvailable(payload.email);
 
   const coach = await Coach.create(payload);
   await writeAuditLog({
@@ -130,6 +159,7 @@ export const updateCoach = asyncHandler(async (req, res) => {
   if (!payload.name) {
     throw new ApiError(400, 'Coach name is required', 'VALIDATION_ERROR', ['name']);
   }
+  await ensureCoachEmailAvailable(payload.email, coach._id);
 
   Object.assign(coach, payload);
   await coach.save();

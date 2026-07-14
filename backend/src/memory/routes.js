@@ -284,6 +284,10 @@ router.post('/coaches', memoryProtect, memoryAdminOnly, (req, res, next) => {
     next(new ApiError(400, 'Coach name is required', 'VALIDATION_ERROR', ['name']));
     return;
   }
+  if (payload.email && memory.coaches.some((item) => item.email === payload.email)) {
+    next(new ApiError(409, 'Coach email is already in use', 'COACH_EMAIL_ALREADY_EXISTS', ['email']));
+    return;
+  }
 
   const coach = {
     _id: newId('coach'),
@@ -305,6 +309,10 @@ router.patch('/coaches/:id', memoryProtect, memoryAdminOnly, (req, res, next) =>
   const payload = normalizeCoachPayload(req.body);
   if (!payload.name) {
     next(new ApiError(400, 'Coach name is required', 'VALIDATION_ERROR', ['name']));
+    return;
+  }
+  if (payload.email && memory.coaches.some((item) => item._id !== coach._id && item.email === payload.email)) {
+    next(new ApiError(409, 'Coach email is already in use', 'COACH_EMAIL_ALREADY_EXISTS', ['email']));
     return;
   }
 

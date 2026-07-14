@@ -76,6 +76,14 @@ export default function ClassDetail() {
     }
   })
 
+  const leaveWaitlist = useMutation({
+    mutationFn: () => api.delete(/classes/${id}/waitlist).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["class", id] });
+      setNotice(t("leftWaitlist"));
+    }
+  })
+
   const bookmark = useMutation({
     mutationFn: () => api.post(`/classes/${id}/bookmark`).then((r) => r.data),
     onSuccess: () => {
@@ -103,7 +111,7 @@ export default function ClassDetail() {
   const reviewAvailableAt = classItem?.startDate ? new Date(new Date(classItem.startDate).getTime() + 2 * 60 * 60 * 1000) : null
   const canReview = Boolean(reviewAvailableAt && reviewAvailableAt <= new Date())
   const percent = capacityPercent(classItem?.currentStudents, classItem?.maxStudents)
-  const actionError = enroll.error || cancel.error || remove.error || payment.error || waitlist.error || bookmark.error || review.error
+  const actionError = enroll.error || cancel.error || remove.error || payment.error || waitlist.error || leaveWaitlist.error || bookmark.error || review.error
   const isEnrolling = actionLock === 'enroll' || enroll.isPending
   const isCancelling = actionLock === 'cancel' || cancel.isPending
   const price = Number(classItem.price ?? 500000).toLocaleString(language === 'en' ? 'en-US' : 'vi-VN')
@@ -171,10 +179,22 @@ export default function ClassDetail() {
               <button className="button button-secondary button-full" disabled={!user || isFull || isEnrolling} onClick={handleEnroll}>
                 {isFull ? t('classFull') : isEnrolling ? t('enrolling') : t('enrollWithoutPayment')}
               </button>
-              {isFull && (
-                <button className="button button-dark button-full" disabled={!user || data.userWaitlisted || waitlist.isPending} onClick={() => waitlist.mutate()}>
-                  {classItem.userWaitlisted ? `${t('onWaitlist')} (${classItem.waitlistCount})` : waitlist.isPending ? t('joiningWaitlist') : t('joinWaitlist')}
+              {isFull && !data.userWaitlisted && (
+                <button className="button button-dark button-full" disabled={!user || waitlist.isPending} onClick={() => waitlist.mutate()}>
+                  {waitlist.isPending ? t('joiningWaitlist') : t('joinWaitlist')}
                 </button>
+              )}
+              {data.userWaitlisted && (
+                <div className="button-stack">
+                  <button className="button button-dark button-full" disabled>
+                    {t('onWaitlist')} ({classItem.waitlistCount})
+                  </button>
+                  <button className="button button-danger button-full" disabled={leaveWaitlist.isPending} onClick={() => {
+                    if (confirm(t('confirmLeaveWaitlist'))) leaveWaitlist.mutate()
+                  }}>
+                    {leaveWaitlist.isPending ? t('leaving') : t('leaveWaitlist')}
+                  </button>
+                </div>
               )}
             </div>
           )}

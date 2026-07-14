@@ -44,6 +44,7 @@ export default function CoachDirectory() {
   const [searchInput, setSearchInput] = useState('')
   const [editingId, setEditingId] = useState('')
   const [draft, setDraft] = useState(null)
+  const [editError, setEditError] = useState('')
   const search = useDebouncedValue(searchInput)
 
   const coaches = useQuery({
@@ -57,6 +58,7 @@ export default function CoachDirectory() {
     onSuccess: (coach) => {
       setEditingId('')
       setDraft(null)
+      setEditError('')
       qc.invalidateQueries({ queryKey: ['coaches'] })
       qc.invalidateQueries({ queryKey: ['coach', coach._id] })
     }
@@ -78,18 +80,33 @@ export default function CoachDirectory() {
   function startEdit(coach) {
     setEditingId(coach._id)
     setDraft(coachToDraft(coach))
+    setEditError('')
   }
 
   function updateDraft(field, value) {
+    setEditError('')
     setDraft((current) => ({ ...current, [field]: value }))
   }
 
   function submitEdit(event, coachId) {
     event.preventDefault()
+    if (!draft.name.trim()) {
+      setEditError(t('coachNameRequired', 'Coach name is required.'))
+      return
+    }
+
     updateCoach.mutate({
       id: coachId,
       payload: {
         ...draft,
+        name: draft.name.trim(),
+        title: draft.title.trim(),
+        email: draft.email.trim(),
+        phone: draft.phone.trim(),
+        birthday: draft.birthday.trim(),
+        gender: draft.gender.trim(),
+        photoUrl: draft.photoUrl.trim(),
+        bio: draft.bio.trim(),
         specialties: draft.specialties,
         certificates: draft.certificates,
         yearsExperience: Number(draft.yearsExperience || 0)
@@ -126,7 +143,7 @@ export default function CoachDirectory() {
       {coaches.isError && <div className="alert alert-error">{getApiErrorMessage(coaches.error, t('couldNotLoadCoaches', 'Could not load coaches'))}</div>}
 
       <div className="card-grid coach-directory-grid">
-        {(coaches.data || []).map((coach) => {
+        {(coaches.data?.data || []).map((coach) => {
           const isEditing = editingId === coach._id
           const specialties = coach.specialties || []
           const photoUrl = isEditing ? draft?.photoUrl : coach.photoUrl
@@ -159,7 +176,7 @@ export default function CoachDirectory() {
 
                 {isEditing && (
                   <form className="coach-edit-form" onSubmit={(event) => submitEdit(event, coach._id)}>
-                    <label className="field"><span>{t('name', 'Name')}</span><input value={draft.name} onChange={(e) => updateDraft('name', e.target.value)} /></label>
+                    <label className="field"><span>{t('name', 'Name')}</span><input required value={draft.name} onChange={(e) => updateDraft('name', e.target.value)} /></label>
                     <label className="field"><span>{t('title', 'Title')}</span><input value={draft.title} onChange={(e) => updateDraft('title', e.target.value)} /></label>
                     <label className="field"><span>{t('email', 'Email')}</span><input value={draft.email} onChange={(e) => updateDraft('email', e.target.value)} /></label>
                     <label className="field"><span>{t('phone', 'Phone')}</span><input value={draft.phone} onChange={(e) => updateDraft('phone', e.target.value)} /></label>
@@ -179,8 +196,9 @@ export default function CoachDirectory() {
                     <label className="field coach-edit-wide"><span>{t('certificates', 'Certificates')}</span><textarea rows="3" value={draft.certificates} onChange={(e) => updateDraft('certificates', e.target.value)} /></label>
                     <div className="form-actions coach-edit-wide">
                       <button className="button button-primary" disabled={updateCoach.isPending} type="submit"><Save size={18} /> {updateCoach.isPending ? t('saving', 'Saving...') : t('saveChanges', 'Save Changes')}</button>
-                      <button className="button button-secondary" type="button" onClick={() => { setEditingId(''); setDraft(null) }}><X size={18} /> {t('cancel', 'Cancel')}</button>
+                      <button className="button button-secondary" type="button" onClick={() => { setEditingId(''); setDraft(null); setEditError('') }}><X size={18} /> {t('cancel', 'Cancel')}</button>
                     </div>
+                    {editError && <div className="alert alert-error coach-edit-wide">{editError}</div>}
                     {uploadCoachPhoto.isPending && <div className="alert alert-success coach-edit-wide">{t('uploadingCoachPhoto', 'Uploading coach photo...')}</div>}
                     {uploadCoachPhoto.isError && <div className="alert alert-error coach-edit-wide">{getApiErrorMessage(uploadCoachPhoto.error, t('couldNotUploadCoachPhoto', 'Could not upload coach photo'))}</div>}
                     {updateCoach.isError && <div className="alert alert-error coach-edit-wide">{getApiErrorMessage(updateCoach.error, t('couldNotSaveCoach', 'Could not save coach'))}</div>}
@@ -192,7 +210,7 @@ export default function CoachDirectory() {
         })}
       </div>
 
-      {!coaches.isLoading && (coaches.data || []).length === 0 && (
+      {!coaches.isLoading && (coaches.data?.data || []).length === 0 && (
         <div className="empty-state empty-state-action">
           <UserRound size={24} />
           <strong>{t('noCoachProfiles', 'No coach profiles yet.')}</strong>

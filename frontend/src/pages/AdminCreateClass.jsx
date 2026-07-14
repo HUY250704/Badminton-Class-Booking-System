@@ -122,7 +122,7 @@ export default function AdminCreateClass() {
   }
 
   function selectCoach(value) {
-    const coach = (coaches.data || []).find((item) => item._id === value)
+    const coach = (coaches.data?.data || []).find((item) => item._id === value)
     setFormError('')
     setForm((current) => ({
       ...current,
@@ -225,7 +225,7 @@ export default function AdminCreateClass() {
               <span>{t('coachProfile')}</span>
               <select value={form.coach} onChange={(e) => selectCoach(e.target.value)}>
                 <option value="">{t('useTypedCoachName')}</option>
-                {(coaches.data || []).map((coach) => (
+                {(coaches.data?.data || []).map((coach) => (
                   <option key={coach._id} value={coach._id}>{coach.name}</option>
                 ))}
               </select>

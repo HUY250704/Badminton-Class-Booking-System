@@ -474,7 +474,7 @@ export default function AdminDashboard() {
           <h2>{t('coachDirectory')}</h2>
         </div>
         <div className="compact-list">
-          {(coaches.data || []).slice(0, 6).map((coach) => (
+          {(coaches.data?.data || []).slice(0, 6).map((coach) => (
             <article className="compact-row" key={coach._id}>
               <div className="compact-avatar">
                 {coach.photoUrl ? <img src={coach.photoUrl} alt="" /> : <UserRound size={20} />}
@@ -485,10 +485,10 @@ export default function AdminDashboard() {
                 <span>{(coach.specialties || []).join(', ') || t('noSpecialtiesListed')}</span>
                 <span>{coach.teachingSchedule?.[0] ? `${t('nextSession')}: ${localizedClass(coach.teachingSchedule[0], language).title} - ${formatDateTime(coach.teachingSchedule[0].startDate)}` : t('noUpcomingTeachingSchedule')}</span>
               </div>
-              <Link className="button button-secondary button-small" to="/admin/create">{t('assign')}</Link>
+              <Link className="button button-secondary button-small" to={`/coaches/${coach._id}`}>{t('viewProfile')}</Link>
             </article>
           ))}
-          {!coaches.isLoading && (coaches.data || []).length === 0 && <p className="muted">{t('noCoachProfiles')}</p>}
+          {!coaches.isLoading && (coaches.data?.data || []).length === 0 && <p className="muted">{t('noCoachProfiles')}</p>}
         </div>
       </section>
 
@@ -498,7 +498,7 @@ export default function AdminDashboard() {
           <h2>{t('roles')}</h2>
         </div>
         <div className="compact-list">
-          {(users.data || []).slice(0, 10).map((user) => (
+          {(users.data?.data || []).slice(0, 10).map((user) => (
             <article className="compact-row" key={user._id}>
               <div className="compact-avatar">
                 {user.avatarUrl ? <img src={user.avatarUrl} alt="" /> : <ShieldCheck size={20} />}
@@ -515,11 +515,12 @@ export default function AdminDashboard() {
                 >
                   <option value="user">{t('user')}</option>
                   <option value="admin">{t('admin')}</option>
+                  <option value="coach">{t('coach')}</option>
                 </select>
               </label>
             </article>
           ))}
-          {!users.isLoading && (users.data || []).length === 0 && <p className="muted">{t('noUsersFound')}</p>}
+          {!users.isLoading && (users.data?.data || []).length === 0 && <p className="muted">{t('noUsersFound')}</p>}
         </div>
         {updateRole.isError && <div className="alert alert-error">{getApiErrorMessage(updateRole.error, t('couldNotUpdateUserRole'))}</div>}
       </section>
@@ -531,7 +532,7 @@ export default function AdminDashboard() {
             <h2>{t('transferQueue')}</h2>
           </div>
           <div className="compact-list">
-            {(transfers.data || []).slice(0, 6).map((item) => (
+            {(transfers.data?.data || []).slice(0, 6).map((item) => (
               <article className="compact-row" key={item._id}>
                 <div>
                   <strong>{item.user?.name || t('student')}</strong>
@@ -547,7 +548,7 @@ export default function AdminDashboard() {
                 )}
               </article>
             ))}
-            {!transfers.isLoading && (transfers.data || []).length === 0 && <p className="muted">{t('noTransferRequestsShort')}</p>}
+            {!transfers.isLoading && (transfers.data?.data || []).length === 0 && <p className="muted">{t('noTransferRequestsShort')}</p>}
           </div>
           {decideTransfer.isError && <div className="alert alert-error">{getApiErrorMessage(decideTransfer.error, t('couldNotUpdateTransfer'))}</div>}
         </div>
@@ -558,7 +559,7 @@ export default function AdminDashboard() {
             <h2>{t('recentActivity')}</h2>
           </div>
           <div className="compact-list">
-            {(auditLogs.data || []).slice(0, 8).map((item) => (
+            {(auditLogs.data?.data || []).slice(0, 8).map((item) => (
               <article className="compact-row" key={item._id}>
                 <Activity size={18} />
                 <div>
@@ -567,7 +568,7 @@ export default function AdminDashboard() {
                 </div>
               </article>
             ))}
-            {!auditLogs.isLoading && (auditLogs.data || []).length === 0 && <p className="muted">{t('noAuditLogs')}</p>}
+            {!auditLogs.isLoading && (auditLogs.data?.data || []).length === 0 && <p className="muted">{t('noAuditLogs')}</p>}
           </div>
         </div>
       </section>

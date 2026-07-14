@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
 import Stripe from 'stripe';
@@ -161,7 +162,7 @@ export const createPayment = asyncHandler(async (req, res) => {
   }
 
   const provider = 'stripe';
-  const providerRef = `STRIPE-${classItem._id}-${Date.now()}`;
+  const providerRef = `STRIPE-${classItem._id}-${req.user._id}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
   const amount = classPrice(classItem);
 
   const transaction = await PaymentTransaction.create({
@@ -351,21 +352,26 @@ export const joinWaitlist = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
+  if (classItem.startDate <= new Date()) {
+    throw new ApiError(400, 'Cannot join waitlist for a class that has already started.', 'CLASS_ALREADY_STARTED');
+  }
+
   const existingEnrollment = await Enrollment.findOne({ class: classItem._id, user: req.user._id, ...activeEnrollmentFilter });
   if (existingEnrollment) {
     throw new ApiError(409, 'You are already enrolled in this class', 'ALREADY_ENROLLED');
   }
 
+  const now = new Date();
   const waitlistItem = await Waitlist.findOneAndUpdate(
     { class: classItem._id, user: req.user._id },
-    { status: 'waiting', joinedAt: new Date(), promotedAt: null },
+    { $setOnInsert: { joinedAt: now }, $set: { status: 'waiting', promotedAt: null } },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
 
   const position = await Waitlist.countDocuments({
     class: classItem._id,
     status: 'waiting',
-    joinedAt: { $lte: waitlistItem.joinedAt }
+    _id: { $lte: waitlistItem._id }
   });
 
   await writeAuditLog({
@@ -379,10 +385,20 @@ export const joinWaitlist = asyncHandler(async (req, res) => {
 });
 
 export const leaveWaitlist = asyncHandler(async (req, res) => {
-  await Waitlist.updateOne(
+  const classItem = await ClassModel.findById(req.params.id);
+  if (!classItem) {
+    throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
+  }
+
+  const result = await Waitlist.updateOne(
     { class: req.params.id, user: req.user._id, status: 'waiting' },
     { status: 'cancelled' }
   );
+
+  if (result.matchedCount === 0) {
+    throw new ApiError(404, 'No active waitlist entry found for this class.', 'WAITLIST_NOT_FOUND');
+  }
+
   res.json({ message: 'Left waitlist' });
 });
 
@@ -462,9 +478,14 @@ export const upsertReview = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
   }
 
+  const now = new Date();
   const reviewDelayHours = Number(process.env.CLASS_REVIEW_DELAY_HOURS || 2);
   const reviewAvailableAt = new Date(classItem.startDate.getTime() + reviewDelayHours * 60 * 60 * 1000);
-  if (reviewAvailableAt > new Date()) {
+
+  if (classItem.startDate > now) {
+    throw new ApiError(400, 'You can only review after the class has started.', 'CLASS_NOT_STARTED');
+  }
+  if (reviewAvailableAt > now) {
     throw new ApiError(400, 'You can review after the class has finished.', 'CLASS_NOT_FINISHED');
   }
 
@@ -473,16 +494,22 @@ export const upsertReview = asyncHandler(async (req, res) => {
     throw new ApiError(403, 'Only enrolled students can review this class.', 'REVIEW_NOT_ALLOWED');
   }
 
+  const existingReview = await Review.findOne({ class: classItem._id, user: req.user._id });
   const review = await Review.findOneAndUpdate(
     { class: classItem._id, user: req.user._id },
     { rating, comment },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   ).populate('user', 'name');
 
-  res.status(201).json(review);
+  res.status(existingReview ? 200 : 201).json(review);
 });
 
 export const getAttendance = asyncHandler(async (req, res) => {
+  const classItem = await ClassModel.findById(req.params.id);
+  if (!classItem) {
+    throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
+  }
+
   const [students, attendance] = await Promise.all([
     Enrollment.find({ class: req.params.id, ...activeEnrollmentFilter }).populate('user', 'name email'),
     Attendance.find({ class: req.params.id }).sort({ date: -1 })
@@ -492,16 +519,28 @@ export const getAttendance = asyncHandler(async (req, res) => {
 });
 
 export const markAttendance = asyncHandler(async (req, res) => {
-  const date = req.body.date ? new Date(req.body.date) : new Date();
-  const records = Array.isArray(req.body.records) ? req.body.records : [];
+  const classItem = await ClassModel.findById(req.params.id);
+  if (!classItem) {
+    throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
+  }
 
-  if (Number.isNaN(date.getTime())) {
+  const rawDate = req.body.date ? new Date(req.body.date) : new Date();
+  if (Number.isNaN(rawDate.getTime())) {
     throw new ApiError(400, 'Attendance date is invalid', 'VALIDATION_ERROR', ['date']);
   }
+
+  const date = new Date(Date.UTC(rawDate.getFullYear(), rawDate.getMonth(), rawDate.getDate()));
+  const records = Array.isArray(req.body.records) ? req.body.records : [];
+
+  const enrolledUsers = await Enrollment.find({ class: classItem._id, ...activeEnrollmentFilter }).distinct('user');
 
   const saved = await Promise.all(records.map((record) => {
     if (!['present', 'absent', 'excused'].includes(record.status)) {
       throw new ApiError(400, 'Invalid attendance status', 'VALIDATION_ERROR', ['status']);
+    }
+
+    if (!enrolledUsers.some((id) => id.toString() === String(record.user))) {
+      throw new ApiError(400, 'User is not enrolled in this class.', 'USER_NOT_ENROLLED');
     }
 
     return Attendance.findOneAndUpdate(
@@ -544,6 +583,11 @@ export const createTransferRequest = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Target class not found', 'CLASS_NOT_FOUND');
   }
 
+  const targetEnrolled = await Enrollment.findOne({ class: targetClass._id, user: req.user._id, ...activeEnrollmentFilter });
+  if (targetEnrolled) {
+    throw new ApiError(409, 'You are already enrolled in the target class.', 'ALREADY_ENROLLED_TARGET');
+  }
+
   if (targetClass.startDate <= new Date()) {
     throw new ApiError(400, 'Target class has already started.', 'CLASS_ALREADY_STARTED', ['toClass']);
   }
@@ -581,12 +625,25 @@ export const myTransfers = asyncHandler(async (req, res) => {
 });
 
 export const listTransfers = asyncHandler(async (req, res) => {
-  const requests = await TransferRequest.find()
-    .populate('user', 'name email')
-    .populate('fromClass', 'title startDate')
-    .populate('toClass', 'title startDate maxStudents')
-    .sort({ createdAt: -1 });
-  res.json(requests);
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+  const skip = (page - 1) * limit;
+
+  const [requests, total] = await Promise.all([
+    TransferRequest.find()
+      .populate('user', 'name email')
+      .populate('fromClass', 'title startDate')
+      .populate('toClass', 'title startDate maxStudents')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    TransferRequest.countDocuments()
+  ]);
+
+  res.json({
+    data: requests,
+    pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+  });
 });
 
 export const decideTransfer = asyncHandler(async (req, res) => {
@@ -605,14 +662,38 @@ export const decideTransfer = asyncHandler(async (req, res) => {
   }
 
   if (status === 'approved') {
-    const currentStudents = await Enrollment.countDocuments({ class: request.toClass, ...activeEnrollmentFilter });
-    const targetClass = await ClassModel.findById(request.toClass);
-    if (!targetClass || currentStudents >= targetClass.maxStudents) {
-      throw new ApiError(409, 'Target class is full or unavailable.', 'CLASS_FULL');
+    const dbSession = await mongoose.startSession();
+    try {
+      await dbSession.withTransaction(async () => {
+        const targetClass = await ClassModel.findById(request.toClass).session(dbSession);
+        if (!targetClass) {
+          throw new ApiError(404, 'Target class not found', 'CLASS_NOT_FOUND');
+        }
+
+        const currentStudents = await Enrollment.countDocuments({ class: request.toClass, ...activeEnrollmentFilter }).session(dbSession);
+        if (currentStudents >= targetClass.maxStudents) {
+          throw new ApiError(409, 'Target class is full or unavailable.', 'CLASS_FULL');
+        }
+
+        await Enrollment.updateOne({ class: request.fromClass, user: request.user }, { status: 'cancelled', cancelledAt: new Date() }).session(dbSession);
+        await enrollPaidStudent({ classId: request.toClass, userId: request.user, session: dbSession });
+      });
+    } finally {
+      dbSession.endSession();
     }
 
-    await Enrollment.updateOne({ class: request.fromClass, user: request.user }, { status: 'cancelled', cancelledAt: new Date() });
-    await enrollPaidStudent({ classId: request.toClass, userId: request.user });
+    // Promote next in waitlist for the old class
+    const nextWaitlist = await Waitlist.findOne({ class: request.fromClass, status: 'waiting' }).sort({ joinedAt: 1 });
+    if (nextWaitlist) {
+      const fromClass = await ClassModel.findById(request.fromClass);
+      const fromStudents = await Enrollment.countDocuments({ class: request.fromClass, ...activeEnrollmentFilter });
+      if (fromClass && fromStudents < fromClass.maxStudents) {
+        nextWaitlist.status = 'promoted';
+        nextWaitlist.promotedAt = new Date();
+        await nextWaitlist.save();
+        await enrollPaidStudent({ classId: request.fromClass, userId: nextWaitlist.user });
+      }
+    }
   }
 
   request.status = status;
@@ -827,14 +908,29 @@ export const adminReports = asyncHandler(async (req, res) => {
 });
 
 export const auditLogs = asyncHandler(async (req, res) => {
-  const logs = await AuditLog.find()
-    .populate('actor', 'name email role')
-    .sort({ createdAt: -1 })
-    .limit(100);
-  res.json(logs);
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 200);
+  const skip = (page - 1) * limit;
+
+  const [logs, total] = await Promise.all([
+    AuditLog.find()
+      .populate('actor', 'name email role')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    AuditLog.countDocuments()
+  ]);
+
+  res.json({
+    data: logs,
+    pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+  });
 });
 
 export const listUsers = asyncHandler(async (req, res) => {
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 200);
+  const skip = (page - 1) * limit;
   const search = String(req.query.search || '').trim();
   const filter = search
     ? {
@@ -845,18 +941,25 @@ export const listUsers = asyncHandler(async (req, res) => {
       }
     : {};
 
-  const users = await User.find(filter)
-    .select('name email role avatarUrl phone createdAt updatedAt')
-    .sort({ createdAt: -1 })
-    .limit(200);
+  const [users, total] = await Promise.all([
+    User.find(filter)
+      .select('name email role avatarUrl phone createdAt updatedAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    User.countDocuments(filter)
+  ]);
 
-  res.json(users);
+  res.json({
+    data: users,
+    pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+  });
 });
 
 export const updateUserRole = asyncHandler(async (req, res) => {
   const role = String(req.body.role || '').trim();
-  if (!['admin', 'user'].includes(role)) {
-    throw new ApiError(400, 'Role must be admin or user', 'VALIDATION_ERROR', ['role']);
+  if (!['admin', 'coach', 'user'].includes(role)) {
+    throw new ApiError(400, 'Role must be admin, coach, or user', 'VALIDATION_ERROR', ['role']);
   }
 
   const user = await User.findById(req.params.userId);
