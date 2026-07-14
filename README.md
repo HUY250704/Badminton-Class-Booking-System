@@ -136,30 +136,6 @@ Các màn hình như danh sách lớp, chi tiết lớp, đăng ký/hủy đăng
 
 Không commit file `.env` thật hoặc secret lên repository.
 
-### Backend `.env`
-
-Tạo file `backend/.env`:
-
-```env
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_strong_jwt_secret
-CLIENT_URL=http://localhost:5173
-```
-
-Tùy chọn khi muốn chạy local không cần MongoDB:
-
-```env
-USE_MEMORY_DB=true
-```
-
-### Frontend `.env`
-
-Tạo file `frontend/.env`:
-
-```env
-VITE_API_URL=http://localhost:5000/api
-```
 
 ## Cài Đặt Và Chạy Local
 
