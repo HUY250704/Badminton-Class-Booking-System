@@ -44,6 +44,12 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.post('/api/payments/stripe-webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 app.use(express.json());
+
+// Ensure all JSON responses use UTF-8
+app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  next();
+});
 app.use('/api', rateLimiter({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
   max: Number(process.env.RATE_LIMIT_MAX || 300)

@@ -77,7 +77,7 @@ export default function ClassDetail() {
   })
 
   const leaveWaitlist = useMutation({
-    mutationFn: () => api.delete(/classes/${id}/waitlist).then((r) => r.data),
+    mutationFn: () => api.delete(`/classes/${id}/waitlist`).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["class", id] });
       setNotice(t("leftWaitlist"));
