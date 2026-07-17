@@ -21,7 +21,7 @@ const sampleClassTranslations = {
   'Beginner Footwork Foundations': {
     vi: {
       title: 'Nền tảng di chuyển cơ bản',
-      description: 'Học cách cầm vợt, tư thế, nhịp split-step và các mẫu di chuyển an toàn cho những pha cầu đầu tiên.',
+      description: 'Học cách cầm vợt, tư thế, nhịp split-step và các mẫu di chuyển an toàn cho những pha cầu ưu tiên.',
       schedule: 'Thứ Ba & Thứ Năm, 18:00 - 19:30',
       location: 'Sân NAPA 1'
     },
@@ -35,7 +35,7 @@ const sampleClassTranslations = {
   'Intermediate Doubles Rotation': {
     vi: {
       title: 'Luân chuyển đôi trung cấp',
-      description: 'Rèn đội hình sắc bén hơn, chuyển đổi trước-sau và phòng thủ áp lực cho đánh đôi câu lạc bộ.',
+      description: 'Rèn đội hình chắc hơn, chuyển trước-sau và phòng thủ áp lực cho đánh đôi cầu lông.',
       schedule: 'Thứ Hai & Thứ Tư, 19:30 - 21:00',
       location: 'Sân NAPA 2'
     },
@@ -48,8 +48,8 @@ const sampleClassTranslations = {
   },
   'Advanced Match Tempo': {
     vi: {
-      title: 'Nhịp độ thi đấu nâng cao',
-      description: 'Bài tập cường độ cao cho đánh lừa, tốc độ hồi vị, biến hóa giao cầu và chọn chiến thuật cú đánh.',
+      title: 'Nhịp thi đấu nâng cao',
+      description: 'Bài tập cường độ cao cho đánh lừa, tốc độ hồi phục, biến hóa giao cầu và chọn chiến thuật phù hợp.',
       schedule: 'Thứ Bảy, 08:00 - 10:00',
       location: 'Nhà thi đấu hiệu suất NAPA'
     },
@@ -119,7 +119,7 @@ export function formatTime(value) {
 
 export function daysUntil(value) {
   const language = getLanguage()
-  if (!value) return language === 'en' ? 'Schedule pending' : 'Chờ lên lịch'
+  if (!value) return language === 'en' ? 'Schedule pending' : 'Chưa lên lịch'
   const start = new Date(value)
   const now = new Date()
   const diff = Math.ceil((start.setHours(0, 0, 0, 0) - now.setHours(0, 0, 0, 0)) / 86400000)
