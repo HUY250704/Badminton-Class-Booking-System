@@ -156,8 +156,7 @@ export const getClasses = asyncHandler(async (req, res) => {
   if (sortBy === 'popularity') {
     const classes = await ClassModel.find(filter)
       .populate('createdBy', 'name email')
-      .populate('coach', 'name email bio photoUrl specialties')
-      .sort({ startDate: 1, _id: 1 });
+      .populate('coach', 'name email bio photoUrl specialties');
 
     const enriched = await attachCounts(classes, req.user?._id);
     pagedClasses = enriched

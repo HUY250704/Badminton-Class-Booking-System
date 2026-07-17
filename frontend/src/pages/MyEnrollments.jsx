@@ -38,6 +38,15 @@ export default function MyEnrollments() {
     queryFn: () => api.get('/classes/my/waitlist').then((r) => r.data)
   })
 
+  const cancelEnrollment = useMutation({
+    mutationFn: (classId) => api.delete(`/classes/${classId}/enroll`).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['my-enrollments'] })
+      qc.invalidateQueries({ queryKey: ['classes'], exact: false })
+      qc.invalidateQueries({ queryKey: ['class'], exact: false })
+    }
+  })
+
   const createTransfer = useMutation({
     mutationFn: ({ fromClass, toClass, reason }) => api.post(`/classes/${fromClass}/transfers`, { toClass, reason }).then((r) => r.data),
     onSuccess: () => {
@@ -85,7 +94,7 @@ export default function MyEnrollments() {
       </section>
 
       <div className="stats-grid">
-        <div className="stat-card"><span>{t('bookedClasses')}</span><strong>{data.length}</strong></div>
+        <div className="stat-card"><span>{t('bookedClasses')}</span><strong>{activeEnrollments.length}</strong></div>
         <div className="stat-card"><span>{t('upcoming')}</span><strong>{upcomingCount}</strong></div>
         <div className="stat-card"><span>{t('completed')}</span><strong>{Math.max(activeEnrollments.length - upcomingCount, 0)}</strong></div>
         <div className="stat-card"><span>{t('saved')}</span><strong>{bookmarks.data?.length ?? 0}</strong></div>
@@ -135,7 +144,19 @@ export default function MyEnrollments() {
                 <div className="progress-track">
                   <div className="progress-fill" style={{ width: `${capacityPercent(klass.currentStudents, klass.maxStudents)}%` }} />
                 </div>
-                <Link className="button button-dark" to={`/classes/${klass._id}`}>{t('openClass')}</Link>
+                <div className="button-stack">
+                  <Link className="button button-dark" to={`/classes/${klass._id}`}>{t('openClass')}</Link>
+                  <button
+                    className="button button-secondary"
+                    type="button"
+                    disabled={cancelEnrollment.isPending}
+                    onClick={() => {
+                      if (confirm(t('confirmCancelClass'))) cancelEnrollment.mutate(klass._id)
+                    }}
+                  >
+                    {cancelEnrollment.isPending ? t('cancelling') : t('cancelEnrollment')}
+                  </button>
+                </div>
               </div>
             </article>
           )

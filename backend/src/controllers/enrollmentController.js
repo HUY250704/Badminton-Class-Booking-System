@@ -48,10 +48,7 @@ export const enrollInClass = asyncHandler(async (req, res) => {
   try {
     await session.withTransaction(async () => {
       const existing = await Enrollment.findOne({ class: classId, user: req.user._id }).session(session);
-      if (existing?.status === 'cancelled') {
-        throw new ApiError(409, 'This class was cancelled earlier and cannot be re-enrolled.', 'ENROLLMENT_ALREADY_CANCELLED');
-      }
-      if (existing) {
+      if (existing?.status === 'active') {
         throw new ApiError(409, 'You are already enrolled in this class', 'ALREADY_ENROLLED');
       }
 
@@ -60,9 +57,21 @@ export const enrollInClass = asyncHandler(async (req, res) => {
         throw new ApiError(409, 'Class is already full', 'CLASS_FULL');
       }
 
-      enrollment = await Enrollment.create([{ class: classId, user: req.user._id, status: 'active' }], { session });
-      // Enrollment.create with array returns an array
-      enrollment = enrollment[0];
+      if (existing?.status === 'cancelled') {
+        existing.status = 'active';
+        existing.cancelledAt = null;
+        enrollment = await existing.save({ session });
+      } else {
+        enrollment = await Enrollment.create([{ class: classId, user: req.user._id, status: 'active' }], { session });
+        // Enrollment.create with array returns an array
+        enrollment = enrollment[0];
+      }
+
+      await Waitlist.updateOne(
+        { class: classId, user: req.user._id, status: 'waiting' },
+        { status: 'cancelled' },
+        { session }
+      );
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -75,21 +84,28 @@ export const enrollInClass = asyncHandler(async (req, res) => {
 
   res.status(201).json(enrollment);
 
-  await sendEmail({
-    to: req.user.email,
-    subject: 'Class registration confirmed',
-    text: `Hi ${req.user.name},\n\nYou are registered for ${classItem.title}.\nSchedule: ${classItem.schedule}\nLocation: ${classItem.location}`
-  });
+  try {
+    await sendEmail({
+      to: req.user.email,
+      subject: 'Class registration confirmed',
+      text: `Hi ${req.user.name},\n\nYou are registered for ${classItem.title}.\nSchedule: ${classItem.schedule}\nLocation: ${classItem.location}`
+    });
+  } catch (emailError) {
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn('Failed to send enrollment email:', emailError.message || emailError);
+    }
+  }
 });
 
 export const cancelEnrollment = asyncHandler(async (req, res) => {
   const session = await mongoose.startSession();
   let cancelled = null;
   let alreadyCancelled = false;
+  let classItem = null;
 
   try {
     await session.withTransaction(async () => {
-      const classItem = await ClassModel.findById(req.params.id).session(session);
+      classItem = await ClassModel.findById(req.params.id).session(session);
       if (!classItem) {
         throw new ApiError(404, 'Class not found', 'CLASS_NOT_FOUND');
       }
@@ -122,6 +138,18 @@ export const cancelEnrollment = asyncHandler(async (req, res) => {
   }
 
   res.json({ message: 'Enrollment cancelled', enrollment: cancelled });
+
+  try {
+    await sendEmail({
+      to: req.user.email,
+      subject: 'Class enrollment cancelled',
+      text: `Hi ${req.user.name},\n\nYour enrollment for ${classItem.title} has been cancelled.\nSchedule: ${classItem.schedule}\nLocation: ${classItem.location}`
+    });
+  } catch (emailError) {
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn('Failed to send cancellation email:', emailError.message || emailError);
+    }
+  }
 });
 
 export const myEnrollments = asyncHandler(async (req, res) => {

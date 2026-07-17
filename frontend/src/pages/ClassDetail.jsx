@@ -5,7 +5,7 @@ import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, CreditCard, Heart, MapPi
 import api from '../api/axios'
 import { broadcastEnrollmentChange, invalidateEnrollmentQueries } from '../api/enrollmentEvents'
 import { getApiErrorMessage } from '../api/errors'
-import { getUser } from '../hooks/useAuth'
+import { useAuthUser } from '../hooks/useAuth'
 import { capacityPercent, capacityText, classImage, daysUntil, formatDateTime, formatTime, levelLabel, localizedClass } from '../utils/classUi'
 import { useTranslation } from '../utils/i18n'
 
@@ -13,7 +13,7 @@ export default function ClassDetail() {
   const { id } = useParams()
   const qc = useQueryClient()
   const navigate = useNavigate()
-  const user = getUser()
+  const user = useAuthUser()
   const { language, t } = useTranslation()
   const [actionLock, setActionLock] = useState('')
   const [notice, setNotice] = useState('')
@@ -70,19 +70,28 @@ export default function ClassDetail() {
 
   const waitlist = useMutation({
     mutationFn: () => api.post(`/classes/${id}/waitlist`).then((r) => r.data),
+    onMutate: () => {
+      setActionLock('waitlist')
+      setNotice('')
+    },
     onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ['class', id] })
       setNotice(`${t('joinedWaitlistPosition')} ${result.position}.`)
-    }
+    },
+    onSettled: () => setActionLock('')
   })
 
   const leaveWaitlist = useMutation({
-   mutationFn: () => api.delete(`/classes/${id}/waitlist`).then((r) => r.data),
-
+    mutationFn: () => api.delete(`/classes/${id}/waitlist`).then((r) => r.data),
+    onMutate: () => {
+      setActionLock('leaveWaitlist')
+      setNotice('')
+    },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["class", id] });
-      setNotice(t("leftWaitlist"));
-    }
+      qc.invalidateQueries({ queryKey: ['class', id] })
+      setNotice(t('leftWaitlist'))
+    },
+    onSettled: () => setActionLock('')
   })
 
   const bookmark = useMutation({
