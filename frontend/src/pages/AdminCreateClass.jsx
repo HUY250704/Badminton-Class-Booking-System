@@ -292,7 +292,7 @@ export default function AdminCreateClass() {
               <div className="progress-fill" style={{ width: `${capacityPercent(existingClass.data?.currentStudents || 0, Number(form.maxStudents) || 1)}%` }} />
             </div>
           </div>
-          <form className="class-body" onSubmit={submitCoach}>
+          <div className="class-body">
             <span className="eyebrow">{t('coachEntity')}</span>
             <h2>{t('createCoach')}</h2>
             <label className="field"><span>{t('name')}</span><input value={coachDraft.name} onChange={(e) => setCoachDraft((draft) => ({ ...draft, name: e.target.value }))} placeholder={t('coachName')} /></label>
@@ -307,11 +307,11 @@ export default function AdminCreateClass() {
               }} />
             </label>
             <label className="field"><span>{t('specialties')}</span><input value={coachDraft.specialties} onChange={(e) => setCoachDraft((draft) => ({ ...draft, specialties: e.target.value }))} placeholder={language === 'en' ? 'Footwork, Doubles' : 'Di chuyển, Đánh đôi'} /></label>
-            <button className="button button-secondary" disabled={createCoach.isPending} type="submit"><Plus size={18} /> {createCoach.isPending ? t('creating') : t('createCoach')}</button>
+            <button className="button button-secondary" disabled={createCoach.isPending} type="button" onClick={submitCoach}><Plus size={18} /> {createCoach.isPending ? t('creating') : t('createCoach')}</button>
             {uploadCoachPhoto.isPending && <div className="alert alert-success">{t('uploadingCoachPhoto')}</div>}
             {uploadCoachPhoto.isError && <div className="alert alert-error">{getApiErrorMessage(uploadCoachPhoto.error, t('couldNotUploadCoachPhoto'))}</div>}
             {createCoach.isError && <div className="alert alert-error">{getApiErrorMessage(createCoach.error, t('couldNotCreateCoach'))}</div>}
-          </form>
+          </div>
         </aside>
       </div>
     </div>
