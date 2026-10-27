@@ -59,7 +59,7 @@ export default function CoachDirectory() {
       setEditingId('')
       setDraft(null)
       setEditError('')
-      qc.invalidateQueries({ queryKey: ['coaches'] })
+      qc.invalidateQueries({ queryKey: ['coaches'] }) 
       qc.invalidateQueries({ queryKey: ['coach', coach._id] })
     }
   })

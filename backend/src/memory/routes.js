@@ -259,13 +259,22 @@ router.get('/admin/transfers', memoryProtect, memoryAdminOnly, (req, res) => {
 
 router.get('/coaches', (req, res) => {
   const search = String(req.query.search || '').trim().toLowerCase();
-  const coaches = memory.coaches
+  const filtered = memory.coaches
     .filter((item) => {
       if (!search) return true;
       return [item.name, item.email, item.bio].some((value) => String(value || '').toLowerCase().includes(search));
     })
     .sort((a, b) => a.name.localeCompare(b.name));
-  res.json(coaches.map(coachPayload));
+  const data = filtered.map(coachPayload);
+  res.json({
+    data,
+    pagination: {
+      page: 1,
+      limit: data.length,
+      total: data.length,
+      pages: 1
+    }
+  });
 });
 
 router.get('/coaches/:id', (req, res, next) => {
